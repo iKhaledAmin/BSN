@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_social_network
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: localhost
+    port: 1025
+    username: username
+    password: password
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
+logging:
+  pattern:
+    console: "%green(%d{HH:mm:ss.SSS}) %highlight(%-5level){FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=blue, TRACE=cyan} %red([%thread]) %yellow(%logger{15}) - %msg%n"
+##For development:
+#logging:
+#  pattern:
+#    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{25} - %msg%n"
