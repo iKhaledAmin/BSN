@@ -42,6 +42,7 @@ public class Profile extends AuditableEntity {
     @Column(name = "profession")
     private String profession;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(
             name = "profile_status",

@@ -38,6 +38,7 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
     private String emailAddress;
 
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(
             name = "account_status",
@@ -83,6 +84,12 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
         return accountRoles.stream()
                 .map(AccountRole::getRole)
                 .collect(Collectors.toList());
+    }
+
+
+    public boolean hasRole(String roleName) {
+        return getRoles().stream()
+                .anyMatch(r -> r.getName().equals(roleName));
     }
 
     @Override
