@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="IU-253.30387.90">
+  <component name="dataSourceStorageLocal" created-in="IU-253.31033.145">
     <data-source name="book_social_network@localhost" uuid="b5697bff-ede4-4d68-a95f-d96fdc89d6bb">
       <database-info product="PostgreSQL" version="15.15 (Debian 15.15-1.pgdg12+1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.7.3" dbms="POSTGRES" exact-version="15.15" exact-driver-version="42.7">
         <identifier-quote-string>&quot;</identifier-quote-string>
