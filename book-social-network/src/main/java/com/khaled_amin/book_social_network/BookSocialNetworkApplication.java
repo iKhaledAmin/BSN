@@ -1,4 +1,4 @@
-package com.Khaled_Amin.book_social_network;
+package com.khaled_amin.book_social_network;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
