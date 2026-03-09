@@ -1,14 +1,16 @@
-package com.khaled_amin.book_social_network.role.constants;
+package com.khaled_amin.book_social_network.role.model.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
+@RequiredArgsConstructor
 public enum DefaultRoles {
-    ADMIN("System administrator"),
-    USER("Default system user"),
-    MODERATOR("Content moderator");
 
+    ADMIN("ADMIN", "System administrator"),
+    USER("USER", "Default system user"),
+    MODERATOR("MODERATOR", "Content moderator");
+
+    private final String name;
     private final String description;
 }

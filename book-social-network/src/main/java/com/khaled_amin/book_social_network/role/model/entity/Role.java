@@ -1,7 +1,7 @@
-package com.Khaled_Amin.book_social_network.role.model.entity;
+package com.khaled_amin.book_social_network.role.model.entity;
 
 
-import com.Khaled_Amin.book_social_network.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.audit.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
