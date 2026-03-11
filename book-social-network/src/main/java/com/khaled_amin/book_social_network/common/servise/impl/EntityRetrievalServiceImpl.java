@@ -1,8 +1,7 @@
 package com.khaled_amin.book_social_network.common.servise.impl;
 
-import com.khaled_amin.book_social_network.common.exception.ResourceNotFoundException;
 import com.khaled_amin.book_social_network.common.repository.BaseRepository;
-import com.khaled_amin.book_social_network.common.servise.GenericEntityService;
+import com.khaled_amin.book_social_network.common.servise.EntityRetrievalService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,13 +11,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
-public class GenericEntityServiceImpl implements GenericEntityService {
+public class EntityRetrievalServiceImpl implements EntityRetrievalService {
 
     private final Repositories repositories;
 
-    public GenericEntityServiceImpl(ApplicationContext context) {
+    public EntityRetrievalServiceImpl(ApplicationContext context) {
         this.repositories = new Repositories(context);
     }
 
@@ -39,12 +39,10 @@ public class GenericEntityServiceImpl implements GenericEntityService {
     }
 
     @Override
-    public <T, ID> T getById(Class<T> entityClass, ID id) {
-
+    public <T, ID, E extends RuntimeException> T getById(Class<T> entityClass, ID id, Supplier<E> notFoundExceptionSupplier) {
         return getRepository(entityClass)
                 .findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(entityClass, "id", id));
+                .orElseThrow(notFoundExceptionSupplier);
     }
 
     @Override
@@ -54,7 +52,6 @@ public class GenericEntityServiceImpl implements GenericEntityService {
 
     @Override
     public <T, ID> T getReference(Class<T> entityClass, ID id) {
-
         return getRepository(entityClass).getReferenceById(id);
     }
 

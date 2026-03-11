@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.role.service.impl;
 
-import com.khaled_amin.book_social_network.common.servise.GenericEntityService;
+import com.khaled_amin.book_social_network.common.servise.EntityRetrievalService;
+import com.khaled_amin.book_social_network.role.exception.RoleException;
 import com.khaled_amin.book_social_network.role.model.dto.RoleRequest;
 import com.khaled_amin.book_social_network.role.model.dto.RoleResponse;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
@@ -9,9 +10,9 @@ import com.khaled_amin.book_social_network.role.repository.RoleRepo;
 import com.khaled_amin.book_social_network.role.service.RoleService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 
@@ -21,7 +22,7 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepo roleRepo;
     private final RoleMapper roleMapper;
-    private final GenericEntityService genericEntityService;
+    private final EntityRetrievalService entityRetrievalService;
 
 
     @Override
@@ -35,37 +36,40 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Boolean existsByName(String name) {
+    public boolean existsByName(String name) {
         return roleRepo.existsByName(name);
     }
 
 
+    @Transactional
     @Override
     public Role add(RoleRequest roleRequest) {
 
-        throwExceptionIfRoleNameAlreadyExists(roleRequest.getName());
+        roleRequest.setName(normalizeRoleName(roleRequest.getName()));
 
-        roleRequest.setName(roleRequest.getName().toUpperCase());
-        Role newRole = toEntity(roleRequest);
+        validateRoleNameUniqueness(roleRequest.getName());
 
-        newRole = roleRepo.save(newRole);
+        roleRequest.setName(roleRequest.getName());
 
-        return newRole;
+        Role role = toEntity(roleRequest);
+
+        return roleRepo.save(role);
     }
 
 
+    @Transactional
     @Override
     public Role update(Long roleId, RoleRequest roleRequest) {
 
-        Role existingRole = genericEntityService.getById(Role.class,roleId);
+        Role existingRole = getById(roleId);
 
-        // handle Role name
+        roleRequest.setName(normalizeRoleName(roleRequest.getName()));
+
         if (!existingRole.getName().equals(roleRequest.getName())) {
-            throwExceptionIfRoleNameAlreadyExists(roleRequest.getName());
+            validateRoleNameUniqueness(roleRequest.getName());
         }
 
-        roleRequest.setName(roleRequest.getName().toUpperCase());
-        roleMapper.updateEntity(roleRequest,existingRole);
+        roleMapper.updateEntity(roleRequest, existingRole);
 
         return roleRepo.save(existingRole);
     }
@@ -76,23 +80,35 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public Optional<Role> getOptionalById(Long roleId){
+        return entityRetrievalService.getOptionalById(Role.class,roleId);
+    }
+
+    @Override
+    public Role getById(Long roleId) {
+        return entityRetrievalService.getById(Role.class,roleId,RoleException::notFound);
+    }
+
+    @Override
     public Optional<Role> getOptionalByName(String roleName){
         return roleRepo.findByName(roleName);
     }
 
     @Override
-    public Role getByName(String roleName){
-        return getOptionalByName(roleName).orElseThrow(
-                () -> new NoSuchElementException("Role not found!")
-        );
+    public Role getByName(String roleName) {
+        return getOptionalByName(roleName)
+                .orElseThrow(RoleException::notFound);
     }
 
-    private void throwExceptionIfRoleNameAlreadyExists(String categoryName) {
-        if (existsByName(categoryName)) {
-            // todo - Exception handling
-            //throw new ConflictException("Role name already exists!");
-        }
 
+    private void validateRoleNameUniqueness(String roleName) {
+        if (roleRepo.existsByName(roleName))
+            throw RoleException.alreadyExists();
     }
 
+    private String normalizeRoleName(String name) {
+        return name.toUpperCase();
+    }
 }
+
+

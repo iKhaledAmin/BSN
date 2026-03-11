@@ -6,12 +6,13 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
-public interface GenericEntityService {
+public interface EntityRetrievalService {
 
     <T, ID> Optional<T> getOptionalById(Class<T> entityClass, ID id);
 
-    <T, ID> T getById(Class<T> entityClass, ID id);
+    <T, ID, E extends RuntimeException> T getById(Class<T> entityClass, ID id, Supplier<E> notFoundExceptionSupplier);
 
     <T, ID> boolean exists(Class<T> entityClass, ID id);
 

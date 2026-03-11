@@ -12,13 +12,16 @@ public interface RoleService {
     Role toEntity(RoleRequest request);
     RoleResponse toResponse(Role entity);
 
-    Boolean existsByName(String name);
+    boolean existsByName(String name);
 
 
     Role add(RoleRequest roleRequest);
     Role update(Long roleId, RoleRequest roleRequest);
 
     public List<Role> getAll();
+
+    Optional<Role> getOptionalById(Long roleId);
+    Role getById(Long roleId);
 
     Optional<Role> getOptionalByName(String roleName);
     Role getByName(String roleName);
