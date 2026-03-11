@@ -23,6 +23,4 @@ public interface RoleService {
     Optional<Role> getOptionalByName(String roleName);
     Role getByName(String roleName);
 
-    Optional<Role> getOptionalById(Long roleId);
-    Role getById(Long roleId);
 }

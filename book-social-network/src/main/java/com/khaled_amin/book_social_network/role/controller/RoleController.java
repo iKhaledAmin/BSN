@@ -2,6 +2,7 @@ package com.khaled_amin.book_social_network.role.controller;
 
 import com.khaled_amin.book_social_network.common.dto.ApiResponse;
 import com.khaled_amin.book_social_network.common.response.ApiResponseFactory;
+import com.khaled_amin.book_social_network.common.servise.GenericEntityService;
 import com.khaled_amin.book_social_network.role.model.dto.RoleRequest;
 import com.khaled_amin.book_social_network.role.model.dto.RoleResponse;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
@@ -25,6 +26,7 @@ public class RoleController {
 
     private final RoleService roleService;
     private final RoleMapper roleMapper;
+    private final GenericEntityService genericEntityService;
 
     @Operation(summary = "Create a new role")
     @PostMapping
@@ -60,7 +62,7 @@ public class RoleController {
     public ResponseEntity<ApiResponse<RoleResponse>> getRole(
             @PathVariable Long roleId) {
 
-        Role role = roleService.getById(roleId);
+        Role role = genericEntityService.getById(Role.class,roleId);
 
         RoleResponse response = roleMapper.toResponse(role);
 

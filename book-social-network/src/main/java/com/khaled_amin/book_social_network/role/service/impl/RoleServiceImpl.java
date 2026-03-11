@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.role.service.impl;
 
+import com.khaled_amin.book_social_network.common.servise.GenericEntityService;
 import com.khaled_amin.book_social_network.role.model.dto.RoleRequest;
 import com.khaled_amin.book_social_network.role.model.dto.RoleResponse;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
@@ -20,6 +21,7 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepo roleRepo;
     private final RoleMapper roleMapper;
+    private final GenericEntityService genericEntityService;
 
 
     @Override
@@ -55,7 +57,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role update(Long roleId, RoleRequest roleRequest) {
 
-        Role existingRole = getById(roleId);
+        Role existingRole = genericEntityService.getById(Role.class,roleId);
 
         // handle Role name
         if (!existingRole.getName().equals(roleRequest.getName())) {
@@ -72,19 +74,6 @@ public class RoleServiceImpl implements RoleService {
     public List<Role> getAll(){
         return roleRepo.findAll();
     }
-
-    @Override
-    public Optional<Role> getOptionalById(Long roleId){
-        return roleRepo.findById(roleId);
-    }
-
-    @Override
-    public Role getById(Long roleId){
-        return getOptionalById(roleId).orElseThrow(
-                () -> new NoSuchElementException("Role not found!")
-        );
-    }
-
 
     @Override
     public Optional<Role> getOptionalByName(String roleName){
