@@ -18,6 +18,9 @@ public interface RoleService {
     Role add(RoleRequest roleRequest);
     Role update(Long roleId, RoleRequest roleRequest);
 
+    Role getDefaultRole();
+    void assignDefaultRole(Long roleId);
+
     public List<Role> getAll();
 
     Optional<Role> getOptionalById(Long roleId);

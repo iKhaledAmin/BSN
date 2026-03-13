@@ -12,21 +12,14 @@ public class RoleException extends BaseApiException {
     public static RoleException notFound() {
         return new RoleException(
                 RoleErrorCode.ROLE_NOT_FOUND,
-                RoleErrorCode.ROLE_NOT_FOUND.getMessage()
+                "Role not found"
         );
     }
 
     public static RoleException alreadyExists() {
         return new RoleException(
                 RoleErrorCode.ROLE_ALREADY_EXISTS,
-                RoleErrorCode.ROLE_ALREADY_EXISTS.getMessage()
-        );
-    }
-
-    public static RoleException defaultRoleNotConfigured() {
-        return new RoleException(
-                RoleErrorCode.DEFAULT_ROLE_NOT_CONFIGURED,
-                RoleErrorCode.DEFAULT_ROLE_NOT_CONFIGURED.getMessage()
+                "Role already exists"
         );
     }
 }

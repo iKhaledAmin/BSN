@@ -9,6 +9,8 @@ import com.khaled_amin.book_social_network.role.model.mapper.RoleMapper;
 import com.khaled_amin.book_social_network.role.repository.RoleRepo;
 import com.khaled_amin.book_social_network.role.service.RoleService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +47,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role add(RoleRequest roleRequest) {
 
-        roleRequest.setName(normalizeRoleName(roleRequest.getName()));
+        String normalizedName = normalizeRoleName(roleRequest.getName());
 
-        validateRoleNameUniqueness(roleRequest.getName());
+        validateRoleNameUniqueness(normalizedName);
 
-        roleRequest.setName(roleRequest.getName());
+        roleRequest.setName(normalizedName);
 
         Role role = toEntity(roleRequest);
 
@@ -63,15 +65,38 @@ public class RoleServiceImpl implements RoleService {
 
         Role existingRole = getById(roleId);
 
-        roleRequest.setName(normalizeRoleName(roleRequest.getName()));
+        String normalizedName = normalizeRoleName(roleRequest.getName());
 
-        if (!existingRole.getName().equals(roleRequest.getName())) {
-            validateRoleNameUniqueness(roleRequest.getName());
+        if (!existingRole.getName().equals(normalizedName)) {
+            validateRoleNameUniqueness(normalizedName);
         }
+
+        roleRequest.setName(normalizedName);
 
         roleMapper.updateEntity(roleRequest, existingRole);
 
         return roleRepo.save(existingRole);
+    }
+
+
+    public Optional<Role> getOptionalDefaultRole(){
+        return roleRepo.findByDefaultRoleTrue();
+    }
+
+    @Cacheable("defaultRole")
+    @Override
+    public Role getDefaultRole() {
+
+        return getOptionalDefaultRole()
+                .orElseThrow(() -> RoleException.defaultRoleNotConfigured());
+    }
+
+
+    @CacheEvict(value = "defaultRole")
+    @Transactional
+    @Override
+    public void assignDefaultRole(Long roleId) {
+        roleRepo.assignDefaultRole(roleId);
     }
 
     @Override

@@ -28,4 +28,12 @@ public class Role extends AuditableEntity {
 
     @Column(name = "role_description", nullable = false)
     private String description;
+
+    @Column(name = "is_default", nullable = false,columnDefinition = "boolean default false" )
+    private boolean defaultRole = false;
+
+
+// ------------------------------------ Business Methods -------------------------------- //
+
+// ------------------------------------ End Business Methods -------------------------------- //
 }
