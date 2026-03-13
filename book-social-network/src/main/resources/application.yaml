@@ -2,7 +2,7 @@ spring:
   application:
     name: book-social-network
   profiles:
-    active: dev
+    active: mysql
   servlet:
     multipart:
       max-file-size: 50MB
