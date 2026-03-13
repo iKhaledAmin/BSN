@@ -1,8 +1,8 @@
-package com.Khaled_Amin.book_social_network.user.model.entity;
+package com.khaled_amin.book_social_network.user.model.entity;
 
-import com.Khaled_Amin.book_social_network.audit.AuditableEntity;
-import com.Khaled_Amin.book_social_network.user.model.enums.Gender;
-import com.Khaled_Amin.book_social_network.user.model.enums.ProfileStatus;
+import com.khaled_amin.book_social_network.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.user.model.enums.Gender;
+import com.khaled_amin.book_social_network.user.model.enums.ProfileStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

@@ -3,7 +3,7 @@ package com.khaled_amin.book_social_network.common.exception;
 
 import com.khaled_amin.book_social_network.common.dto.ApiError;
 import com.khaled_amin.book_social_network.common.dto.ErrorResponse;
-import com.khaled_amin.book_social_network.common.response.ApiResponseFactory;
+import com.khaled_amin.book_social_network.common.factory.ApiResponseFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

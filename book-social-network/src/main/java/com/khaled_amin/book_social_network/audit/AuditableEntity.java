@@ -1,8 +1,6 @@
-package com.Khaled_Amin.book_social_network.audit;
+package com.khaled_amin.book_social_network.audit;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,18 +22,18 @@ import java.time.LocalDateTime;
 public abstract class AuditableEntity {
 
     @CreatedDate
-    @Column(name = "created_at",nullable = false,updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @CreatedBy
-    @Column(name = "created_by",nullable = false,updatable = false)
+    @Column(name = "created_by", nullable = false, updatable = false)
     private String createdBy;
 
     @LastModifiedDate
-    @Column(name = "updated_at",insertable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    @Column(name = "updated_by",insertable = false)
+    @Column(name = "updated_by")
     private String updatedBy;
 }

@@ -1,8 +1,8 @@
-package com.Khaled_Amin.book_social_network.user.model.entity;
+package com.khaled_amin.book_social_network.user.model.entity;
 
-import com.Khaled_Amin.book_social_network.audit.AuditableEntity;
-import com.Khaled_Amin.book_social_network.role.model.entity.Role;
-import com.Khaled_Amin.book_social_network.user.model.enums.AccountStatus;
+import com.khaled_amin.book_social_network.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.role.model.entity.Role;
+import com.khaled_amin.book_social_network.user.model.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -28,7 +28,7 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
     @Column(name = "account_id")
     private Long id;
 
-    @Column(name = "username",unique = true, nullable = false, updatable = false)
+    @Column(name = "username", nullable = false, updatable = false,unique = true)
     private String username;
 
     @Column(name = "password_hash", nullable = false)
@@ -45,7 +45,7 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
             nullable = false,
             columnDefinition = "VARCHAR(20) DEFAULT 'DISABLED'"
     )
-    private AccountStatus status = AccountStatus.DISABLED;
+    private AccountStatus accountStatus = AccountStatus.DISABLED;
 
 
     // -------------------------------------- Relationships ----------------------------------- //
@@ -57,7 +57,7 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
 
     @Builder.Default
     @OneToMany(
-            mappedBy = "user",
+            mappedBy = "account",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.LAZY
@@ -67,10 +67,15 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
 
     @PrePersist
     public void applyDefaults() {
-        if (status == null) {
-            status = AccountStatus.DISABLED;
+        if (accountStatus == null) {
+            accountStatus = AccountStatus.DISABLED;
         }
     }
+
+    public void attachProfile(Profile profile) {
+        this.profile = profile;
+    }
+
     public void assignRole(Role role) {
         AccountRole accountRole = AccountRole.builder()
                 .account(this)
@@ -114,12 +119,12 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
 
     @Override
     public boolean isAccountNonLocked() {
-        return status != AccountStatus.LOCKED;
+        return accountStatus != AccountStatus.LOCKED;
     }
 
     @Override
     public boolean isEnabled() {
-        return status == AccountStatus.ACTIVE;
+        return accountStatus == AccountStatus.ACTIVE;
     }
 
     @Override

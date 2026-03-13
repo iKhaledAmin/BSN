@@ -1,6 +1,6 @@
-package com.Khaled_Amin.book_social_network.user.model.entity;
+package com.khaled_amin.book_social_network.user.model.entity;
 
-import com.Khaled_Amin.book_social_network.role.model.entity.Role;
+import com.khaled_amin.book_social_network.role.model.entity.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

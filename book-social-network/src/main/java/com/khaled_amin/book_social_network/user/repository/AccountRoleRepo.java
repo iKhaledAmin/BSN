@@ -1,7 +1,7 @@
-package com.Khaled_Amin.book_social_network.user.repository;
+package com.khaled_amin.book_social_network.user.repository;
 
-import com.Khaled_Amin.book_social_network.user.model.entity.AccountRole;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.khaled_amin.book_social_network.common.repository.BaseRepository;
+import com.khaled_amin.book_social_network.user.model.entity.AccountRole;
 
-public interface AccountRoleRepo extends JpaRepository<AccountRole , Long> {
+public interface AccountRoleRepo extends BaseRepository<AccountRole , Long> {
 }

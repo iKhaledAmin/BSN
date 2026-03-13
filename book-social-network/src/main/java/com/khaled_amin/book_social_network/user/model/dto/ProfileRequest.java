@@ -1,12 +1,22 @@
 package com.khaled_amin.book_social_network.user.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.khaled_amin.book_social_network.user.model.enums.Gender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-public class ProfileRequets {
+import java.time.LocalDate;
+
+
+@Getter
+@Setter
+@SuperBuilder
+public class ProfileRequest {
 
     @NotEmpty(message = "First name is mandatory")
     @NotBlank(message = "First name is mandatory")
@@ -21,4 +31,17 @@ public class ProfileRequets {
     @Size(max = 50, message = "Last name is too long")
     @JsonProperty("last_name")
     private String lastName;
+
+    @JsonProperty("gender")
+    private Gender gender;
+
+    @JsonProperty("birth_date")
+    private LocalDate birthDate;
+
+    @JsonProperty("phone_number")
+    private String phoneNumber;
+
+    @Size(max = 50, message = "Profession is too long")
+    @JsonProperty("profession")
+    private String profession;
 }

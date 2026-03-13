@@ -1,14 +1,14 @@
-package com.khaled_amin.book_social_network.auth.model.dto;
+package com.khaled_amin.book_social_network.user.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 public class RegistrationRequest {
 
     @NotEmpty(message = "First name is mandatory")

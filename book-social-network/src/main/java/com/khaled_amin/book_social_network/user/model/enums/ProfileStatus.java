@@ -1,8 +1,10 @@
-package com.Khaled_Amin.book_social_network.user.model.enums;
+package com.khaled_amin.book_social_network.user.model.enums;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum ProfileStatus {
 
     GUEST("Temporary profile created automatically."),
@@ -11,13 +13,11 @@ public enum ProfileStatus {
 
     private final String description;
 
-    ProfileStatus(String description) {
-        this.description = description;
+    public static ProfileStatus getDefault() {
+        return INCOMPLETE;
     }
 
-
-
-    public boolean isComplete() {
+    public  boolean isComplete() {
         return this == COMPLETE;
     }
 

@@ -18,4 +18,6 @@ public interface BaseMapper<REQUEST, RESPONSE, ENTITY> {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     void updateEntity(REQUEST request, @MappingTarget ENTITY entity);
+
+    ENTITY deepClone(ENTITY source);
 }

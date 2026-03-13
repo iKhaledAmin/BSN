@@ -1,7 +1,7 @@
-package com.Khaled_Amin.book_social_network.user.repository;
+package com.khaled_amin.book_social_network.user.repository;
 
-import com.Khaled_Amin.book_social_network.user.model.entity.Profile;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.khaled_amin.book_social_network.common.repository.BaseRepository;
+import com.khaled_amin.book_social_network.user.model.entity.Profile;
 
-public interface ProfileRepo extends JpaRepository<Profile, Long> {
+public interface ProfileRepo extends BaseRepository<Profile, Long> {
 }

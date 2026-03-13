@@ -1,4 +1,4 @@
-package com.khaled_amin.book_social_network.common.response;
+package com.khaled_amin.book_social_network.common.factory;
 
 import com.khaled_amin.book_social_network.common.dto.*;
 

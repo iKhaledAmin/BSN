@@ -1,25 +1,34 @@
-package com.khaled_amin.book_social_network.role.exception;
+package com.khaled_amin.book_social_network.user.exception;
 
 import com.khaled_amin.book_social_network.common.exception.BaseApiException;
-import com.khaled_amin.book_social_network.role.error.RoleErrorCode;
+import com.khaled_amin.book_social_network.user.error.AccountErrorCode;
 
-public class RoleException extends BaseApiException {
+public class AccountException extends BaseApiException {
 
-    private RoleException(RoleErrorCode code, String message) {
+    private AccountException(AccountErrorCode code, String message) {
         super(code, message);
     }
 
-    public static RoleException notFound() {
-        return new RoleException(
-                RoleErrorCode.ROLE_NOT_FOUND,
-                "Role not found"
+    public static AccountException notFound() {
+        return new AccountException(
+                AccountErrorCode.Account_NOT_FOUND,
+                AccountErrorCode.Account_NOT_FOUND.getMessage()
         );
     }
 
-    public static RoleException alreadyExists() {
-        return new RoleException(
-                RoleErrorCode.ROLE_ALREADY_EXISTS,
-                "Role already exists"
+
+    public static AccountException usernameAlreadyExists(String username) {
+        return new AccountException(
+                AccountErrorCode.USERNAME_ALREADY_EXISTS,
+                AccountErrorCode.USERNAME_ALREADY_EXISTS.getMessage() + username
         );
     }
+
+    public static AccountException emailAlreadyExists(String email) {
+        return new AccountException(
+                AccountErrorCode.EMAIL_ALREADY_EXISTS,
+                AccountErrorCode.EMAIL_ALREADY_EXISTS.getMessage() + email
+        );
+    }
+
 }
