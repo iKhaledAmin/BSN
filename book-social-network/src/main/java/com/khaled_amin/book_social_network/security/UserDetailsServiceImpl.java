@@ -1,6 +1,6 @@
-package com.Khaled_Amin.book_social_network.security;
+package com.khaled_amin.book_social_network.security;
 
-import com.Khaled_Amin.book_social_network.user.repository.AccountRepo;
+import com.khaled_amin.book_social_network.user.repository.AccountRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
