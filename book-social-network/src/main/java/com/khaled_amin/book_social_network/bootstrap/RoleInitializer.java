@@ -1,13 +1,16 @@
 package com.khaled_amin.book_social_network.bootstrap;
 
-import com.khaled_amin.book_social_network.role.model.dto.RoleRequest;
-import com.khaled_amin.book_social_network.role.model.enums.DefaultRoles;
-import com.khaled_amin.book_social_network.role.service.RoleService;
+import com.khaled_amin.book_social_network.role.model.entity.Role;
+import com.khaled_amin.book_social_network.role.model.enums.SystemRoles;
+import com.khaled_amin.book_social_network.role.repository.RoleRepo;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Component
@@ -15,29 +18,33 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RoleInitializer implements CommandLineRunner {
 
-    private final RoleService roleService;
+    private final RoleRepo roleRepo;
 
     @Override
     public void run(String @NonNull ... args) {
 
-        for (DefaultRoles role : DefaultRoles.values()) {
+        List<Role> rolesToInsert = new ArrayList<>();
 
-            String roleName = role.name();
+        for (SystemRoles systemRole : SystemRoles.values()) {
 
-            if (!roleService.existsByName(roleName)) {
+            String systemCode = systemRole.getSystemCode();
 
-                RoleRequest request = RoleRequest.builder()
-                        .name(roleName)
-                        .description(role.getDescription())
+            if (!roleRepo.existsBySystemCode(systemCode)) {
+
+                Role newRole = Role.builder()
+                        .name(systemRole.getName())
+                        .description(systemRole.getDescription())
+                        .systemCode(systemCode)
+                        .defaultRole(systemRole.isDefaultRole())
+                        .protectedRole(true)
                         .build();
 
-                roleService.add(request);
+                rolesToInsert.add(newRole);
             }
+        }
+
+        if (!rolesToInsert.isEmpty()) {
+            roleRepo.saveAll(rolesToInsert);
         }
     }
 }
-
-
-
-
-

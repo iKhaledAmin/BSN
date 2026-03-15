@@ -29,4 +29,11 @@ public class RoleException extends BaseApiException {
                 RoleErrorCode.DEFAULT_ROLE_NOT_CONFIGURED.getMessage()
         );
     }
+
+    public static RoleException protectedRole() {
+        return new RoleException(
+                RoleErrorCode.ROLE_PROTECTED,
+                RoleErrorCode.ROLE_PROTECTED.getMessage()
+        );
+    }
 }

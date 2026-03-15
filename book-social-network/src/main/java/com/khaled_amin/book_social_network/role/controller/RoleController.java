@@ -2,8 +2,9 @@ package com.khaled_amin.book_social_network.role.controller;
 
 import com.khaled_amin.book_social_network.common.dto.ApiResponse;
 import com.khaled_amin.book_social_network.common.factory.ApiResponseFactory;
-import com.khaled_amin.book_social_network.role.model.dto.RoleRequest;
+import com.khaled_amin.book_social_network.role.model.dto.CreateRoleRequest;
 import com.khaled_amin.book_social_network.role.model.dto.RoleResponse;
+import com.khaled_amin.book_social_network.role.model.dto.UpdateRoleRequest;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
 import com.khaled_amin.book_social_network.role.model.mapper.RoleMapper;
 import com.khaled_amin.book_social_network.role.service.RoleService;
@@ -29,7 +30,7 @@ public class RoleController {
     @Operation(summary = "Create a new role")
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(
-            @Valid @RequestBody RoleRequest request) {
+            @Valid @RequestBody CreateRoleRequest request) {
 
         Role role = roleService.add(request);
 
@@ -44,7 +45,7 @@ public class RoleController {
     @PutMapping("/{roleId}")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
             @PathVariable Long roleId,
-            @Valid @RequestBody RoleRequest request) {
+            @Valid @RequestBody UpdateRoleRequest request) {
 
         Role role = roleService.update(roleId, request);
 
@@ -84,6 +85,7 @@ public class RoleController {
                 ApiResponseFactory.success(roles)
         );
     }
+
 
 
 }

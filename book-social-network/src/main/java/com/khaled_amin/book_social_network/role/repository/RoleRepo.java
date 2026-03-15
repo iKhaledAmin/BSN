@@ -2,9 +2,9 @@ package com.khaled_amin.book_social_network.role.repository;
 
 import com.khaled_amin.book_social_network.common.repository.BaseRepository;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 
+
+import java.util.List;
 import java.util.Optional;
 
 public interface RoleRepo extends BaseRepository<Role, Long> {
@@ -12,19 +12,7 @@ public interface RoleRepo extends BaseRepository<Role, Long> {
 
     Boolean existsByName(String name);
 
-    @Modifying
-    @Query("UPDATE Role r SET r.defaultRole = false WHERE r.defaultRole = true")
-    void clearDefaultRole();
+    List<Role> findAllByDefaultRoleTrue();
 
-    @Modifying
-    @Query("""
-       UPDATE Role r 
-       SET r.defaultRole = CASE 
-           WHEN r.id = :roleId THEN true 
-           ELSE false 
-       END
-       """)
-    void assignDefaultRole(Long roleId);
-
-    Optional<Role> findByDefaultRoleTrue();
+    boolean existsBySystemCode(String systemCode);
 }

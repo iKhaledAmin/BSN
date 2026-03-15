@@ -5,19 +5,22 @@ import org.mapstruct.MappingTarget;
 
 
 
-public interface BaseMapper<REQUEST, RESPONSE, ENTITY> {
+public interface BaseMapper<CREATE_REQUEST, UPDATE_REQUEST, RESPONSE, ENTITY> {
 
-    ENTITY toEntity(REQUEST request);
+    // Create
+    ENTITY toEntity(CREATE_REQUEST request);
 
-    RESPONSE toResponse(ENTITY entity);
-
-
+    // Update
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    void updateEntity(REQUEST request, @MappingTarget ENTITY entity);
+    void updateEntity(UPDATE_REQUEST request, @MappingTarget ENTITY entity);
 
+    // Response
+    RESPONSE toResponse(ENTITY entity);
+
+    //  deep clone
     ENTITY deepClone(ENTITY source);
 }

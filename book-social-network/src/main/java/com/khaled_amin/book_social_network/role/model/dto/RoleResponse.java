@@ -18,4 +18,10 @@ public class RoleResponse {
 
     @JsonProperty("description")
     private String description;
+
+    @JsonProperty("is_default")
+    private Boolean defaultRole;
+
+    @JsonProperty("is_protected")
+    private Boolean protectedRole;
 }
