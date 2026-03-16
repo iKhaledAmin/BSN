@@ -35,6 +35,6 @@ public class AccountRequest {
     private String emailAddress;
 
     @Valid
-    @JsonProperty("profile_date")
+    @JsonProperty("profile_data")
     private ProfileRequest profileRequest;
 }

@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.role.service;
 
+import com.khaled_amin.book_social_network.role.exception.RoleException;
 import com.khaled_amin.book_social_network.role.model.dto.CreateRoleRequest;
 import com.khaled_amin.book_social_network.role.model.dto.UpdateRoleRequest;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
@@ -25,6 +26,8 @@ public interface RoleService {
     Optional<Role> getOptionalByName(String roleName);
     Role getByName(String roleName);
 
+    Optional<Role> getOptionalBySystemCode(String systemCode);
+    Role getBySystemCode(String systemCode);
 
     void delete(Long roleId);
 

@@ -15,4 +15,6 @@ public interface RoleRepo extends BaseRepository<Role, Long> {
     List<Role> findAllByDefaultRoleTrue();
 
     boolean existsBySystemCode(String systemCode);
+
+    Optional<Role> findBySystemCode(String systemCode);
 }

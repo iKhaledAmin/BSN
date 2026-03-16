@@ -115,6 +115,17 @@ public class RoleServiceImpl implements RoleService {
                 .orElseThrow(RoleException::notFound);
     }
 
+    @Override
+    public Optional<Role> getOptionalBySystemCode(String systemCode){
+        return roleRepo.findBySystemCode(systemCode);
+    }
+
+    @Override
+    public Role getBySystemCode(String systemCode) {
+        return getOptionalBySystemCode(systemCode)
+                .orElseThrow(RoleException::notFound);
+    }
+
 
     @Transactional
     @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)

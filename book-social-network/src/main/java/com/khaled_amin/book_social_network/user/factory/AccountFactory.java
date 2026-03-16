@@ -10,18 +10,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class AccountFactory {
 
     private final PasswordEncoder passwordEncoder;
 
-    public Account createAccount(RegistrationRequest request, Role defaultRole) {
+    public Account createAccount(RegistrationRequest request, List<Role> roles) {
 
         Profile profile = Profile.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .profileStatus(ProfileStatus.INCOMPLETE)
+                .profileStatus(ProfileStatus.getDefault())
                 .build();
 
         Account account = Account.builder()
@@ -32,7 +34,7 @@ public class AccountFactory {
                 .build();
 
         account.attachProfile(profile);
-        account.assignRole(defaultRole);
+        account.assignRole(roles);
 
         return account;
     }
