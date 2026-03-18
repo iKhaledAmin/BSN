@@ -17,10 +17,11 @@ public enum AccountStatus {
         this.description = description;
     }
 
-    public boolean canLogin() {
-        return this == ACTIVE;
-    }
-
+    // helper methods
+    public boolean isDisabled() { return this == DISABLED; }
+    public boolean isActive()   { return this == ACTIVE; }
+    public boolean isLocked()   { return this == LOCKED; }
+    public boolean isSuspended(){ return this == SUSPENDED; }
 
     public static AccountStatus getDefault() {
         return DISABLED;
