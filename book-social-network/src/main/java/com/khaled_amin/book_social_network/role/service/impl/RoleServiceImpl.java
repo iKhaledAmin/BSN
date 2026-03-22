@@ -141,6 +141,11 @@ public class RoleServiceImpl implements RoleService {
         roleRepo.delete(role);
     }
 
+    @Override
+    public List<Role> getAllByIds(List<Long> roleIds) {
+        return roleRepo.findAllById(roleIds);
+    }
+
     private void validateRoleNameUniqueness(String roleName) {
         if (existsByName(roleName))
             throw RoleException.alreadyExists();

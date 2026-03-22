@@ -35,11 +35,11 @@ public class AdminInitializer implements CommandLineRunner {
         String password = systemProperties.getAdmin().getPassword();
         String email = systemProperties.getAdmin().getEmail();
 
-        if (accountRepo.existsByAccountRolesRoleSystemCode(SystemRoles.ADMIN.getSystemCode())) {
+        if (accountRepo.existsByAccountRolesRoleSystemCode(SystemRoles.SUPER_ADMIN.getSystemCode())) {
             return;
         }
 
-        Role adminRole = roleService.getBySystemCode(SystemRoles.ADMIN.getSystemCode());
+        Role adminRole = roleService.getBySystemCode(SystemRoles.SUPER_ADMIN.getSystemCode());
 
         RegistrationRequest request = RegistrationRequest.builder()
                 .firstName("System")

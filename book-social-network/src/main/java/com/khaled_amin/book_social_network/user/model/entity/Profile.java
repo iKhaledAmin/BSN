@@ -58,9 +58,15 @@ public class Profile extends AuditableEntity {
         }
     }
 
+    // ------------------------------------ Business Methods -------------------------------- //
     @Transient
     public String getFullName() {
         return firstName + " " + lastName;
     }
+
+    public boolean isComplete() {
+        return profileStatus.isComplete();
+    }
+
 
 }

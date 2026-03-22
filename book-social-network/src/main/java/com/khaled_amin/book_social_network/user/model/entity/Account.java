@@ -2,6 +2,7 @@ package com.khaled_amin.book_social_network.user.model.entity;
 
 import com.khaled_amin.book_social_network.audit.AuditableEntity;
 import com.khaled_amin.book_social_network.role.model.entity.Role;
+import com.khaled_amin.book_social_network.role.model.enums.SystemRoles;
 import com.khaled_amin.book_social_network.user.model.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -75,7 +76,7 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
 
         boolean alreadyAssigned = hasRole(role.getId());
 
-        if (alreadyAssigned) {
+        if (alreadyAssigned || role == null) {
             return;
         }
 
@@ -96,7 +97,7 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
     }
 
     public void removeRole(Role role) {
-        if (role == null || role.getId() == null) {
+        if (role == null || role.getId() == null || role.isSystemRole()) {
             return;
         }
 
@@ -119,6 +120,14 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
                 .anyMatch(r -> r.getName().equals(roleName));
     }
 
+    public boolean hasRole(SystemRoles systemRole) {
+        if (systemRole == null) {
+            return false;
+        }
+
+        return hasRoleBySystemCode(systemRole.getSystemCode());
+    }
+
     public boolean hasRole(Long roleId) {
         if (roleId == null) {
             return false;
@@ -127,6 +136,16 @@ public class Account extends AuditableEntity implements UserDetails,Principal {
         return accountRoles.stream()
                 .map(AccountRole::getRole)
                 .anyMatch(r -> r.getId().equals(roleId));
+    }
+
+    private boolean hasRoleBySystemCode(String systemCode) {
+        if (systemCode == null) {
+            return false;
+        }
+
+        return accountRoles.stream()
+                .map(AccountRole::getRole)
+                .anyMatch(r -> systemCode.equals(r.getSystemCode()));
     }
 
     public void clearRoles() {

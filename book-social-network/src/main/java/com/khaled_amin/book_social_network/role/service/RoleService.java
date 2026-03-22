@@ -31,4 +31,5 @@ public interface RoleService {
 
     void delete(Long roleId);
 
+    List<Role> getAllByIds(List<Long> roleIds);
 }

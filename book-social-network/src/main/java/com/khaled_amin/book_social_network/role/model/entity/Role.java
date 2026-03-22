@@ -53,5 +53,16 @@ public class Role extends AuditableEntity {
     private boolean protectedRole = false;
 // ------------------------------------ Business Methods -------------------------------- //
 
+    public boolean isProtected(){
+        return protectedRole;
+    }
+
+    public boolean isDefault(){
+        return defaultRole;
+    }
+
+    public boolean isSystemRole(){
+        return systemCode != null ;
+    }
 // ------------------------------------ End Business Methods -------------------------------- //
 }

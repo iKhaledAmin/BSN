@@ -11,6 +11,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public enum SystemRoles {
 
+    SUPER_ADMIN("SUPER_ADMIN","SYSTEM_SUPER_ADMIN","The head of system administrator", false),
     ADMIN("ADMIN","SYSTEM_ADMIN","System administrator", false),
     USER("USER","SYSTEM_USER","Default system user", true),
     MODERATOR("MODERATOR","SYSTEM_MODERATOR","Content moderator", false);
