@@ -1,0 +1,17 @@
+package com.khaled_amin.book_social_network.core.api;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@SuperBuilder
+public class ApiResponse<T> {
+
+    @JsonProperty("meta")
+    private Meta meta;
+
+    @JsonProperty("data")
+    private T data;
+
+}

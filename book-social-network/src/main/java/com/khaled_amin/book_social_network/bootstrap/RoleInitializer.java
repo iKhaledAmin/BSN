@@ -1,16 +1,11 @@
 package com.khaled_amin.book_social_network.bootstrap;
 
-import com.khaled_amin.book_social_network.role.model.entity.Role;
-import com.khaled_amin.book_social_network.role.model.enums.SystemRoles;
-import com.khaled_amin.book_social_network.role.repository.RoleRepo;
+import com.khaled_amin.book_social_network.role.application.service.RoleService;
+import com.khaled_amin.book_social_network.role.domain.model.SystemRole;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Component
@@ -18,33 +13,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoleInitializer implements CommandLineRunner {
 
-    private final RoleRepo roleRepo;
+    private final RoleService roleService;
 
     @Override
-    public void run(String @NonNull ... args) {
+    public void run(String... args) {
 
-        List<Role> rolesToInsert = new ArrayList<>();
+        for (SystemRole systemRole : SystemRole.values()) {
 
-        for (SystemRoles systemRole : SystemRoles.values()) {
-
-            String systemCode = systemRole.getSystemCode();
-
-            if (!roleRepo.existsBySystemCode(systemCode)) {
-
-                Role newRole = Role.builder()
-                        .name(systemRole.getName())
-                        .description(systemRole.getDescription())
-                        .systemCode(systemCode)
-                        .defaultRole(systemRole.isDefaultRole())
-                        .protectedRole(true)
-                        .build();
-
-                rolesToInsert.add(newRole);
-            }
-        }
-
-        if (!rolesToInsert.isEmpty()) {
-            roleRepo.saveAll(rolesToInsert);
+            roleService.getOptionalByName(systemRole.getName().value())
+                    .orElseGet(
+                            () -> roleService.createSystemRole(systemRole)
+                    );
         }
     }
 }

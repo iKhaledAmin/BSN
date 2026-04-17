@@ -1,7 +1,7 @@
-package com.Khaled_Amin.book_social_network.auth.controller;
+package com.khaled_amin.book_social_network.auth.controller;
 
-import com.Khaled_Amin.book_social_network.auth.model.dto.RegistrationRequest;
-import com.Khaled_Amin.book_social_network.auth.service.AuthenticationService;
+import com.khaled_amin.book_social_network.auth.model.dto.RegistrationRequest;
+import com.khaled_amin.book_social_network.auth.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

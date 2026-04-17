@@ -1,5 +1,6 @@
-package com.khaled_amin.book_social_network.user.model.entity;
+package com.khaled_amin.book_social_network.auth.model.entity;
 
+import com.khaled_amin.book_social_network.user.model.entity.Account;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

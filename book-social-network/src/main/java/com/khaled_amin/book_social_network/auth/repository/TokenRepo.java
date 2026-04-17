@@ -1,4 +1,4 @@
-package com.khaled_amin.book_social_network.user.repository;
+package com.khaled_amin.book_social_network.auth.repository;
 
 import com.khaled_amin.book_social_network.common.repository.BaseRepository;
 import com.khaled_amin.book_social_network.auth.model.entity.Token;

@@ -1,0 +1,23 @@
+package com.khaled_amin.book_social_network.core.api;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@SuperBuilder
+public class PageInfo {
+
+    @JsonProperty("page")
+    private int page;
+
+    @JsonProperty("size")
+    private int size;
+
+    @JsonProperty("total_elements")
+    private long totalElements;
+
+    @JsonProperty("total_pages")
+    private int totalPages;
+
+}

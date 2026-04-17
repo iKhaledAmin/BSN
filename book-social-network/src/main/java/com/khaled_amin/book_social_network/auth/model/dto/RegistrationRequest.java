@@ -1,4 +1,4 @@
-package com.Khaled_Amin.book_social_network.auth.model.dto;
+package com.khaled_amin.book_social_network.auth.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
