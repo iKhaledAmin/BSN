@@ -9,6 +9,8 @@ public final class ApiResponseFactory {
     private ApiResponseFactory() {
     }
 
+
+
     public static <T> ApiResponse<T> success(T data) {
 
         return ApiResponse.<T>builder()
@@ -17,18 +19,28 @@ public final class ApiResponseFactory {
                 .build();
     }
 
-    public static <T> PageResponse<T> page(
+    public static ApiErrorResponse error(ErrorResponse error) {
+
+        return ApiErrorResponse.builder()
+                .meta(buildMeta())
+                .error(error)
+                .build();
+    }
+
+
+
+    public static <T> ApiPageResponse<T> page(
             List<T> data,
             int page,
             int size,
             long totalElements,
             int totalPages) {
 
-        return PageResponse.<T>builder()
+        return ApiPageResponse.<T>builder()
                 .meta(buildMeta())
                 .data(data)
-                .page(
-                        PageInfo.builder()
+                .pageInfo(
+                        PageInfoResponse.builder()
                                 .page(page)
                                 .size(size)
                                 .totalElements(totalElements)
@@ -38,13 +50,6 @@ public final class ApiResponseFactory {
                 .build();
     }
 
-    public static ErrorResponse error(ApiError error) {
-
-        return ErrorResponse.builder()
-                .meta(buildMeta())
-                .error(error)
-                .build();
-    }
 
     private static Meta buildMeta() {
 
