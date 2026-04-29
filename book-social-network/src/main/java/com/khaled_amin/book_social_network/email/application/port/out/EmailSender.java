@@ -81,7 +81,7 @@ public interface EmailSender {
      *   <li>Throws {@link EmailApplicationException} if delivery fails</li>
      * </ul>
      *
-     * @param message the email message to be sent
+     * @param message {@link EmailMessage} the email message to be sent
      * @throws EmailApplicationException if the email could not be delivered
      */
     void send(EmailMessage message);

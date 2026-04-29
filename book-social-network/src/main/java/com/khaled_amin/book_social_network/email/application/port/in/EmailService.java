@@ -87,8 +87,8 @@ public interface EmailService {
      *   <li>Throws {@link EmailApplicationException} if processing or delivery fails</li>
      * </ul>
      *
-     * @param command   encapsulates email creation data
-     * @param variables template variables used during content generation
+     * @param command {@link EmailCreateCommand}  encapsulates email creation data
+     * @param variables {@link Map(String, Object)} template variables used during content generation
      * @throws EmailApplicationException if email processing or delivery fails
      *
      * @see EmailSender#send(EmailMessage)

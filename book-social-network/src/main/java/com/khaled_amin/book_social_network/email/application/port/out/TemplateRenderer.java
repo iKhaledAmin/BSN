@@ -23,7 +23,7 @@ import java.util.Map;
  * <h3>Responsibilities</h3>
  * <ul>
  *   <li>Resolve templates based on a logical name or identifier</li>
- *   <li>Apply provided variables to generate dynamic content</li>
+ *   <li>Apply provided variables to generateToken dynamic content</li>
  *   <li>Return a fully rendered, ready-to-use textual output</li>
  * </ul>
  *
@@ -64,7 +64,7 @@ public interface TemplateRenderer {
      * <h3>Contract</h3>
      * <ul>
      *   <li>Resolves the specified template</li>
-     *   <li>Applies the provided variables to generate the final content</li>
+     *   <li>Applies the provided variables to generateToken the final content</li>
      *   <li>Returns a fully rendered string suitable for downstream usage (e.g., email body)</li>
      * </ul>
      *
@@ -94,8 +94,8 @@ public interface TemplateRenderer {
      *   <li>Failure scenarios include unresolved templates or invalid input data</li>
      * </ul>
      *
-     * @param templateName the logical name or identifier of the template
-     * @param variables key-value pairs used for template population
+     * @param templateName {@link String} the logical name or identifier of the template
+     * @param variables {@link Map(String, Object)} key-value pairs used for template population
      * @return fully rendered template content
      * @throws EmailApplicationException if rendering fails
      */
