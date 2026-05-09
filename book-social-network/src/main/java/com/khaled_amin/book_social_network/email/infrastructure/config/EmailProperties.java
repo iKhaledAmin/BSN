@@ -2,6 +2,7 @@ package com.khaled_amin.book_social_network.email.infrastructure.config;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -10,8 +11,14 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "application.email")
 public record EmailProperties(
+        @NotNull @Valid Sender sender,
         @NotNull @Valid Retry retry
 ) {
+
+    public record Sender(
+            @NotBlank String from,
+            @NotBlank String replyTo
+    ) {}
 
     public record Retry(
             @NotNull @Valid

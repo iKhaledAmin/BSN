@@ -1,0 +1,269 @@
+package com.khaled_amin.book_social_network.security.jwt;
+
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
+import com.khaled_amin.book_social_network.identity.core.model.ActorType;
+import com.khaled_amin.book_social_network.security.exception.InvalidTokenException;
+import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+
+@Service
+@RequiredArgsConstructor
+public  class JwtService {
+    private final JwtProperties jwtProperties;
+
+
+    private static final String CLAIM_ACTOR_TYPE = "actorType";
+    private static final String CLAIM_AUTHORITIES = "authorities";
+
+
+    /**
+     * Generates a signed JWT token for the given authenticated principal.
+     *
+     * @param principal {@link AuthenticatedPrincipal} principal used as the token identity source
+     * @return token {@link String} signed JWT token
+     */
+    public String generateToken(AuthenticatedPrincipal principal) {
+        return generateToken(new HashMap<>(), principal);
+    }
+
+
+    /**
+     * Generates a signed JWT token with additional custom claims.
+     *
+     * @param extraClaims {@link Map(String, Object)} additional claims to include in the token payload
+     * @param principal {@link AuthenticatedPrincipal} principal used as the token identity source
+     * @return token {@link String} signed JWT token
+     */
+    public String generateToken(Map<String, Object> extraClaims, AuthenticatedPrincipal principal) {
+
+        var authorities = principal.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        var expirationDate = resolveExpirationDate(principal);
+
+        return Jwts.builder()
+                .claims(extraClaims)
+                .subject(principal.getSubject())
+                .claim(CLAIM_ACTOR_TYPE, principal.getActorType())
+                .claim(CLAIM_AUTHORITIES, authorities)
+                .issuedAt(new Date())
+                .expiration(expirationDate)
+                .signWith(getSignInKey())
+                .compact();
+    }
+
+
+    /**
+     * Extracts and validates the JWT payload from the provided token.
+     *
+     * <p>
+     * This method validates token structure, signature, and required claims
+     * before mapping the token into a {@link JwtPayload}.
+     * </p>
+     *
+     * @param token {@link String} raw JWT token
+     * @return payload {@link JwtPayload} extracted JWT payload
+     * @throws InvalidTokenException if the token is invalid, malformed,
+     * expired, unsupported, or missing required claims
+     */
+    public JwtPayload extractPayload(String token) {
+
+        Claims claims = extractAllClaims(token);
+
+        // SUBJECT
+        String subject = claims.getSubject();
+        if (subject == null || subject.isBlank()) {
+            throw InvalidTokenException.invalid()
+                    .withDebug("reason", "Token subject is missing");
+        }
+
+        // ACTOR TYPE
+        ActorType actorType = extractActorType(claims);
+
+        // STANDARD CLAIMS
+        Date issuedAt = claims.getIssuedAt();
+        Date expiration = claims.getExpiration();
+        if (expiration == null) {
+            throw InvalidTokenException.invalid()
+                    .withDebug("reason", "Token expiration claim is missing");
+        }
+
+        // AUTHORITIES
+        Set<String> authorities = extractAuthorities(claims);
+
+        // JWT PAYLOAD
+        return new JwtPayload(
+                subject,
+                actorType,
+                issuedAt,
+                expiration,
+                authorities
+        );
+    }
+
+    /**
+     * Validates that the provided JWT payload matches the authenticated principal.
+     *
+     * <p>
+     * Validation includes:
+     * </p>
+     * <ul>
+     *     <li>subject consistency</li>
+     *     <li>actor type consistency</li>
+     *     <li>token expiration</li>
+     *     <li>principal active state</li>
+     *     <li>principal locked state</li>
+     * </ul>
+     *
+     * @param payload {@link JwtPayload} extracted JWT payload
+     * @param principal {@link AuthenticatedPrincipal}resolved authenticated principal
+     * @throws InvalidTokenException if validation fails
+     */
+    public void validateToken(JwtPayload payload, AuthenticatedPrincipal principal) {
+
+        if (!principal.supportsToken(payload.getSubject())) {
+            throw InvalidTokenException.invalid().withDebug("reason", "Token subject mismatch");
+        }
+
+        if (payload.getActorType() != principal.getActorType()) {
+            throw InvalidTokenException.invalid().withDebug("reason", "Actor type mismatch");
+        }
+
+        if (isTokenExpired(payload)) {
+            throw InvalidTokenException.invalid().withDebug("reason", "Token expired");
+        }
+
+        if (!principal.isActive()) {
+            throw InvalidTokenException.principalDisabled()
+                    .withDebug("reason", "Principal is disabled")
+                    .withDebug("actorType", principal.getActorType())
+                    .withDebug("subject", principal.getSubject());
+        }
+
+        if (principal.isLocked()) {
+            throw InvalidTokenException.principalLocked()
+                    .withDebug("reason", "Principal is locked")
+                    .withDebug("actorType", principal.getActorType())
+                    .withDebug("subject", principal.getSubject());
+        }
+    }
+
+
+    /**
+     * Extracts a specific claim from the provided JWT token.
+     *
+     * @param token {@link String} raw JWT token
+     * @param claimsResolver function used to extract the target claim
+     * @param <T> extracted claim type
+     * @return extracted claim value
+     * @throws InvalidTokenException if the token is invalid or cannot be parsed
+     */
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+
+
+
+
+    private Date resolveExpirationDate(AuthenticatedPrincipal principal) {
+        long expirationMinutes = jwtProperties.getExpirationMinutes(principal.getActorType());
+        long expirationMillis = expirationMinutes * 60 * 1000;
+        return new Date(System.currentTimeMillis() + expirationMillis);
+    }
+
+    private ActorType extractActorType(Claims claims) {
+
+        try {
+
+            String actorTypeRaw = claims.get(CLAIM_ACTOR_TYPE, String.class);
+
+            if (actorTypeRaw == null || actorTypeRaw.isBlank()) {
+                throw InvalidTokenException.invalid()
+                        .withDebug("reason", "Actor type claim is missing");
+            }
+
+            return ActorType.from(actorTypeRaw);
+
+        } catch (IllegalArgumentException ex) {
+            throw InvalidTokenException.invalid(ex).withDebug("reason", "Invalid actor type");
+        }
+    }
+
+    private Set<String> extractAuthorities(Claims claims) {
+
+        Object raw = claims.get(CLAIM_AUTHORITIES);
+
+        if (raw instanceof Collection<?> list) {
+            return list.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+        }
+
+        return Set.of();
+    }
+
+    private boolean isTokenExpired(JwtPayload payload) {
+        return payload.getExpiration().before(new Date());
+    }
+
+    /**
+     * Extracts the expiration date from the provided JWT token.
+     *
+     * @param token {@link String} raw JWT token
+     * @return date {@link Date} token expiration date
+     * @throws InvalidTokenException if the token is invalid or cannot be parsed
+     */
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    private Claims extractAllClaims(String token) {
+
+        try {
+
+            return Jwts
+                    .parser()
+                    .verifyWith(getSignInKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+        } catch (ExpiredJwtException ex) {
+            throw InvalidTokenException.expired(ex).withDebug("reason", "JWT token expired");
+        } catch (MalformedJwtException ex) {
+            throw InvalidTokenException.malformed(ex).withDebug("reason", "Malformed JWT token");
+        } catch (SignatureException ex) {
+            throw InvalidTokenException.signatureInvalid(ex).withDebug("reason", "Invalid JWT signature");
+        } catch (UnsupportedJwtException ex) {
+            throw InvalidTokenException.invalid(ex).withDebug("reason", "Unsupported JWT token");
+        } catch (IllegalArgumentException ex) {
+            throw InvalidTokenException.invalid(ex).withDebug("reason", "JWT token is empty or invalid");
+        }
+
+    }
+
+    private SecretKey getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+}

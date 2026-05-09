@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.verification.domain.model;
 
-import com.khaled_amin.book_social_network.identity.actor.ActorIdentity;
+import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.verification.domain.exception.VerificationDomainException;
 import jakarta.persistence.*;
 import lombok.*;
@@ -117,7 +117,7 @@ public class VerificationToken {
 
         if (target == null) {
             throw VerificationDomainException.invalidState()
-                    .withDetail("reason", "Target actor must not be null");
+                    .withDetail("reason", "Target account must not be null");
         }
 
         if (expiresAt == null || createdAt == null) {

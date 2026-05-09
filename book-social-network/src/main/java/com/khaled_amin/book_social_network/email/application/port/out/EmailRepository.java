@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Outbound port for email persistence and retrieval.
+ * Outbound port for email persistence and Retrieval.
  *
  * <p>
  * Defines the boundary between the application layer and the underlying

@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.core.audit;
 
-import com.khaled_amin.book_social_network.core.actor.Actor;
-import com.khaled_amin.book_social_network.core.actor.ActorProvider;
+import com.khaled_amin.book_social_network.identity.core.model.Actor;
+import com.khaled_amin.book_social_network.identity.core.provider.ActorProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
@@ -16,10 +16,12 @@ public class AuditAwareImpl implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        // Get the current actor from the actor provider
-        Actor actor = actorProvider.getCurrentActor();
-        // e.g. USER_ACCOUNT:123 or SYSTEM:SYSTEM or SERVICE:service_name or ANONYMOUS:ANONYMOUS
-        return Optional.of(actor.getType() + ":" + actor.getIdentity().id());
+
+        // Get the current account from the account provider
+        Actor actor = actorProvider.getCurrent();
+
+        // e.g. ACCOUNT:123 or SYSTEM:SYSTEM or SERVICE:service_name or ANONYMOUS:ANONYMOUS
+        return Optional.of(actor.getType() + ":" + actor.getActorIdentity().id());
     }
 }
 

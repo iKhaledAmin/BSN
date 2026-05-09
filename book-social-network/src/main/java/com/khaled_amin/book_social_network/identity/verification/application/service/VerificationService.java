@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.verification.application.service;
 
-import com.khaled_amin.book_social_network.identity.actor.ActorIdentity;
+import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.verification.application.dto.VerificationResult;
 import com.khaled_amin.book_social_network.identity.verification.application.exception.VerificationApplicationException;
 import com.khaled_amin.book_social_network.identity.verification.domain.model.TokenType;
@@ -80,7 +80,7 @@ public interface VerificationService {
      * </ul>
      *
      * @param type  {@link TokenType}  the verification purpose (e.g., account activation, password reset)
-     * @param target {@link ActorIdentity} the actor identity associated with the token
+     * @param target {@link ActorIdentity} the account identity associated with the token
      * @return generated verification code
      */
     String generateToken(TokenType type, ActorIdentity target);

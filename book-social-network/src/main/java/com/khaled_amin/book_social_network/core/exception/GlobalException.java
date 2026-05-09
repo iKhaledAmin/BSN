@@ -1,6 +1,6 @@
     package com.khaled_amin.book_social_network.core.exception;
 
-    public class GlobalException extends BaseException {
+    public class GlobalException extends BusinessException {
 
         private GlobalException(GlobalError error, String message) {
             super(error, message);

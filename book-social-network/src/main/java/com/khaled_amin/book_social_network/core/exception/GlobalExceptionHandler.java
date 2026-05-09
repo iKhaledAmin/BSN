@@ -6,6 +6,7 @@ import com.khaled_amin.book_social_network.core.api.ApiErrorResponse;
 import com.khaled_amin.book_social_network.core.api.ApiResponseFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import com.khaled_amin.book_social_network.security.exception.SecurityException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,8 +16,8 @@ import java.util.*;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ApiErrorResponse> handleBusinessException(BaseException ex, HttpServletRequest request) {
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
 
         BaseError error = ex.getError();
 
@@ -41,7 +42,6 @@ public class GlobalExceptionHandler {
                         ApiResponseFactory.error(errorResponse)
                 );
     }
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -71,8 +71,27 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseFactory.error(error));
     }
 
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ApiErrorResponse> handleSecurityException(SecurityException ex, HttpServletRequest request) {
+
+        BaseError error = ex.getError();
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(error.getStatus().value())
+                .code(error.getCode())
+                .message(error.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(error.getStatus())
+                .body(ApiResponseFactory.error(errorResponse));
+    }
+
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleUnexpectedException(Exception ex, HttpServletRequest request) {
 
 //        // TODO replace with logger
 //        System.err.println("ERROR_ID=" + requestId);
@@ -83,6 +102,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .status(globalError.getStatus().value())
                 .code(globalError.getCode())
+               // .message("Unexpected error occurred")
                 .message(ex.getMessage())
 //                .details(Map.of(
 //                        "requestId", requestId

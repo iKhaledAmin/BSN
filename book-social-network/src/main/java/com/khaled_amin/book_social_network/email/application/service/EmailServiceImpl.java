@@ -49,7 +49,7 @@ import java.util.Map;
  *   <li>Delegates domain rules to {@link  Email} aggregate</li>
  *   <li>Delegates rendering to {@link TemplateRenderer}</li>
  *   <li>Delegates delivery to {@link EmailSender}</li>
- *   <li>Delegates persistence and retrieval to {@link EmailRepository}</li>
+ *   <li>Delegates persistence and Retrieval to {@link EmailRepository}</li>
  * </ul>
  */
 

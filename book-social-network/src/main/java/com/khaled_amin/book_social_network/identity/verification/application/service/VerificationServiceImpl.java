@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.verification.application.service;
 
 
-import com.khaled_amin.book_social_network.identity.actor.ActorIdentity;
+import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.verification.application.config.VerificationProperties;
 import com.khaled_amin.book_social_network.identity.verification.application.dto.VerificationResult;
 import com.khaled_amin.book_social_network.identity.verification.application.exception.VerificationApplicationException;
