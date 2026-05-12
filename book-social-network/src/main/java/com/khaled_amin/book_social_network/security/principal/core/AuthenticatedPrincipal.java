@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.security.principal.core;
 
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import org.springframework.security.core.GrantedAuthority;
@@ -81,6 +82,7 @@ public interface AuthenticatedPrincipal {
      */
     String getSubject();
 
+
     /**
      * Indicates whether the principal is currently active.
      *
@@ -117,6 +119,12 @@ public interface AuthenticatedPrincipal {
      * @ type {@link ActorType}return non-null actor type
      */
     ActorType getActorType();
+
+    /**
+     * Return the actor code the represent the business identifier.
+     * @return {@link ActorCode} non-null actor code
+     */
+    ActorCode getActorCode();
 
     /**
      * Validates whether this principal supports a given token subject.

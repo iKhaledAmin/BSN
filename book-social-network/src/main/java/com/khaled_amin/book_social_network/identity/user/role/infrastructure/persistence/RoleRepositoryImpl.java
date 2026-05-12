@@ -55,4 +55,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     public List<Role> findAllById(List<Long> roleIds) {
         return roleJpaRepository.findAllById(roleIds);
     }
+
+    @Override
+    public List<Role> findAllByNameIn(List<String> names) {
+        return roleJpaRepository.findAllByNameIn(names);
+    }
 }

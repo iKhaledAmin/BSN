@@ -136,16 +136,18 @@ public abstract class AbstractPolicy<C extends BasePolicyContext> implements Bas
             case ACCOUNT -> handleAccount(context);
             case ANONYMOUS -> handleAnonymous(context);
             case SYSTEM -> handleSystem(context);
-            default -> deny("Unsupported account type");
+            case CLIENT -> handleClient(context);
+            default -> deny("Unsupported actor type");
         }
     }
 
 
+
     /**
-     * Extracts the account from the policy context.
+     * Extracts the actor from the policy context.
      *
      * @param context {@link BasePolicyContext} the policy context
-     * @return {@link Actor} the extracted account
+     * @return {@link Actor} the extracted actor
      *
      */
     protected abstract Actor extractActor(C context);
@@ -197,6 +199,14 @@ public abstract class AbstractPolicy<C extends BasePolicyContext> implements Bas
     protected void handleAnonymous(C context) {
         deny("ANONYMOUS not allowed to " + getOperationName());
     }
+
+    /**
+     * Default CLIENT handler — denies access.
+     */
+    private void handleClient(C context) {
+        deny("CLIENT  not allowed to " + getOperationName());
+    }
+
 
 
 }

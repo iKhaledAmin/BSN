@@ -6,6 +6,8 @@ import com.khaled_amin.book_social_network.core.api.ActionResponse;
 
 public interface AuthenticationService {
 
+    void createBootstrapAdmin(String username, String rawPassword, String email);
+
     RegistrationResponse register(RegistrationRequest request);
 
     ActivationResponse activate(ActivationRequest request);

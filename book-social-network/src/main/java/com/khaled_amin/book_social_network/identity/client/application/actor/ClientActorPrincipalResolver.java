@@ -4,7 +4,6 @@ import com.khaled_amin.book_social_network.identity.core.exception.ActorResoluti
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipalResolver;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
-import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
 import com.khaled_amin.book_social_network.security.principal.clinet.ClientPrincipal;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,7 @@ public class ClientActorPrincipalResolver implements ActorPrincipalResolver {
         }
 
         return new ClientActor(
-                client.getDbId(),
+                client.getActorCode(),
                 client.getScopes()
         );
     }

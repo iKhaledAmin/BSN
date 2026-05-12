@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.bootstrap;
 
-import com.khaled_amin.book_social_network.role.application.service.RoleService;
-import com.khaled_amin.book_social_network.role.domain.model.SystemRole;
+import com.khaled_amin.book_social_network.identity.user.role.application.service.RoleService;
+import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;

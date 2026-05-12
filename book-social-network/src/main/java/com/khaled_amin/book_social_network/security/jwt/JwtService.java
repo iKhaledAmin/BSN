@@ -1,15 +1,13 @@
 package com.khaled_amin.book_social_network.security.jwt;
 
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.security.exception.InvalidTokenException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +26,8 @@ public  class JwtService {
     private final JwtProperties jwtProperties;
 
 
-    private static final String CLAIM_ACTOR_TYPE = "actorType";
+    private static final String CLAIM_ACTOR_TYPE = "actor_type";
+    private static final String CLAIM_ACTOR_CODE = "actor_code";
     private static final String CLAIM_AUTHORITIES = "authorities";
 
 
@@ -62,7 +61,8 @@ public  class JwtService {
         return Jwts.builder()
                 .claims(extraClaims)
                 .subject(principal.getSubject())
-                .claim(CLAIM_ACTOR_TYPE, principal.getActorType())
+                .claim(CLAIM_ACTOR_TYPE, principal.getActorType().name())
+                .claim(CLAIM_ACTOR_CODE, principal.getActorCode().getValue())
                 .claim(CLAIM_AUTHORITIES, authorities)
                 .issuedAt(new Date())
                 .expiration(expirationDate)
@@ -98,6 +98,9 @@ public  class JwtService {
         // ACTOR TYPE
         ActorType actorType = extractActorType(claims);
 
+        // ACTOR CODE
+        ActorCode actorCode = extractActorCode(claims);
+
         // STANDARD CLAIMS
         Date issuedAt = claims.getIssuedAt();
         Date expiration = claims.getExpiration();
@@ -113,6 +116,7 @@ public  class JwtService {
         return new JwtPayload(
                 subject,
                 actorType,
+                actorCode,
                 issuedAt,
                 expiration,
                 authorities
@@ -147,6 +151,10 @@ public  class JwtService {
             throw InvalidTokenException.invalid().withDebug("reason", "Actor type mismatch");
         }
 
+        if (!payload.getActorCode().equals(principal.getActorCode())) {
+            throw InvalidTokenException.invalid().withDebug("reason", "Actor code mismatch");
+        }
+
         if (isTokenExpired(payload)) {
             throw InvalidTokenException.invalid().withDebug("reason", "Token expired");
         }
@@ -154,14 +162,14 @@ public  class JwtService {
         if (!principal.isActive()) {
             throw InvalidTokenException.principalDisabled()
                     .withDebug("reason", "Principal is disabled")
-                    .withDebug("actorType", principal.getActorType())
+                    .withDebug("getActorType", principal.getActorType())
                     .withDebug("subject", principal.getSubject());
         }
 
         if (principal.isLocked()) {
             throw InvalidTokenException.principalLocked()
                     .withDebug("reason", "Principal is locked")
-                    .withDebug("actorType", principal.getActorType())
+                    .withDebug("getActorType", principal.getActorType())
                     .withDebug("subject", principal.getSubject());
         }
     }
@@ -204,8 +212,28 @@ public  class JwtService {
 
             return ActorType.from(actorTypeRaw);
 
-        } catch (IllegalArgumentException ex) {
+        } catch (ActorResolutionException | RequiredTypeException ex) {
             throw InvalidTokenException.invalid(ex).withDebug("reason", "Invalid actor type");
+        }
+    }
+
+    private ActorCode extractActorCode(Claims claims) {
+
+        try {
+
+            String actorCodeRaw = claims.get(CLAIM_ACTOR_CODE, String.class);
+
+            if (actorCodeRaw == null || actorCodeRaw.isBlank()) {
+                throw InvalidTokenException.invalid()
+                        .withDebug("reason", "Actor code claim is missing");
+            }
+
+            return ActorCode.of(actorCodeRaw);
+
+        } catch (RequiredTypeException ex) {
+
+            throw InvalidTokenException.invalid(ex)
+                    .withDebug("reason", "Invalid actor code");
         }
     }
 

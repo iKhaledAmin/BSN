@@ -54,7 +54,7 @@ import com.khaled_amin.book_social_network.identity.core.model.ActorType;
  * public class AccountActorSourceResolver implements ActorSourceResolver {
  *
  *     @Override
- *     public ActorType getType() {
+ *     public ActorType getActorType() {
  *         return ActorType.ACCOUNT;
  *     }
  *

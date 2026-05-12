@@ -1,128 +1,240 @@
 package com.khaled_amin.book_social_network.identity.core.model;
 
-
 import com.khaled_amin.book_social_network.core.policy.core.AbstractPolicy;
+import com.khaled_amin.book_social_network.identity.core.generator.ActorCodeGenerator;
 import com.khaled_amin.book_social_network.identity.core.resolver.ActorSourceResolver;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 
 /**
- * Represents a domain object that can act as a source of {@link Actor}.
+ * Represents a domain object capable of participating in the system
+ * as an identifiable {@link Actor}.
  *
  * <p>
- * {@code ActorSource} is a strategic contract that allows a domain entity
- * to expose itself as an {@link Actor} within the system.
- * It acts as a bridge between domain models and the business actor abstraction layer.
+ * {@code ActorSource} is the foundational identity contract that bridges
+ * domain entities with the system-wide actor model.
  * </p>
  *
- * <h3>Conceptual Model</h3>
- * <ul>
- *   <li><b>{@link ActorSource}</b> → Domain entity representation of identity ownership</li>
- *   <li><b>{@link AuthenticatedPrincipal}</b> → Security representation (authentication layer)</li>
- *   <li><b>{@link Actor}</b> → Business identity abstraction (application layer)</li>
- * </ul>
- *
- * <h3>Purpose</h3>
- * <ul>
- *   <li>Enable domain entities to participate in identity-based operations</li>
- *   <li>Allow transformation of domain objects into {@link Actor} via resolvers</li>
- *   <li>Support cross-layer identity propagation (e.g., policies, auditing, security)</li>
- * </ul>
- *
- * <h3>How It Works</h3>
  * <p>
- * Any class implementing this interface can be resolved into an {@link Actor}
- * using the {@link  ActorSourceResolver} mechanism.
- * The resolution process relies on:
+ * Implementing this interface means the object owns a stable business identity
+ * represented by:
  * </p>
  * <ul>
- *   <li>{@link ActorIdentity#getActorType()} to determine the appropriate resolver</li>
- *   <li>A registered {@link  ActorSourceResolver} for that {@link ActorType}</li>
+ *     <li>{@link ActorType} → defines the actor category</li>
+ *     <li>{@link ActorCode} → globally unique business identity</li>
+ * </ul>
+ *
+ * <p>
+ * Together, these values form an {@link ActorIdentity},
+ * which becomes the canonical identity representation used across:
+ * </p>
+ * <ul>
+ *     <li>Authorization and policy evaluation</li>
+ *     <li>Audit logging and traceability</li>
+ *     <li>Security and authentication flows</li>
+ *     <li>Cross-module identity propagation</li>
+ *     <li>Ownership and attribution models</li>
+ * </ul>
+ *
+ * <h3>Architectural Role</h3>
+ * <ul>
+ *     <li><b>{@link ActorSource}</b> → domain identity owner</li>
+ *     <li><b>{@link AuthenticatedPrincipal}</b> → authenticated security representation</li>
+ *     <li><b>{@link Actor}</b> → lightweight business actor abstraction</li>
+ * </ul>
+ *
+ * <h3>Identity Model</h3>
+ * <p>
+ * This interface intentionally separates:
+ * </p>
+ * <ul>
+ *     <li><b>Persistence identity</b> (database primary keys)</li>
+ *     <li><b>Business/security identity</b> ({@link ActorIdentity})</li>
+ * </ul>
+ *
+ * <p>
+ * Therefore, implementations should expose a stable {@link ActorCode}
+ * instead of relying on database IDs.
+ * </p>
+ *
+ * <p>
+ * Actor codes should be generated through
+ * {@link ActorCodeGenerator#generate(ActorType)}
+ * to guarantee consistency, uniqueness, and adherence
+ * to the system identity strategy.
+ * </p>
+ *
+ * <h3>Design Characteristics</h3>
+ * <ul>
+ *     <li>Composition-based identity model</li>
+ *     <li>Technology-independent business identity</li>
+ *     <li>Supports heterogeneous actor systems</li>
+ *     <li>Safe for distributed and cross-module communication</li>
+ *     <li>JPA-friendly and inheritance-safe</li>
+ * </ul>
+ *
+ * <h3>Resolution Flow</h3>
+ * <p>
+ * Implementations can be resolved into an {@link Actor}
+ * through the {@link ActorSourceResolver} infrastructure.
+ * </p>
+ *
+ * <p>
+ * Resolution typically relies on:
+ * </p>
+ * <ul>
+ *     <li>{@link #getActorType()}</li>
+ *     <li>{@link #getActorCode()}</li>
+ *     <li>A registered resolver for the corresponding {@link ActorType}</li>
  * </ul>
  *
  * <h3>When to Implement</h3>
  * <p>
- * This interface should ONLY be implemented by domain entities that:
+ * This interface should only be implemented by domain entities that:
  * </p>
  * <ul>
- *   <li>Represent a real identity in the system (e.g., Account, Client)</li>
- *   <li>Need to be treated as an {@link Actor} in business logic</li>
- *   <li>Participate in authorization, policy evaluation, or auditing</li>
+ *     <li>Represent a real system identity</li>
+ *     <li>Participate in authorization decisions</li>
+ *     <li>Need actor-level traceability or auditing</li>
+ *     <li>Must be resolved into an {@link Actor}</li>
+ * </ul>
+ *
+ * <h3>Typical Examples</h3>
+ * <ul>
+ *     <li>Account</li>
+ *     <li>Client</li>
+ *     <li>Service integrations</li>
+ *     <li>Future machine or API identities</li>
  * </ul>
  *
  * <h3>When NOT to Implement</h3>
  * <ul>
- *   <li>DTOs, commands, or request/response models</li>
- *   <li>Value objects or technical/helper classes</li>
- *   <li>Entities that are not part of the identity model</li>
- *   <li>Any class where exposing identity could lead to security leaks</li>
+ *     <li>DTOs or request models</li>
+ *     <li>Value objects</li>
+ *     <li>Helper or utility classes</li>
+ *     <li>Entities without identity semantics</li>
+ *     <li>Objects that should never participate in authorization</li>
  * </ul>
  *
- * <h3>⚠️ Important Design Warning</h3>
+ * <h3>Security Considerations</h3>
  * <p>
- * Implementing {@code ActorSource} is a <b>security-sensitive decision</b>.
- * By doing so, the entity becomes eligible to be resolved into an {@link Actor},
- * which means:
+ * Implementing this interface is a security-sensitive architectural decision.
+ * Any implementing type becomes part of the system identity boundary and may:
  * </p>
  * <ul>
- *   <li>It can be used in authorization and policy evaluation</li>
- *   <li>It becomes part of the system's identity boundary</li>
- *   <li>It may influence access control decisions</li>
- * </ul>
- *
- * <p>
- * Incorrect usage may result in:
- * </p>
- * <ul>
- *   <li>Privilege escalation vulnerabilities</li>
- *   <li>Invalid identity mappings</li>
- *   <li>Broken authorization rules</li>
+ *     <li>Participate in policy evaluation</li>
+ *     <li>Influence authorization decisions</li>
+ *     <li>Appear in audit trails and security contexts</li>
  * </ul>
  *
  * <p>
- * Therefore, this interface should only be implemented when:
+ * Incorrect implementation may introduce:
  * </p>
  * <ul>
- *   <li>The entity has a well-defined and stable identity</li>
- *   <li>The {@link ActorType} mapping is explicit and correct</li>
- *   <li>A corresponding {@code ActorSourceResolver} is properly implemented</li>
+ *     <li>Privilege escalation vulnerabilities</li>
+ *     <li>Broken authorization mappings</li>
+ *     <li>Identity spoofing risks</li>
  * </ul>
  *
- * <h3>Example</h3>
+ * <p>
+ * Therefore, implementations must guarantee:
+ * </p>
+ * <ul>
+ *     <li>Stable and valid actor identities</li>
+ *     <li>Correct {@link ActorType} exposure</li>
+ *     <li>Globally unique {@link ActorCode} ownership</li>
+ * </ul>
+ *
+ * <h3>Implementation Example</h3>
  * <pre>{@code
  * @Entity
  * public class Account implements ActorSource {
  *
+ *     @Embedded
+ *     @AttributeOverride(
+ *             name = "value",
+ *             column = @Column(
+ *                     name = "account_code",
+ *                     nullable = false,
+ *                     updatable = false,
+ *                     unique = true,
+ *                     comment = "Stable globally unique business identity"
+ *             )
+ *     )
+ *     private ActorCode accountCode;
+ *
+ *
  *     @Override
- *     public ActorIdentity getActorIdentity() {
- *         return ActorIdentity.of(ActorType.ACCOUNT, id.toString());
+ *     public ActorType getActorType() {
+ *         return ActorType.ACCOUNT;
+ *     }
+ *
+ *     @Override
+ *     public ActorCode getClientCode() {
+ *         return accountCode;
  *     }
  * }
  * }</pre>
  *
  * <h3>Related Components</h3>
  * <ul>
- *   <li>{@link Actor}</li>
- *   <li>{@link ActorIdentity}</li>
- *   <li>{@link ActorType}</li>
- *   <li>{@link ActorSourceResolver}</li>
- *   <li>{@link AbstractPolicy}</li>
+ *     <li>{@link Actor}</li>
+ *     <li>{@link ActorIdentity}</li>
+ *     <li>{@link ActorCode}</li>
+ *     <li>{@link ActorType}</li>
+ *     <li>{@link ActorCodeGenerator}</li>
+ *     <li>{@link ActorSourceResolver}</li>
+ *     <li>{@link AbstractPolicy}</li>
  * </ul>
  */
 public interface ActorSource {
 
     /**
-     * Returns the {@link ActorIdentity} representing this source.
+     * Returns the actor category represented by this source.
      *
      * <p>
-     * The returned identity must be:
+     * The returned type must remain stable throughout
+     * the lifecycle of the implementing entity.
+     * </p>
+     *
+     * @return non-null {@link ActorType}
+     */
+    ActorType getActorType();
+
+    /**
+     * Returns the stable globally unique business identity
+     * of this actor source.
+     *
+     * <p>
+     * This value must:
      * </p>
      * <ul>
-     *   <li>Non-null</li>
-     *   <li>Consistent with the actual entity identity</li>
-     *   <li>Stable across the lifecycle of the entity</li>
+     *     <li>Be globally unique</li>
+     *     <li>Remain stable over time</li>
+     *     <li>Be independent of database primary keys</li>
+     * </ul>
+     *
+     * @return non-null {@link ActorCode}
+     */
+    ActorCode getActorCode();
+
+    /**
+     * Returns the canonical {@link ActorIdentity}
+     * representing this actor source.
+     *
+     * <p>
+     * The default implementation composes:
+     * </p>
+     * <ul>
+     *     <li>{@link #getActorType()}</li>
+     *     <li>{@link #getActorCode()}</li>
      * </ul>
      *
      * @return non-null {@link ActorIdentity}
      */
-    ActorIdentity getActorIdentity();
+    default ActorIdentity getActorIdentity() {
+        return ActorIdentity.of(
+                getActorType(),
+                getActorCode()
+        );
+    }
 }

@@ -3,8 +3,8 @@ package com.khaled_amin.book_social_network.identity.user.account.api.controller
 import com.khaled_amin.book_social_network.core.api.ApiResponse;
 import com.khaled_amin.book_social_network.core.api.ApiResponseFactory;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.provider.ActorProvider;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleId;
 import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountAdminResponse;
 import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountNormalResponse;
 import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountReplaceRolesRequest;
@@ -15,6 +15,7 @@ import com.khaled_amin.book_social_network.identity.user.account.application.ser
 import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountUpdateCommand;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.AccountId;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +38,11 @@ public class AccountController {
             @Valid @RequestBody AccountUpdateRequest request) {
 
         Actor authaticatedActor = actorProvider.getCurrent();
+        ActorCode accountCode = authaticatedActor.getActorIdentity().getActorCode();
 
-        Long accountId = accountService.getByIdentity(authaticatedActor.getActorIdentity()).getId();
         AccountUpdateCommand command = accountNormalMapper.toCommand(request);
 
-        Account updatedAccount = accountService.update(AccountId.of(accountId) , command);
+        Account updatedAccount = accountService.update(accountCode,command);
 
         AccountNormalResponse response = accountNormalMapper.toResponse(updatedAccount);
         return ResponseEntity.ok(
@@ -49,18 +50,18 @@ public class AccountController {
         );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<AccountNormalResponse>> updateAccountById(
-            @PathVariable Long id,
+    @PutMapping("/{accountCode}")
+    public ResponseEntity<ApiResponse<AccountAdminResponse>> updateAccount(
+            @PathVariable String accountCode,
             @Valid @RequestBody AccountUpdateRequest request) {
 
-        AccountId accountId = AccountId.of(id);
         AccountUpdateCommand command = accountNormalMapper.toCommand(request);
+        Account updatedAccount = accountService.update(
+                ActorCode.of(accountCode),
+                command
+        );
 
-        Account updatedAccount = accountService.update(accountId, command);
-
-
-        AccountNormalResponse response = accountNormalMapper.toResponse(updatedAccount);
+        AccountAdminResponse response = accountAdminMapper.toResponse(updatedAccount);
         return ResponseEntity.ok(
                 ApiResponseFactory.success(response)
         );
@@ -69,70 +70,76 @@ public class AccountController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<AccountNormalResponse>> getCurrentAccount() {
 
-
         Actor authntcatedActor = actorProvider.getCurrent();
         Account account = accountService.getByIdentity(authntcatedActor.getActorIdentity());
 
+        AccountNormalResponse response = accountNormalMapper.toResponse(account);
         return ResponseEntity.ok(
-                ApiResponseFactory.success(
-                        accountNormalMapper.toResponse(account)
-                )
+                ApiResponseFactory.success(response)
         );
     }
 
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AccountAdminResponse>> getAccountById(
-            @PathVariable Long id) {
+    @GetMapping("/{accountCode}")
+    public ResponseEntity<ApiResponse<AccountAdminResponse>> getAccount(
+            @PathVariable String accountCode) {
 
-        Account account = accountService.getById(AccountId.of(id));
+        Account account = accountService.getByAccountCode(
+                ActorCode.of(accountCode)
+        );
 
+        AccountAdminResponse response = accountAdminMapper.toResponse(account);
         return ResponseEntity.ok(
-                ApiResponseFactory.success(
-                        accountAdminMapper.toResponse(account)
-                )
+                ApiResponseFactory.success(response)
         );
     }
 
-
-    @PostMapping("/{accountId}/roles/{roleId}")
+    @PostMapping("/{accountCode}/roles/{roleName}")
     public ResponseEntity<ApiResponse<AccountAdminResponse>> assignRole(
-            @PathVariable Long accountId,
-            @PathVariable Long roleId) {
+            @PathVariable String accountCode,
+            @PathVariable String roleName) {
 
-        Account account = accountService.assignRoles(AccountId.of(accountId), RoleId.of(roleId));
+        Account account = accountService.assignRole(
+                ActorCode.of(accountCode),
+                RoleName.of(roleName)
+        );
 
+        AccountAdminResponse response =  accountAdminMapper.toResponse(account);
         return ResponseEntity.ok(
-                ApiResponseFactory.success(accountAdminMapper.toResponse(account))
+                ApiResponseFactory.success(response)
         );
     }
 
-    @DeleteMapping("/{accountId}/roles/{roleId}")
+    @DeleteMapping("/{accountCode}/roles/{roleName}")
     public ResponseEntity<ApiResponse<AccountAdminResponse>> removeRole(
-            @PathVariable Long accountId,
-            @PathVariable Long roleId) {
+            @PathVariable String accountCode,
+            @PathVariable String roleName) {
 
-        Account account = accountService.removeRole(AccountId.of(accountId), RoleId.of(roleId));
+        Account account = accountService.removeRole(
+                ActorCode.of(accountCode),
+                RoleName.of(roleName)
+        );
 
+        AccountAdminResponse response = accountAdminMapper.toResponse(account);
         return ResponseEntity.ok(
-                ApiResponseFactory.success(
-                        accountAdminMapper.toResponse(account)
-                )
+                ApiResponseFactory.success(response)
         );
     }
 
 
-    @PutMapping("/{accountId}/roles")
+    @PutMapping("/{accountCode}/roles")
     public ResponseEntity<ApiResponse<AccountAdminResponse>> replaceRoles(
-            @PathVariable Long accountId,
+            @PathVariable String accountCode,
             @RequestBody @Valid AccountReplaceRolesRequest request) {
 
-        Account account = accountService.replaceRoles(AccountId.of(accountId),request.getRoleIds());
+        Account account = accountService.replaceRoles(
+                ActorCode.of(accountCode),
+                request.getRoleNames()
+        );
 
+        AccountAdminResponse response = accountAdminMapper.toResponse(account);
         return ResponseEntity.ok(
-                ApiResponseFactory.success(
-                        accountAdminMapper.toResponse(account)
-                )
+                ApiResponseFactory.success(response)
         );
     }
 }

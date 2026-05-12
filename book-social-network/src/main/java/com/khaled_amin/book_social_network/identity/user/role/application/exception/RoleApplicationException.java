@@ -49,4 +49,8 @@ public class RoleApplicationException extends IdentityException {
     public static RoleApplicationException invalidSystemRole() {
         return of(RoleApplicationError.INVALID_SYSTEM_ROLE);
     }
+
+    public static RoleApplicationException invalidRoles() {
+        return of(RoleApplicationError.INVALID_ROLE_LIST);
+    }
 }

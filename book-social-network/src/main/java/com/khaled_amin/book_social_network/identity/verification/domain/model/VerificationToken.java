@@ -33,7 +33,25 @@ public class VerificationToken {
     // -------------------- Target --------------------
 
     @Embedded
-    @Column(name = "target", nullable = false,updatable = false)
+    @AttributeOverrides({
+            @AttributeOverride(
+                    name = "actorType",
+                    column = @Column(
+                            name = "target_actor_type",
+                            nullable = false,
+                            updatable = false
+                    )
+            ),
+            @AttributeOverride(
+                    name = "actorCode.value",
+                    column = @Column(
+                            name = "target_actor_code",
+                            nullable = false,
+                            updatable = false
+                    )
+            )
+    })
+    //@Column(name = "target", nullable = false,updatable = false)
     private ActorIdentity target;
 
     // -------------------- Lifecycle --------------------

@@ -14,6 +14,7 @@ import com.khaled_amin.book_social_network.identity.user.role.domain.model.Syste
 import com.khaled_amin.book_social_network.identity.user.role.domain.repository.RoleRepository;
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleId;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -190,10 +191,47 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role getByName(String roleName) {
-        return getOptionalByName(roleName)
-                .orElseThrow(RoleApplicationException::notFound);
+        return getOptionalByName(roleName).orElseThrow(() -> RoleApplicationException.notFound()
+                .withDetail("reason", "Role not found for given name")
+                .withDetail("roleName",roleName)
+        );
     }
 
+    @Override
+    public Role getByName(RoleName roleName) {
+        return getByName(roleName.value());
+    }
+
+    @Override
+    public List<Role> getAllByNames(List<RoleName> roleNames) {
+
+        if (roleNames == null || roleNames.isEmpty())
+            throw RoleApplicationException.invalidRoles()
+                    .withDetail("reason", "Role names list must not be null or empty");
+
+        List<String> names = roleNames.stream()
+                .map(RoleName::value)
+                .toList();
+
+        List<Role> roles = roleRepository.findAllByNameIn(names);
+
+        if (roles.size() != roleNames.size()) {
+
+            Set<String> foundNames = roles.stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toSet());
+
+            List<String> notFoundNames = names.stream()
+                    .filter(name -> !foundNames.contains(name))
+                    .toList();
+
+            throw RoleApplicationException.rolesNotFound()
+                    .withDetail("requestedRoleNames", names)
+                    .withDetail("notFoundRoleNames", notFoundNames);
+        }
+
+        return roles;
+    }
 
 
     @Override

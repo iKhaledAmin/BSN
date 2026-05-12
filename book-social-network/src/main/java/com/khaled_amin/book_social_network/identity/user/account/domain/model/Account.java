@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
-import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
@@ -46,6 +46,22 @@ public class Account extends AuditableEntity implements ActorSource {
     private AccountStatus accountStatus = AccountStatus.getDefault();
 
 
+
+
+    @Embedded
+    @AttributeOverride(
+            name = "value",
+            column = @Column(
+                    name = "account_code",
+                    nullable = false,
+                    updatable = false,
+                    unique = true,
+                    comment = "Stable globally unique business identity"
+            )
+    )
+    private ActorCode accountCode;
+
+
     // -------------------------------------- Relationships ----------------------------------- //
 
     @OneToOne(cascade = CascadeType.ALL, optional = false)
@@ -64,8 +80,13 @@ public class Account extends AuditableEntity implements ActorSource {
 
 
     @Override
-    public ActorIdentity getActorIdentity() {
-        return ActorIdentity.of(ActorType.ACCOUNT, id.toString());
+    public ActorType getActorType() {
+        return ActorType.ACCOUNT;
+    }
+
+    @Override
+    public ActorCode getActorCode() {
+        return accountCode;
     }
 
 
@@ -76,6 +97,7 @@ public class Account extends AuditableEntity implements ActorSource {
               Username username,
               EncodedPassword encodedPassword,
               Email emailAddress,
+              ActorCode accountCode,
               Profile profile,
               List<Role> roles
     ) {
@@ -97,6 +119,7 @@ public class Account extends AuditableEntity implements ActorSource {
                 .username(username.value())
                 .password(encodedPassword.value())
                 .emailAddress(emailAddress.value())
+                .accountCode(accountCode)
                 .accountStatus(AccountStatus.getDefault())
                 .build();
 
@@ -226,6 +249,10 @@ public class Account extends AuditableEntity implements ActorSource {
 
         if (password == null || password.isBlank()) {
             throw AccountDomainException.invalidAccountState().withDetail("reason", "Password must be not be null or empty");
+        }
+
+        if (accountCode == null) {
+            throw AccountDomainException.invalidAccountState().withDetail("reason", "Account code must not be null");
         }
 
         if (profile == null) {

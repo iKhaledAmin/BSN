@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.security.jwt;
 
 
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,9 +13,12 @@ import java.util.Set;
 @AllArgsConstructor
 public class JwtPayload {
 
-     // ActorSource
-     private final String subject;     // username OR clientId
-     private final ActorType actorType;   // ACCOUNT | CLIENT
+     // Technical authentication identity
+     private final String subject; // username OR clientId
+
+     // Business actor identity
+     private final ActorType actorType; // ACCOUNT | CLIENT
+     private final ActorCode actorCode;  // accountCode OR clientCode
 
      // Time-based security
      private final Date issuedAt;

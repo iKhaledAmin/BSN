@@ -27,17 +27,17 @@ public class SpringSecurityAuthenticatedActorProvider implements AuthenticatedAc
 
         //  No authentication → system context (batch / startup operations / scheduled jobs / background processing / etc)
         if (auth == null) {
-            return new SystemActor();
+            return SystemActor.INSTANCE;
         }
 
         //  Anonymous request (not logged in) → anonymous context (e.g. public API [register, login, etc.])
         if (auth instanceof AnonymousAuthenticationToken) {
-            return new AnonymousActor();
+            return AnonymousActor.INSTANCE;
         }
 
         //  Not authenticated [Authentication exists but not valid] → fallback to anonymous context
         if (!auth.isAuthenticated()) {
-            return new AnonymousActor();
+            return AnonymousActor.INSTANCE;
         }
 
         Object principal = auth.getPrincipal();

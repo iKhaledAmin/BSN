@@ -10,6 +10,10 @@ public class ActorResolutionException extends SystemException {
         super(code, message);
     }
 
+    protected ActorResolutionException(String code, String message, Throwable cause) {
+        super(code, message, cause);
+    }
+
     public static ActorResolutionException sourceTypeMismatch(Class<?> expected, Class<?> actual) {
         return new ActorResolutionException(
                 "ACTOR_SOURCE_TYPE_MISMATCH",
@@ -42,5 +46,13 @@ public class ActorResolutionException extends SystemException {
 
     public static ActorResolutionException unsupportedActorType() {
         return new ActorResolutionException("ACTOR_UNSUPTED_TYPE", "Unsupported actor type");
+    }
+
+    public static ActorResolutionException invalidActorType(String value) {
+        return new ActorResolutionException("ACTOR_INVALID_TYPE", "Invalid actor type: " + value);
+    }
+
+    public static ActorResolutionException invalidActorType(String value, Exception ex) {
+        return new ActorResolutionException("ACTOR_INVALID_TYPE", "Invalid actor type: " + value, ex);
     }
 }

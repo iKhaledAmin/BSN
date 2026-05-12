@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.security.principal.account;
 
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import lombok.Getter;
@@ -27,9 +28,8 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
 
     @Getter
     private final Set<String> roleNames;
-
     private final Set<GrantedAuthority> authorities;
-    private final ActorType actorType;
+    private final ActorCode accountCode;
 
 
     public static AccountPrincipal of(
@@ -39,14 +39,14 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
             boolean active,
             boolean locked,
             Set<String> roleNames,
-            ActorType  actorType
+            ActorCode accountCode
     ) {
         Set<GrantedAuthority> authorities = roleNames
                 .stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toSet());
 
-        return new AccountPrincipal(id, username, password, active, locked, roleNames, authorities, actorType);
+        return new AccountPrincipal(id, username, password, active, locked, roleNames, authorities, accountCode);
     }
 
 
@@ -94,6 +94,7 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
         return username;
     }
 
+
     @Override
     public boolean isActive() {
         return active;
@@ -105,9 +106,15 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
     }
 
     @Override
-    public ActorType  getActorType() {
-        return actorType;
+    public ActorType getActorType() {
+        return ActorType.ACCOUNT;
     }
+
+    @Override
+    public ActorCode getActorCode() {
+        return accountCode;
+    }
+
 
 }
 

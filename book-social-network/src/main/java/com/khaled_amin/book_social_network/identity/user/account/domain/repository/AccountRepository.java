@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.repository;
 
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 
 import java.util.Optional;
@@ -21,4 +22,8 @@ public interface AccountRepository {
     long countByRoleName(String roleName);
 
     Optional<Account> findByEmail(String email);
+
+    Optional<Account> findByAccountCode(String accountCode);
+
+    Optional<Account> findByRoleName(String roleName);
 }

@@ -5,6 +5,7 @@ import com.khaled_amin.book_social_network.identity.user.role.domain.command.Upd
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleId;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,10 +27,12 @@ public interface RoleService {
 
     Optional<Role> getOptionalByName(String roleName);
     Role getByName(String roleName);
+    Role getByName(RoleName roleName);
 
 
     void delete(RoleId roleId);
 
+    List<Role> getAllByNames(List<RoleName> roleNames);
     List<Role> getAllByIds(List<Long> roleIds);
 
     List<Long> getAllDefaultRoleIds();

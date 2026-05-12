@@ -42,6 +42,7 @@ public interface AuthenticationMapper {
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "actorType", expression = "java(principal.getActorType().name())")
+    @Mapping(target = "actorCode", expression = "java(principal.getActorCode().getValue())")
     @Mapping(target = "username", source = "username")
     @Mapping(target = "roles", expression = "java(mapRoles(principal.getRoleNames()))")
     LoginResponse.AccountInfo toAccountInfo(AccountPrincipal principal);

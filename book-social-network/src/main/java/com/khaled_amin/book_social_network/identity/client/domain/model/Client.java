@@ -1,9 +1,7 @@
 package com.khaled_amin.book_social_network.identity.client.domain.model;
 
-
-
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
-import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import jakarta.persistence.*;
@@ -52,15 +50,30 @@ public class Client extends AuditableEntity implements ActorSource {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private ClientStatus status = ClientStatus.ACTIVE;
+    private ClientStatus status = ClientStatus.getDefault();
+
+    @Embedded
+    @AttributeOverride(
+            name = "value",
+            column = @Column(
+                    name = "client_code",
+                    nullable = false,
+                    updatable = false,
+                    unique = true
+            )
+    )
+    private ActorCode clientCode;
 
     @Override
-    public ActorIdentity getActorIdentity() {
-        return ActorIdentity.of(
-                ActorType.CLIENT,
-                id.toString()
-        );
+    public ActorType getActorType() {
+        return ActorType.CLIENT;
     }
+
+    @Override
+    public ActorCode getActorCode() {
+        return clientCode;
+    }
+
 
     public Set<String> getScopes() {
         return new HashSet<>();

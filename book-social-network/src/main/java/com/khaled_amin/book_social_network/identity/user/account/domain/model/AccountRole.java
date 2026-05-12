@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.model;
 
+import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
 import jakarta.persistence.*;
@@ -18,10 +19,41 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "account_roles",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"account_id", "role_id"})}
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"account_id", "role_id"})
+        }
 )
-@EntityListeners(AuditingEntityListener.class)
-public class AccountRole {
+
+@AttributeOverrides({
+
+        @AttributeOverride(
+                name = "createdAt",
+                column = @Column(
+                        name = "assigned_at",
+                        nullable = false,
+                        updatable = false
+                )
+        ),
+
+        @AttributeOverride(
+                name = "createdBy.actorType",
+                column = @Column(
+                        name = "assigned_by_actor_type",
+                        nullable = false,
+                        updatable = false
+                )
+        ),
+
+        @AttributeOverride(
+                name = "createdBy.actorCode.value",
+                column = @Column(
+                        name = "assigned_by_actor_code",
+                        nullable = false,
+                        updatable = false
+                )
+        )
+})
+public class AccountRole extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,14 +67,6 @@ public class AccountRole {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_id", nullable = false, updatable = false)
     private Role role;
-
-    @CreatedDate
-    @Column(name = "assigned_at", nullable = false, updatable = false)
-    private LocalDateTime assignedAt;
-
-    @CreatedBy
-    @Column(name = "assigned_by", nullable = false, updatable = false)
-    private String assignedBy;
 
     // -------------------------------------- Business Methods ---------------------------------- //
 

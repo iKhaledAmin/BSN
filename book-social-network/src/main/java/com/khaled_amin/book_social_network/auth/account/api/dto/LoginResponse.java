@@ -27,7 +27,12 @@
             private Long id;
 
             @JsonProperty("actor_type")
-            private String actorType;          // ACCOUNT / CLIENT
+            private String actorType;
+
+            @JsonProperty("actor_code")
+            private String actorCode;
+
+            // ACCOUNT / CLIENT
             private String username;
             private List<String> roles;
         }

@@ -138,7 +138,7 @@ public class ActorSourceResolverRegistry {
      */
     public Actor resolve(ActorSource source) {
 
-        ActorType type = source.getActorIdentity().type();
+        ActorType type = source.getActorIdentity().getActorType();
         ActorSourceResolver resolver = resolverMap.get(type);
 
         if (resolver == null) {

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
     private final String clientId;
     private final boolean active;
     private final boolean locked;
-    private final ActorType actorType;
+    private final ActorCode clientCode;
 
     @Getter
     private final Set<String> scopes;
@@ -33,7 +34,7 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
             boolean locked,
             Set<String> scopes,
             Set<GrantedAuthority> authorities,
-            ActorType  actorType
+            ActorCode clientCode
     ) {
         this.dbId = dbId;
         this.clientId = clientId;
@@ -41,7 +42,7 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
         this.locked = locked;
         this.scopes = scopes;
         this.authorities = authorities;
-        this.actorType = actorType;
+        this.clientCode = clientCode;
     }
 
     public static ClientPrincipal of(
@@ -50,7 +51,7 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
             boolean active,
             boolean locked,
             Set<String> scopes,
-            ActorType  actorType
+            ActorCode clientCode
     ) {
 
         Set<GrantedAuthority> authorities = scopes.stream()
@@ -64,7 +65,7 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
                 locked,
                 scopes,
                 authorities,
-                actorType
+                clientCode
         );
     }
 
@@ -89,7 +90,14 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
     }
 
     @Override
-    public ActorType  getActorType() {
-        return actorType;
+    public ActorType getActorType() {
+        return ActorType.CLIENT;
     }
+
+    @Override
+    public ActorCode getActorCode() {
+        return clientCode;
+    }
+
+
 }

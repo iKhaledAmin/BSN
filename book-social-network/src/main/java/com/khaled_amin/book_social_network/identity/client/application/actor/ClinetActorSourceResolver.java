@@ -6,7 +6,6 @@ import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.identity.core.resolver.ActorSourceResolver;
 import com.khaled_amin.book_social_network.identity.client.domain.model.Client;
-import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 
 public class ClinetActorSourceResolver implements ActorSourceResolver {
     @Override
@@ -24,7 +23,7 @@ public class ClinetActorSourceResolver implements ActorSourceResolver {
         }
 
         return new ClientActor(
-                client.getId(),
+                client.getClientCode(),
                 client.getScopes()
         );
     }

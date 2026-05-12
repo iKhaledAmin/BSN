@@ -10,8 +10,9 @@ import com.khaled_amin.book_social_network.email.application.port.in.EmailServic
 import com.khaled_amin.book_social_network.email.domain.command.EmailCreateCommand;
 import com.khaled_amin.book_social_network.email.domain.model.EmailTemplate;
 import com.khaled_amin.book_social_network.email.infrastructure.config.EmailProperties;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.AccountId;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.EncodedPassword;
+import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import com.khaled_amin.book_social_network.identity.verification.application.dto.VerificationResult;
 import com.khaled_amin.book_social_network.identity.verification.application.service.VerificationService;
 import com.khaled_amin.book_social_network.identity.verification.domain.model.TokenType;
@@ -51,7 +52,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AccountAuthenticationProvider authenticationProvider;
 
 
+    @Transactional
+    @Override
+    public void createBootstrapAdmin(
+            String username,
+            String rawPassword,
+            String email
+    ) {
 
+        if (accountService.existsByRoleName(
+                SystemRole.SUPER_ADMIN.getName().value())) {
+            return;
+        }
+
+        Role superAdminRole = roleService.getByName(
+                SystemRole.SUPER_ADMIN.getName().value()
+        );
+
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        AccountCreateCommand command = AccountCreateCommand.of(
+                username,
+                encodedPassword,
+                email,
+                "System",
+                "Administrator"
+        );
+
+        Account account = accountService.create(
+                command,
+                List.of(superAdminRole)
+        );
+
+        accountService.activate(account.getAccountCode());
+    }
 
     @Override
     @Transactional
@@ -83,10 +117,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 TokenType.ACCOUNT_ACTIVATION
         );
 
-        Long longId = Long.valueOf(result.target().id());
-        AccountId accountId = AccountId.of(longId);
+        ActorCode actorCode = result.target().getActorCode();
 
-        Account activatedAccount = accountService.activate(accountId);
+        Account activatedAccount = accountService.activate(actorCode);
 
         return authenticationMapper.toActivationResponse(activatedAccount);
     }
@@ -144,15 +177,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 TokenType.RESET_PASSWORD
         );
 
-        // Extract identity
-        Long accountId = Long.valueOf(result.target().id());
+        ActorCode actorCode = result.target().getActorCode();
 
         // Encode password
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // Apply domain operation
         accountService.resetPassword(
-                AccountId.of(accountId),
+                actorCode,
                 EncodedPassword.of(encodedPassword)
         );
 

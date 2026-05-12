@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.service;
 
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.core.provider.ActorProvider;
 import com.khaled_amin.book_social_network.identity.core.exception.IdentityException;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.Email;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.EncodedPassword;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleId;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.user.account.application.policy.AccountPolicyContextFactory;
 import com.khaled_amin.book_social_network.identity.user.account.application.policy.AccountPolicyEngine;
@@ -21,6 +21,7 @@ import com.khaled_amin.book_social_network.identity.user.account.domain.model.Ac
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.identity.user.account.domain.repository.AccountRepository;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.AccountId;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,9 +66,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account update(AccountId accountId, AccountUpdateCommand command) {
+    public Account update(ActorCode accountCode, AccountUpdateCommand command) {
 
-        Account target = getById(accountId.value());
+        Account target = getByAccountCode(accountCode);
         Actor actor = actorProvider.getCurrent();
 
         // Application validation
@@ -87,26 +88,26 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account activate(AccountId accountId) {
-        Account target = getById(accountId);
+    public Account activate(ActorCode accountCode) {
+        Account target = getByAccountCode(accountCode);
         target.activate();
         return accountRepository.save(target);
     }
 
     @Transactional
     @Override
-    public void resetPassword(AccountId accountId, EncodedPassword encodedPassword) {
-        Account target = getById(accountId);
+    public void resetPassword(ActorCode accountCode, EncodedPassword encodedPassword) {
+        Account target = getByAccountCode(accountCode);
         target.resetPassword(encodedPassword);
         accountRepository.save(target);
     }
 
     @Transactional
     @Override
-    public Account assignRoles(AccountId accountId, RoleId roleId) {
+    public Account assignRole(ActorCode accountCode, RoleName roleName) {
 
-        Account target = getById(accountId.value());
-        Role role = roleService.getById(roleId.value());
+        Account target = getByAccountCode(accountCode);
+        Role role = roleService.getByName(roleName);
         Actor actor = actorProvider.getCurrent();
 
         // Policy Validation
@@ -123,15 +124,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account assignRoles(AccountId accountId, List<Long> roleIds) {
+    public Account assignRoles(ActorCode accountCode, List<String> roleNames) {
 
-        List<Long> normalizedIds = normalizeRoleIds(roleIds);
-        Account target = getById(accountId.value());
+        List<RoleName> normalizedRoleNames = normalizeRoleNames(roleNames);
+        Account target = getByAccountCode(accountCode);
         Actor actor = actorProvider.getCurrent();
-        List<Role> fetchedRoles = roleService.getAllByIds(normalizedIds);
-
-        // Application validation
-        accountValidator.validateAccountRoles(normalizedIds, fetchedRoles);
+        List<Role> fetchedRoles = roleService.getAllByNames(normalizedRoleNames);
 
         // Policy validation
         for (Role role : fetchedRoles) {
@@ -148,10 +146,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account removeRole(AccountId accountId,RoleId roleId) {
+    public Account removeRole(ActorCode accountCode, RoleName roleName) {
 
-        Account target = getById(accountId.value());
-        Role role = roleService.getById(roleId.value());
+        Account target = getByAccountCode(accountCode);
+        Role role = roleService.getByName(roleName);
         Actor actor = actorProvider.getCurrent();
 
 
@@ -170,24 +168,24 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.save(target);
     }
 
+
     @Transactional
     @Override
-    public Account replaceRoles(AccountId accountId, List<Long> roleIds) {
+    public Account replaceRoles(ActorCode accountCode, List<String> roleNames) {
 
-        List<Long> normalizedIds = normalizeRoleIds(roleIds);
-        Account target = getById(accountId.value());
+
+        List<RoleName> normalizedRoleNames = normalizeRoleNames(roleNames);
+        Account target = getByAccountCode(accountCode);
         Actor actor = actorProvider.getCurrent();
-        List<Role> fetchedRoles = roleService.getAllByIds(normalizedIds);
 
-        // Application validation
-        accountValidator.validateAccountRoles(normalizedIds,fetchedRoles);
+        List<Role> fetchedRoles = roleService.getAllByNames(normalizedRoleNames);
 
-        // Policy Validation
+        // Policy validation
         accountPolicyEngine.canRepaceRoles(
                 policyContextFactory.forReplace(actor, target, target.getRoles(), fetchedRoles)
         );
 
-        // Application-business-rule
+        // Business rule
         ensureAtLeastSuperAdminStillExists(target, fetchedRoles);
 
         // Domain logic
@@ -196,7 +194,6 @@ public class AccountServiceImpl implements AccountService {
         // Persist
         return accountRepository.save(target);
     }
-
 
     // -------------------------------- Retrieval -------------------------------- //
 
@@ -240,10 +237,6 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByEmail(email);
     }
 
-    @Override
-    public Optional<Account> getOptionalByEmail(Email email) {
-        return getOptionalByEmail(email.value());
-    }
 
     @Override
     public Account getByEmail(String email) {
@@ -256,6 +249,7 @@ public class AccountServiceImpl implements AccountService {
         return getByEmail(email.value());
     }
 
+    @Override
     public Account getByIdentity(ActorIdentity identity) {
 
         if (identity == null) {
@@ -263,23 +257,39 @@ public class AccountServiceImpl implements AccountService {
                     .withDetail("reason", "Actor identity cannot be null");
         }
 
-        Long id = Long.valueOf(identity.id());
+        ActorCode accountCode = identity.getActorCode();
 
-        Account account = getOptionalById(id)
+        Account account = getOptionalByAccountCode(accountCode)
                 .orElseThrow(() -> AccountApplicationException.notFound()
                         .withDetail("reason", "Account not found for given identity")
-                        .withDetail("actorType", identity.type().name())
-                        .withDetail("actorId", identity.id())
+                        .withDetail("actorType", identity.getActorType().name())
+                        .withDetail("actorCode", identity.getActorCode().toString())
                 );
 
         if (!account.getActorIdentity().sameAs(identity)) {
             throw AccountApplicationException.notFound()
                     .withDetail("reason", "Account not found for given identity")
-                    .withDetail("actorType", identity.type().name())
-                    .withDetail("actorId", identity.id());
+                    .withDetail("actorType", identity.getActorType().name())
+                    .withDetail("actorCode", identity.getActorCode().toString());
         }
 
         return account;
+    }
+
+    public Optional<Account> getOptionalByAccountCode(ActorCode accountCode) {
+        return accountRepository.findByAccountCode(accountCode.getValue());
+    }
+
+    public Account getByAccountCode(ActorCode accountCode){
+        return getOptionalByAccountCode(accountCode).orElseThrow(() -> AccountApplicationException.notFound()
+                .withDetail("reason", "Account not found for given code")
+                .withDetail("actorCode", accountCode.getValue())
+        );
+    }
+
+    @Override
+    public Optional<Account> getOptionalByRoleName(String roleName) {
+        return accountRepository.findByRoleName(roleName);
     }
 
     // ------------------------------- End Retrieval ------------------------------ //
@@ -325,6 +335,15 @@ public class AccountServiceImpl implements AccountService {
     private List<Long> normalizeRoleIds(List<Long> roleIds) {
         return roleIds.stream()
                 .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+    }
+
+    private List<RoleName> normalizeRoleNames(List<String> roleNames) {
+
+        return roleNames.stream()
+                .filter(Objects::nonNull)
+                .map(RoleName::of)
                 .distinct()
                 .toList();
     }

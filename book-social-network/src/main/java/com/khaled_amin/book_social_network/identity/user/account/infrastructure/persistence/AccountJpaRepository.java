@@ -20,4 +20,8 @@ public interface AccountJpaRepository  extends BaseRepository<Account,Long> {
     boolean existsByAccountRolesRoleId(Long roleId);
 
     Optional<Account> findByEmailAddress(String email);
+
+    Optional<Account> findByAccountCodeValue(String accountCode);
+
+    Optional<Account> findByAccountRolesRoleName(String roleName);
 }

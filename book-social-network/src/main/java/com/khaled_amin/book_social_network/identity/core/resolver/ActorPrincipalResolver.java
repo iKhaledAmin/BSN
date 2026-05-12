@@ -53,7 +53,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * public class AccountActorPrincipalResolver implements ActorPrincipalResolver {
  *
  *     @Override
- *     public ActorType getType() {
+ *     public ActorType getActorType() {
  *         return ActorType.ACCOUNT;
  *     }
  *

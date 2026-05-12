@@ -54,7 +54,7 @@ public abstract class AbstractActor implements Actor {
      */
     @Override
     public ActorType getType() {
-        return identity.type();
+        return identity.getActorType();
     }
 
     /**

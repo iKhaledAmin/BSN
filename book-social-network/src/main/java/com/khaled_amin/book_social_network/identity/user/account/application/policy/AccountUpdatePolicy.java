@@ -66,7 +66,7 @@ public class AccountUpdatePolicy extends AbstractPolicy<AccountPolicyContext> {
     private ActorIdentity targetIdentity(Account target) {
         return ActorIdentity.of(
                 ActorType.ACCOUNT,
-                target.getId().toString()
+                target.getActorCode()
         );
     }
 }

@@ -46,6 +46,12 @@ public enum RoleApplicationError implements BaseError {
             "ROLE_INVALID_SYSTEM_ROLE",
             HttpStatus.BAD_REQUEST,
             "System role must not be null"
+    ),
+
+    INVALID_ROLE_LIST(
+            "ROLE_INVALID_ROLE_LIST",
+            HttpStatus.BAD_REQUEST,
+            "Invalid role list"
     );
 
     private final String code;

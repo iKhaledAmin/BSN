@@ -39,7 +39,7 @@ public class AccountPrincipalResolver implements PrincipalResolver {
                 account.getAccountStatus().isActive(),
                 account.getAccountStatus().isLocked(),
                 account.getRoleNames(),
-                ActorType.ACCOUNT
+                account.getAccountCode()
         );
     }
 }

@@ -31,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 account.getAccountStatus().isActive(),
                 account.getAccountStatus().isLocked(),
                 account.getRoleNames(),
-                ActorType.ACCOUNT
+                account.getAccountCode()
         );
     }
 }

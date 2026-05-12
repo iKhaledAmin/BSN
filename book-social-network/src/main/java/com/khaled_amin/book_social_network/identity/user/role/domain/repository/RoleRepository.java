@@ -19,4 +19,6 @@ public interface RoleRepository {
     List<Role> findAll();
 
     List<Role> findAllById(List<Long> roleIds);
+
+    List<Role> findAllByNameIn(List<String> names);
 }

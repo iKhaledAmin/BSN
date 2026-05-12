@@ -27,7 +27,7 @@ public class AccountActorPrincipalResolver implements ActorPrincipalResolver {
         }
 
         return new AccountActor(
-                account.getId(),
+                account.getActorCode(),
                 account.getRoleNames()
         );
     }

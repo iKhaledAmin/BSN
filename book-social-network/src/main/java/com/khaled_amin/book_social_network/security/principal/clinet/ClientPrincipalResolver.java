@@ -36,7 +36,7 @@ public class ClientPrincipalResolver implements PrincipalResolver {
                 client.getStatus().isActive(),
                 client.getStatus().isLocked(),
                 client.getScopes(),
-                ActorType.CLIENT
+                client.getClientCode()
         );
     }
 }
