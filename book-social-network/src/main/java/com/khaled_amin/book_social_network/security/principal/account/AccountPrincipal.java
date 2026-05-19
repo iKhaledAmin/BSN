@@ -13,6 +13,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @RequiredArgsConstructor
@@ -28,7 +29,12 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
 
     @Getter
     private final Set<String> roleNames;
+
+    @Getter
+    private final Set<String> permissions;
+
     private final Set<GrantedAuthority> authorities;
+
     private final ActorCode accountCode;
 
 
@@ -39,14 +45,19 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
             boolean active,
             boolean locked,
             Set<String> roleNames,
+            Set<String> permissions,
             ActorCode accountCode
     ) {
-        Set<GrantedAuthority> authorities = roleNames
-                .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .collect(Collectors.toSet());
+        Set<GrantedAuthority> authorities = Stream.concat(
+                        // Roles
+                        roleNames.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)),
 
-        return new AccountPrincipal(id, username, password, active, locked, roleNames, authorities, accountCode);
+                        // Permissions / Capabilities
+                        permissions.stream().map(SimpleGrantedAuthority::new)
+                )
+                .collect(Collectors.toUnmodifiableSet());
+
+        return new AccountPrincipal(id, username, password, active, locked, roleNames, permissions, authorities, accountCode);
     }
 
 

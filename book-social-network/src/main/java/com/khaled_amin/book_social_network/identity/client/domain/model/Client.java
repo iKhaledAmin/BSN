@@ -1,14 +1,16 @@
 package com.khaled_amin.book_social_network.identity.client.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
@@ -74,13 +76,27 @@ public class Client extends AuditableEntity implements ActorSource {
         return clientCode;
     }
 
+    public Set<Capability> getCapabilities() {
+        return capabilities.stream()
+                .map(ClientCapability::getCapability)
+                .collect(Collectors.toSet());
+    }
 
     public Set<String> getScopes() {
-        return new HashSet<>();
+        return getCapabilities().stream()
+                .map(Capability::toScope)
+                .collect(Collectors.toSet());
     }
 
     public void activate() { this.status = ClientStatus.ACTIVE; }
     public void disable()  { this.status = ClientStatus.DISABLED; }
+
+    // -------------------------------------------- Relationships --------------------------------------------
+
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ClientCapability> capabilities;
+
+    // -------------------------------------------- End Relationships --------------------------------------------
 
 
 

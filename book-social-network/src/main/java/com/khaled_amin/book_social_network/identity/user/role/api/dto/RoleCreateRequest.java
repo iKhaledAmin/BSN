@@ -8,12 +8,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @Builder
-public class CreateRoleRequest {
+public class RoleCreateRequest {
 
     @NotBlank(message = "Role name is mandatory")
     @Pattern(regexp = "^[A-Z_]+$", message = "Role name must contain only uppercase letters and underscores")
@@ -29,16 +27,16 @@ public class CreateRoleRequest {
 
     @NotBlank(message = "Role description is mandatory")
     @Size(max = 255, message = "Role description must not exceed 255 characters")
-    @JsonProperty("value")
+    @JsonProperty("description")
     private String description;
 
 
     @NotNull(message = "Default role is mandatory")
-    @JsonProperty(value = "default_role")
+    @JsonProperty("default_role")
     private Boolean defaultRole;
 
     @NotNull(message = "Protected role is mandatory")
-    @JsonProperty(value = "protected_role")
+    @JsonProperty("protected_role")
     private Boolean protectedRole;
 
 }

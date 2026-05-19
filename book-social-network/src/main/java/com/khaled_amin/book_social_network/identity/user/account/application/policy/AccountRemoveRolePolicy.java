@@ -48,7 +48,7 @@ public class AccountRemoveRolePolicy extends AbstractPolicy<AccountPolicyContext
 
     @Override
     protected void handleSystem(AccountPolicyContext context) {
-        // SYSTEM is trusted (batch jobs, bootstrap, internalServer processes)
+        // SYSTEM is trusted (batch jobs, definition, internalServer processes)
         allow();
     }
 

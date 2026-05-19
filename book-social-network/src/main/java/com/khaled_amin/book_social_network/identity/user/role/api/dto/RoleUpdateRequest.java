@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UpdateRoleRequest {
+public class RoleUpdateRequest {
 
     @JsonProperty("display_name")
     @Pattern(regexp = "^[a-zA-Z ]+$", message = "Display value must contain only letters")

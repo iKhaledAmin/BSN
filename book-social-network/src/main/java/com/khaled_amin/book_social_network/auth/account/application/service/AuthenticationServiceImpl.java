@@ -54,11 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Transactional
     @Override
-    public void createBootstrapAdmin(
-            String username,
-            String rawPassword,
-            String email
-    ) {
+    public void createBootstrapAdmin(String username, String rawPassword, String email) {
 
         if (accountService.existsByRoleName(
                 SystemRole.SUPER_ADMIN.getName().value())) {
@@ -66,7 +62,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         Role superAdminRole = roleService.getByName(
-                SystemRole.SUPER_ADMIN.getName().value()
+                SystemRole.SUPER_ADMIN.getName()
         );
 
         String encodedPassword = passwordEncoder.encode(rawPassword);

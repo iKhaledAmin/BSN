@@ -115,14 +115,9 @@ public class ActorCode {
 
     private void validate(String value) {
 
-        if (value == null) {
+        if (value == null || value.isBlank()) {
             throw IdentityException.invalidIdentity()
-                    .withDetail("reason", "Actor code must not be null");
-        }
-
-        if (value.isBlank()) {
-            throw IdentityException.invalidIdentity()
-                    .withDetail("reason", "Actor code must not be blank");
+                    .withDetail("reason", "Actor code must not be null or blank");
         }
 
         String normalized = normalize(value);

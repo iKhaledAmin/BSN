@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @Component
@@ -63,7 +64,7 @@ public class AccountReplaceRolesPolicy extends AbstractPolicy<AccountPolicyConte
         Actor actor = context.getActor();
         Account target = context.getTarget();
 
-        List<Role> currentRoles = context.getCurrentRoles();
+        Set<Role> currentRoles = context.getCurrentRoles();
         List<Role> newRoles = context.getNewRoles();
 
         DiffResult<Role> diff = DiffUtils.diff(

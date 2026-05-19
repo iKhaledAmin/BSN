@@ -6,12 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 @Builder
 public class RoleResponse {
-
-    @JsonProperty("id")
-    private Long id;
 
     @JsonProperty("name")
     private String name;

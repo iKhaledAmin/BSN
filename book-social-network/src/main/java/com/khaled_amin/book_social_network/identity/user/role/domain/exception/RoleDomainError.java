@@ -58,6 +58,21 @@ public enum RoleDomainError implements BaseError {
             "ROLE_PROTECTED_VIOLATION",
             HttpStatus.CONFLICT,
             "This role should be protected"
+    ),
+    INVALID_ROLE(
+            "ROLE_INVALID_ROLE",
+            HttpStatus.BAD_REQUEST,
+            "Role is invalid"
+    ),
+    CAPABILITY_ALREADY_ADDED(
+            "ROLE_CAPABILITY_ALREADY_ADDED",
+            HttpStatus.CONFLICT,
+            "Capability is already added"
+    ),
+    CAPABILITY_NOT_INCLUDED(
+            "ROLE_CAPABILITY_NOT_INCLUDED",
+            HttpStatus.CONFLICT,
+            "Capability is not included"
     );
 
 

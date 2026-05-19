@@ -54,9 +54,10 @@ public class ClientPrincipal implements AuthenticatedPrincipal {
             ActorCode clientCode
     ) {
 
-        Set<GrantedAuthority> authorities = scopes.stream()
+        Set<GrantedAuthority> authorities = scopes
+                .stream()
                 .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
 
         return new ClientPrincipal(
                 dbId,

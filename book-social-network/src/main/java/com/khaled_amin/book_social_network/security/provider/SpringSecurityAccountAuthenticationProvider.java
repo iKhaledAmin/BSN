@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SpringSecurityAccountAuthenticationProvider
-        implements AccountAuthenticationProvider {
+public class SpringSecurityAccountAuthenticationProvider implements AccountAuthenticationProvider {
 
     private final AuthenticationManager authenticationManager;
 

@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.identity.user.role.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
 import com.khaled_amin.book_social_network.identity.user.role.domain.command.UpdateRoleCommand;
 import com.khaled_amin.book_social_network.identity.user.role.domain.exception.RoleDomainException;
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleDescription;
@@ -8,6 +9,10 @@ import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleD
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Getter
@@ -73,6 +78,19 @@ public class Role extends AuditableEntity {
                     "System roles and critical business roles should always be protected."
     )
     private boolean protectedRole = false;
+
+    // -------------------------------------- Relationships ----------------------------------- //
+
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "role",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<RoleCapability> roleCapabilities = new HashSet<>();
+    // ------------------------------------ End Relationships -------------------------------- //
+
 // ------------------------------------ Business Methods -------------------------------- //
 
     public static Role create(
@@ -132,6 +150,52 @@ public class Role extends AuditableEntity {
     public boolean isSystemRole() { return roleType.isSystem();}
     public boolean isBusinessRole(){ return roleType.isBusiness();}
 
+    public void addCapability(Capability capability){
+        validateToAddCapability(capability);
+        RoleCapability roleCapability = RoleCapability.create(capability,this);
+        roleCapabilities.add(roleCapability);
+    }
+
+    public void addCapabilities(Set<Capability> capabilities){
+        if (capabilities == null)
+            throw RoleDomainException.invalid()
+                    .withDetail("reason", "Capabilities list cannot be null");
+
+        capabilities.forEach(this::addCapability);
+    }
+
+    public void removeCapability(Capability capability){
+        validateToRemoveCapability(capability);
+        roleCapabilities.removeIf(rc -> rc.getCapability().equals(capability));
+    }
+
+
+
+    public Set<Capability> getCapabilities() {
+        return roleCapabilities.stream()
+                .map(RoleCapability::getCapability)
+                .collect(Collectors.toSet());
+    }
+
+
+    public Set<String> getPermissions(){
+        return roleCapabilities
+                .stream()
+                .map(roleCapability -> roleCapability.getCapability().toPermission())
+                .collect(Collectors.toSet());
+    }
+
+    public boolean hasCapability(String capabilityCode) {
+        if (capabilityCode == null) {
+            return false;
+        }
+
+        return getCapabilities()
+                .stream()
+                .anyMatch(c -> c.getCode().equals(capabilityCode));
+    }
+
+
 // ------------------------------------ End Business Methods -------------------------------- //
 
 
@@ -164,6 +228,29 @@ public class Role extends AuditableEntity {
             throw RoleDomainException.protectedRoleViolation().withDetail("reason", "This role may be a system role or default role");
     }
 
+    private void validateToAddCapability(Capability capability){
+        if (capability == null) {
+            throw RoleDomainException.invalid().withDetail("reason", "Capability cannot be null");
+        }
+
+        if (this.hasCapability(capability.getCode())) {
+            throw RoleDomainException
+                    .capabilityAlreadyAdded()
+                    .withDetail("capabilityCode", capability.getCode());
+        }
+    }
+
+    private void validateToRemoveCapability(Capability capability) {
+        if (capability == null) {
+            throw RoleDomainException.invalid().withDetail("reason", "Capability cannot be null");
+        }
+
+        if (!this.hasCapability(capability.getCode())) {
+            throw RoleDomainException
+                    .capabilityNotIncluded()
+                    .withDetail("capabilityCode", capability.getCode());
+        }
+    }
 
 // ------------------------------------ End Validation Methods -------------------------------- //
 

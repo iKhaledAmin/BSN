@@ -1,6 +1,5 @@
 package com.khaled_amin.book_social_network.security.Spring_integration;
 
-import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.identity.user.account.domain.repository.AccountRepository;
 import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
@@ -31,6 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 account.getAccountStatus().isActive(),
                 account.getAccountStatus().isLocked(),
                 account.getRoleNames(),
+                account.getPermissions(),
                 account.getAccountCode()
         );
     }

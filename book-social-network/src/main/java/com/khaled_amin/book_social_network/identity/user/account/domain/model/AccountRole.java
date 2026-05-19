@@ -5,11 +5,7 @@ import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)

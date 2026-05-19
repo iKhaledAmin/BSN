@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder(access = AccessLevel.PACKAGE)
@@ -20,6 +21,6 @@ public class AccountPolicyContext implements BasePolicyContext {
     private final Role requestedRole; // role requested by the account
     private final List<Role> requestedRoles; // roles requested by the account
 
-    private final List<Role> currentRoles; // existing roles
+    private final Set<Role> currentRoles; // existing roles
     private final List<Role> newRoles;     // desired roles
 }

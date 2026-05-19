@@ -6,6 +6,7 @@ import com.khaled_amin.book_social_network.identity.user.account.domain.model.Ac
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class AccountPolicyContextFactory {
@@ -54,7 +55,7 @@ public class AccountPolicyContextFactory {
     public AccountPolicyContext forReplace(
             Actor actor,
             Account target,
-            List<Role> currentRoles,
+            Set<Role> currentRoles,
             List<Role> newRoles
     ) {
         return AccountPolicyContext.builder()

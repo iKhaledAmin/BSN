@@ -1,6 +1,5 @@
 package com.khaled_amin.book_social_network.security.Spring_integration;
 
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import com.khaled_amin.book_social_network.security.exception.RestAccessDeniedHandler;
 import com.khaled_amin.book_social_network.security.exception.RestAuthenticationEntryPoint;
 import lombok.AllArgsConstructor;
@@ -55,7 +54,7 @@ public class SecurityConfig {
                             "/webjars/**",
                             "/swagger-ui.html"
                     ).permitAll()
-                    .requestMatchers("/accounts/**").hasRole("ADMIN")
+                    //.requestMatchers("/accounts/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             )
             .sessionManagement(session ->

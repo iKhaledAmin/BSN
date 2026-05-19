@@ -35,7 +35,7 @@ public class RoleCreateBusinessRolePolicy extends AbstractPolicy<RolePolicyConte
 
     @Override
     protected void handleSystem(RolePolicyContext context) {
-        allow(); // system bootstrap allowed
+        allow(); // system definition allowed
     }
 
     @Override

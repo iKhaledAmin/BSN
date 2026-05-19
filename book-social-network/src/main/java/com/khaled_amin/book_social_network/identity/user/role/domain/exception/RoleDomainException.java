@@ -1,6 +1,8 @@
 package com.khaled_amin.book_social_network.identity.user.role.domain.exception;
 
+import com.khaled_amin.book_social_network.core.exception.BusinessException;
 import com.khaled_amin.book_social_network.identity.core.exception.IdentityException;
+import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 
 public class RoleDomainException extends IdentityException {
 
@@ -20,6 +22,10 @@ public class RoleDomainException extends IdentityException {
     }
 
     // -------- Specific -------- //
+
+    public static RoleDomainException invalid(){
+        return of(RoleDomainError.INVALID_ROLE);
+    }
 
     public static RoleDomainException invalidRoleName() {
         return of(RoleDomainError.INVALID_ROLE_NAME);
@@ -55,5 +61,13 @@ public class RoleDomainException extends IdentityException {
 
     public static RoleDomainException protectedRoleViolation() {
         return of(RoleDomainError.PROTECTED_ROLE_VIOLATION);
+    }
+
+    public static RoleDomainException capabilityAlreadyAdded() {
+        return of(RoleDomainError.CAPABILITY_ALREADY_ADDED);
+    }
+
+    public static RoleDomainException capabilityNotIncluded() {
+        return of(RoleDomainError.CAPABILITY_NOT_INCLUDED);
     }
 }

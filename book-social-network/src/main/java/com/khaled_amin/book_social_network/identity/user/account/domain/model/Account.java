@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
@@ -75,7 +76,7 @@ public class Account extends AuditableEntity implements ActorSource {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<AccountRole> accountRoles = new ArrayList<>();
+    private Set<AccountRole> accountRoles = new HashSet<>();
     // ------------------------------------ End Relationships -------------------------------- //
 
 
@@ -195,10 +196,10 @@ public class Account extends AuditableEntity implements ActorSource {
     }
 
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return accountRoles.stream()
                 .map(AccountRole::getRole)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     public Set<String> getRoleNames(){
@@ -217,6 +218,20 @@ public class Account extends AuditableEntity implements ActorSource {
         return getRoles()
                 .stream()
                 .anyMatch(r -> r.getName().equals(roleName));
+    }
+
+    public Set<Capability> getCapabilities() {
+        return getRoles()
+                .stream()
+                .flatMap(role -> role.getCapabilities().stream())
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> getPermissions() {
+        return getCapabilities()
+                .stream()
+                .map(Capability::toPermission)
+                .collect(Collectors.toSet());
     }
 
     public void resetPassword(EncodedPassword newPassword) {
@@ -267,7 +282,7 @@ public class Account extends AuditableEntity implements ActorSource {
     }
 
     private void validateAccountRolesState() {
-        List<Role> roles = this.getRoles();
+        Set<Role> roles = this.getRoles();
 
         if (roles == null || roles.isEmpty()) {
             throw AccountDomainException.invalidAccountState().withDetail("reason", "Account roles must not be null or empty");

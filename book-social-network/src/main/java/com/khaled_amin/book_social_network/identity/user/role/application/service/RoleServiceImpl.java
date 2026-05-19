@@ -1,6 +1,9 @@
 package com.khaled_amin.book_social_network.identity.user.role.application.service;
 
 import com.khaled_amin.book_social_network.core.servise.EntityRetrievalService;
+import com.khaled_amin.book_social_network.identity.capability.application.port.CapabilityService;
+import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
+import com.khaled_amin.book_social_network.identity.capability.domain.value.CapabilityCode;
 import com.khaled_amin.book_social_network.identity.core.provider.ActorProvider;
 import com.khaled_amin.book_social_network.identity.user.role.application.exception.RoleApplicationException;
 import com.khaled_amin.book_social_network.identity.user.role.application.policy.RolePolicyContextFactory;
@@ -35,6 +38,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleFactory roleFactory;
     private final RolePolicyEngine rolePolicyEngine;
     private final ActorProvider actorProvider;
+    private final CapabilityService capabilityService;
     private final EntityRetrievalService entityRetrievalService;
     private final RoleApplicationValidator roleApplicationValidator;
     private final RolePolicyContextFactory policyContextFactory;
@@ -101,7 +105,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
     @Override
-    public Role update(Long roleId, UpdateRoleCommand command) {
+    public Role update(RoleName roleName, UpdateRoleCommand command) {
 
         if (command == null) {
             throw RoleApplicationException
@@ -110,7 +114,7 @@ public class RoleServiceImpl implements RoleService {
         }
 
 
-        Role existingRole = getById(roleId);
+        Role existingRole = getByName(roleName);
         Actor actor = actorProvider.getCurrent();
 
         // Application validation
@@ -129,15 +133,82 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Transactional
+    @Override
+    public Role addCapability(RoleName roleName, CapabilityCode code) {
+
+//        if (roleName == null) {
+//            throw .invalidRole()
+//                    .withDetail("reason", "Role name must not be null");
+//        }
+//
+//        if (code == null) {
+//            throw .invalidCapability()
+//                    .withDetail("reason", "Capability code must not be null");
+//        }
+
+        Role role = getByName(roleName);
+
+        Capability capability = capabilityService.getByCode(code);
+
+        Actor actor = actorProvider.getCurrent();
+
+        /*
+         * POLICY VALIDATION
+         *
+         * Add later:
+         *
+         * rolePolicyEngine.canAssignCapability(...)
+         */
+
+        role.addCapability(capability);
+
+        return roleRepository.save(role);
+    }
+
+
+    @Transactional
+    @Override
+    public Role removeCapability(RoleName roleName, CapabilityCode code) {
+
+//        if (roleName == null) {
+//            throw .invalidRole()
+//                    .withDetail("reason", "Role name must not be null");
+//        }
+//
+//        if (code == null) {
+//            throw .invalidCapability()
+//                    .withDetail("reason", "Capability code must not be null");
+//        }
+
+        Role role = getByName(roleName);
+
+        Capability capability = capabilityService.getByCode(code);
+
+        Actor actor = actorProvider.getCurrent();
+
+        /*
+         * POLICY VALIDATION
+         *
+         * Add later:
+         *
+         * rolePolicyEngine.canRemoveCapability(...)
+         */
+
+        role.removeCapability(capability);
+
+        return roleRepository.save(role);
+    }
+
+    @Transactional
     @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
     @Override
-    public void delete(RoleId roleId) {
+    public void delete(RoleName roleName) {
 
-        Role role = getById(roleId);
+        Role role = getByName(roleName);
         Actor actor = actorProvider.getCurrent();
 
         // Application validation
-        roleApplicationValidator.validateDelete(roleId.value());
+        roleApplicationValidator.validateDelete(role.getId());
 
         // Policy validation
         rolePolicyEngine.canDeleteRole(
@@ -233,38 +304,6 @@ public class RoleServiceImpl implements RoleService {
         return roles;
     }
 
-
-    @Override
-    public List<Role> getAllByIds(List<Long> roleIds) {
-
-        List<Role> roles = roleRepository.findAllById(roleIds);
-
-        if (roles.size() != roleIds.size()) {
-
-            Set<Long> foundIds = roles.stream()
-                    .map(Role::getId)
-                    .collect(Collectors.toSet());
-
-            List<Long> notFoundIds = roleIds.stream()
-                    .filter(id -> !foundIds.contains(id))
-                    .toList();
-
-            throw RoleApplicationException
-                    .rolesNotFound()
-                    .withDetail("requestedRoleIds", roleIds)
-                    .withDetail("notFoundRoleIds", notFoundIds);
-        }
-
-        return roles;
-    }
-
-    @Override
-    public List<Long> getAllDefaultRoleIds() {
-        return getDefaultRoles()
-                .stream()
-                .map(Role::getId)
-                .toList();
-    }
     // ------------------------------------- End Retrieval methods ----------------------------------------- //
 
 
