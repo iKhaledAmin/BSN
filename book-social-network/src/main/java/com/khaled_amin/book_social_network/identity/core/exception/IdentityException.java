@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.identity.core.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
 public class IdentityException extends BusinessException {
 
-    protected IdentityException(BaseError error, String message) {
+    protected IdentityException(BusinessError error, String message) {
         super(error, message);
     }
 

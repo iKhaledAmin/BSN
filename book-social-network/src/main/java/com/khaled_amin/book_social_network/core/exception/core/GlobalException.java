@@ -1,4 +1,6 @@
-    package com.khaled_amin.book_social_network.core.exception;
+    package com.khaled_amin.book_social_network.core.exception.core;
+
+    import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
     public class GlobalException extends BusinessException {
 

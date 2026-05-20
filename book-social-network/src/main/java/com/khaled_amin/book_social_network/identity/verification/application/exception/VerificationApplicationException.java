@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.identity.verification.application.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
 public class VerificationApplicationException extends BusinessException {
 
-    private VerificationApplicationException(BaseError error, String message) {
+    private VerificationApplicationException(BusinessError error, String message) {
         super(error, message);
     }
 

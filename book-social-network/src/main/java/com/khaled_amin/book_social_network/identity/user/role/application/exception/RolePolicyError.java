@@ -1,9 +1,9 @@
 package com.khaled_amin.book_social_network.identity.user.role.application.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum RolePolicyError implements BaseError {
+public enum RolePolicyError implements BusinessError {
 
 
     INVALID_POLICY_CONTEXT(

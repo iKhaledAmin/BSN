@@ -1,10 +1,10 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
 
-public enum AccountPolicyError implements BaseError {
+public enum AccountPolicyError implements BusinessError {
 
     INVALID_POLICY_CONTEXT(
             "ACCOUNT_POLICY_INVALID_CONTEXT",

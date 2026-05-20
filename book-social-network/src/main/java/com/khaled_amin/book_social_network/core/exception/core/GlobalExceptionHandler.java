@@ -1,6 +1,8 @@
-package com.khaled_amin.book_social_network.core.exception;
+package com.khaled_amin.book_social_network.core.exception.core;
 
 
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
+import com.khaled_amin.book_social_network.core.exception.BusinessException;
 import org.springframework.security.access.AccessDeniedException;
 import com.khaled_amin.book_social_network.core.api.ErrorResponse;
 import com.khaled_amin.book_social_network.core.api.ApiErrorResponse;
@@ -21,7 +23,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
 
-        BaseError error = ex.getError();
+        BusinessError error = ex.getError();
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(error.getStatus().value())

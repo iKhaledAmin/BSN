@@ -1,9 +1,9 @@
 package com.khaled_amin.book_social_network.security.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum SecurityError implements BaseError {
+public enum SecurityError implements BusinessError {
 
     // ================= AUTHENTICATION =================
 

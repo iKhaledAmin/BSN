@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.email.application.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
 public class EmailApplicationException extends BusinessException {
 
-    private EmailApplicationException(BaseError error, String message, Throwable cause) {
+    private EmailApplicationException(BusinessError error, String message, Throwable cause) {
         super(error, message, cause);
     }
 

@@ -1,16 +1,16 @@
 package com.khaled_amin.book_social_network.security.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
 public class SecurityException extends BusinessException {
-    protected SecurityException(BaseError error) {
+    protected SecurityException(BusinessError error) {
         super(error);
     }
-    protected SecurityException(BaseError error,String message){
+    protected SecurityException(BusinessError error, String message){
         super(error,message);
     }
-    protected SecurityException(BaseError error, Throwable cause) {
+    protected SecurityException(BusinessError error, Throwable cause) {
         super(error, cause);
     }
 

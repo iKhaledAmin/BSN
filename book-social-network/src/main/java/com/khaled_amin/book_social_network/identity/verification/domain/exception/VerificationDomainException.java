@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.identity.verification.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
 public class VerificationDomainException extends BusinessException {
 
-    private VerificationDomainException(BaseError error, String message) {
+    private VerificationDomainException(BusinessError error, String message) {
         super(error, message);
     }
 

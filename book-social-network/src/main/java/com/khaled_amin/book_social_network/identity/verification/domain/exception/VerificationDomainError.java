@@ -1,9 +1,9 @@
 package com.khaled_amin.book_social_network.identity.verification.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum VerificationDomainError implements BaseError {
+public enum VerificationDomainError implements BusinessError {
 
     INVALID_TOKEN("VERIFICATION_INVALID_TOKEN_CODE", HttpStatus.BAD_REQUEST, "Invalid token"),
     TOKEN_EXPIRED("VERIFICATION_TOKEN_EXPIRED", HttpStatus.BAD_REQUEST, "Token expired"),

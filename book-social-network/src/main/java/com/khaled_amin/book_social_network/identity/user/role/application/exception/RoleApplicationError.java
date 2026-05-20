@@ -1,10 +1,10 @@
 package com.khaled_amin.book_social_network.identity.user.role.application.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
 
-public enum RoleApplicationError implements BaseError {
+public enum RoleApplicationError implements BusinessError {
 
     ALREADY_EXISTS(
             "ROLE_ALREADY_EXISTS",

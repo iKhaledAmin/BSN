@@ -1,8 +1,9 @@
-package com.khaled_amin.book_social_network.core.exception;
+package com.khaled_amin.book_social_network.core.exception.core;
 
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum GlobalError implements BaseError {
+public enum GlobalError implements BusinessError {
 
     NO_CONTENT(
             "CORE_GLOBAL_EXCEPTION_NO_CONTENT",

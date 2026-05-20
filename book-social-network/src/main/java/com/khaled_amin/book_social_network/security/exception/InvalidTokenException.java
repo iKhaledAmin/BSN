@@ -1,14 +1,14 @@
 package com.khaled_amin.book_social_network.security.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 
 public class InvalidTokenException extends SecurityException {
 
-    protected InvalidTokenException(BaseError error) {
+    protected InvalidTokenException(BusinessError error) {
         super(error);
     }
 
-    protected InvalidTokenException(BaseError error, Throwable cause) {
+    protected InvalidTokenException(BusinessError error, Throwable cause) {
         super(error, cause);
     }
 

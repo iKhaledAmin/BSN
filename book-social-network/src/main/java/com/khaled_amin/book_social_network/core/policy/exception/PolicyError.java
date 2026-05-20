@@ -1,9 +1,9 @@
 package com.khaled_amin.book_social_network.core.policy.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum PolicyError implements BaseError {
+public enum PolicyError implements BusinessError {
 
 
     INVALID_POLICY_CONTEXT(

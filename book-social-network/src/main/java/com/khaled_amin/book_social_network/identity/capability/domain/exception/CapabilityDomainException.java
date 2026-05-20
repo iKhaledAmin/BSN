@@ -1,10 +1,10 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.identity.core.exception.IdentityException;
 
 public class CapabilityDomainException extends IdentityException {
-    protected CapabilityDomainException(BaseError error, String message) {
+    protected CapabilityDomainException(BusinessError error, String message) {
         super(error, message);
     }
 

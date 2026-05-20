@@ -5,30 +5,29 @@ import lombok.Getter;
 
 
 @Getter
-public abstract class BusinessException extends BaseException {
+public abstract class TechnicalException extends BaseException {
 
-    private final BusinessError error;
+    private final TechnicalError error;
 
 
     // ----------------------------------- Constructors ----------------------------------- //
 
-    protected BusinessException(BusinessError error) {
+    protected TechnicalException(TechnicalError error) {
         super(error.getMessage());
         this.error = error;
     }
-    protected BusinessException(BusinessError error, Throwable cause){
+    protected TechnicalException(TechnicalError error, Throwable cause){
         super(error.getMessage(),cause);
         this.error = error;
     }
 
-    protected BusinessException(BusinessError error, String message) {
+    protected TechnicalException(TechnicalError error, String message) {
         super(message);
         this.error = error;
     }
-    protected BusinessException(BusinessError error, String message, Throwable cause) {
+    protected TechnicalException(TechnicalError error, String message, Throwable cause) {
         super(message, cause);
         this.error = error;
     }
-
 
 }

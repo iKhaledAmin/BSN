@@ -1,21 +1,21 @@
 package com.khaled_amin.book_social_network.core.policy.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import com.khaled_amin.book_social_network.core.exception.BusinessException;
 
 
 public class PolicyException extends BusinessException {
 
-    protected PolicyException(BaseError error, String message) {
+    protected PolicyException(BusinessError error, String message) {
         super(error, message);
     }
 
     // -------------------- Generic -------------------- //
-    public static PolicyException of(BaseError error) {
+    public static PolicyException of(BusinessError error) {
         return new PolicyException(error, error.getMessage());
     }
 
-    public static PolicyException of(BaseError error, String customMessage) {
+    public static PolicyException of(BusinessError error, String customMessage) {
         return new PolicyException(error, customMessage);
     }
 

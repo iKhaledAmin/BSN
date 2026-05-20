@@ -1,9 +1,9 @@
 package com.khaled_amin.book_social_network.email.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum EmailDomainError implements BaseError {
+public enum EmailDomainError implements BusinessError {
 
     UPDATE_EMAIL_VIOLATION("EMAIL_UPDATE_VIOLATION", HttpStatus.CONFLICT, "Cannot update email"),
     INVALIDED_TRANSITION("INVALIDED_TRANSITION", HttpStatus.CONFLICT, "Email live cycle violation"),

@@ -1,9 +1,9 @@
 package com.khaled_amin.book_social_network.identity.user.role.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BaseError;
+import com.khaled_amin.book_social_network.core.exception.BusinessError;
 import org.springframework.http.HttpStatus;
 
-public enum RoleDomainError implements BaseError {
+public enum RoleDomainError implements BusinessError {
 
     INVALID_ROLE_ID(
             "ROLE_INVALID_ROLE_ID",
