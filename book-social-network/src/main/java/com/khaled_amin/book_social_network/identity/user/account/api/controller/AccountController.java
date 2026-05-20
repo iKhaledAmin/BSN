@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -67,6 +68,7 @@ public class AccountController {
         );
     }
 
+    @PreAuthorize("hasAuthority('account_read_self')")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<AccountNormalResponse>> getCurrentAccount() {
 
@@ -80,6 +82,7 @@ public class AccountController {
     }
 
 
+    @PreAuthorize("hasAuthority('account_read')")
     @GetMapping("/{accountCode}")
     public ResponseEntity<ApiResponse<AccountAdminResponse>> getAccount(
             @PathVariable String accountCode) {

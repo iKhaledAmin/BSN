@@ -3,6 +3,8 @@ package com.khaled_amin.book_social_network.security.jwt;
 
 import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
+import com.khaled_amin.book_social_network.security.jwt.claims.JwtClaimsContributor;
+import com.khaled_amin.book_social_network.security.jwt.claims.JwtClaimsContributorRegistry;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
@@ -11,7 +13,6 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -24,11 +25,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public  class JwtService {
     private final JwtProperties jwtProperties;
+    private final JwtClaimsContributorRegistry claimsContributorRegistry;
 
 
     private static final String CLAIM_ACTOR_TYPE = "actor_type";
     private static final String CLAIM_ACTOR_CODE = "actor_code";
-    private static final String CLAIM_AUTHORITIES = "authorities";
+
+    private static final String CLAIM_ROLES = "roles";
+    private static final String CLAIM_PERMISSIONS = "permissions";
+    private static final String CLAIM_SCOPE = "scope";
 
 
     /**
@@ -42,34 +47,58 @@ public  class JwtService {
     }
 
 
+
     /**
-     * Generates a signed JWT token with additional custom claims.
+     * Generates a signed JWT token for the provided authenticated principal.
      *
-     * @param extraClaims {@link Map(String, Object)} additional claims to include in the token payload
-     * @param principal {@link AuthenticatedPrincipal} principal used as the token identity source
-     * @return token {@link String} signed JWT token
+     * <p>
+     * The token generation process consists of:
+     * </p>
+     * <ol>
+     *     <li>Applying standard security claims
+     *     (subject, actor type, actor code, timestamps)</li>
+     *
+     *     <li>Resolving the appropriate
+     *     {@link JwtClaimsContributor}
+     *     for the authenticated principal</li>
+     *
+     *     <li>Adding actor-specific authorization claims
+     *     such as roles, permissions, or scopes</li>
+     *
+     *     <li>Signing the final JWT using the configured signing key</li>
+     * </ol>
+     *
+     * <p>
+     * Actor-specific claims are delegated to specialized contributors
+     * to keep this service independent of authorization model details.
+     * </p>
+     *
+     * @param extraClaims additional custom claims to include in the token
+     * @param principal authenticated principal used as token identity source
+     * @return signed JWT token
+     * @throws IllegalStateException if no claims contributor is registered
+     * for the provided principal type
      */
     public String generateToken(Map<String, Object> extraClaims, AuthenticatedPrincipal principal) {
 
-        var authorities = principal.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+        Date expirationDate = resolveExpirationDate(principal);
 
-        var expirationDate = resolveExpirationDate(principal);
-
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .claims(extraClaims)
                 .subject(principal.getSubject())
                 .claim(CLAIM_ACTOR_TYPE, principal.getActorType().name())
                 .claim(CLAIM_ACTOR_CODE, principal.getActorCode().getValue())
-                .claim(CLAIM_AUTHORITIES, authorities)
                 .issuedAt(new Date())
-                .expiration(expirationDate)
+                .expiration(expirationDate);
+
+        JwtClaimsContributor<AuthenticatedPrincipal> contributor = claimsContributorRegistry.get(principal);
+
+        contributor.contribute(builder, principal);
+
+        return builder
                 .signWith(getSignInKey())
                 .compact();
     }
-
 
     /**
      * Extracts and validates the JWT payload from the provided token.
@@ -95,13 +124,10 @@ public  class JwtService {
                     .withDebug("reason", "Token subject is missing");
         }
 
-        // ACTOR TYPE
         ActorType actorType = extractActorType(claims);
 
-        // ACTOR CODE
         ActorCode actorCode = extractActorCode(claims);
 
-        // STANDARD CLAIMS
         Date issuedAt = claims.getIssuedAt();
         Date expiration = claims.getExpiration();
         if (expiration == null) {
@@ -109,8 +135,9 @@ public  class JwtService {
                     .withDebug("reason", "Token expiration claim is missing");
         }
 
-        // AUTHORITIES
-        Set<String> authorities = extractAuthorities(claims);
+        Set<String> roles = extractRoles(claims);
+        Set<String> permissions = extractPermissions(claims);
+        Set<String> scopes = extractScopes(claims);
 
         // JWT PAYLOAD
         return new JwtPayload(
@@ -119,7 +146,9 @@ public  class JwtService {
                 actorCode,
                 issuedAt,
                 expiration,
-                authorities
+                roles,
+                permissions,
+                scopes
         );
     }
 
@@ -237,9 +266,9 @@ public  class JwtService {
         }
     }
 
-    private Set<String> extractAuthorities(Claims claims) {
+    private Set<String> extractRoles(Claims claims) {
 
-        Object raw = claims.get(CLAIM_AUTHORITIES);
+        Object raw = claims.get(CLAIM_ROLES);
 
         if (raw instanceof Collection<?> list) {
             return list.stream()
@@ -248,6 +277,31 @@ public  class JwtService {
         }
 
         return Set.of();
+    }
+
+    private Set<String> extractPermissions(Claims claims) {
+
+        Object raw = claims.get(CLAIM_PERMISSIONS);
+
+        if (raw instanceof Collection<?> list) {
+            return list.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+        }
+
+        return Set.of();
+    }
+
+    private Set<String> extractScopes(Claims claims) {
+
+        String raw = claims.get(CLAIM_SCOPE, String.class);
+
+        if (raw == null || raw.isBlank()) {
+            return Set.of();
+        }
+
+        return Arrays.stream(raw.split(" "))
+                .collect(Collectors.toSet());
     }
 
     private boolean isTokenExpired(JwtPayload payload) {

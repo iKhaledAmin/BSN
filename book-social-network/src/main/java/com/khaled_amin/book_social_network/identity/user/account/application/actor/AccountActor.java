@@ -30,18 +30,24 @@ import java.util.Set;
  */
 public class AccountActor extends AbstractActor {
 
-    private final Set<String> roleNames;
+    private final Set<String> roles;
+    private final Set<String> permissions;
 
-    public AccountActor(ActorCode actorCode, Set<String> roleNames) {
+    public AccountActor(ActorCode actorCode, Set<String> roles ,Set<String> permissions) {
         super(
                 ActorIdentity.of(ActorType.ACCOUNT, actorCode)
         );
 
-        this.roleNames = roleNames;
+        this.roles = roles;
+        this.permissions = permissions;
+    }
+
+    public boolean hasRole(String role) {
+        return roles.contains(role);
     }
 
     @Override
     public boolean hasAuthority(String authority) {
-        return roleNames.contains(authority);
+        return permissions.contains(authority);
     }
 }

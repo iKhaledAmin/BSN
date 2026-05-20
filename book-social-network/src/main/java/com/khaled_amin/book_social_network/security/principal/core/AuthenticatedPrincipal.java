@@ -70,6 +70,7 @@ import java.util.Collection;
  */
 public interface AuthenticatedPrincipal {
 
+
     /**
      * Returns the unique identity of this principal.
      *
@@ -81,6 +82,26 @@ public interface AuthenticatedPrincipal {
      * @return {@link String} non-null unique identity string
      */
     String getSubject();
+
+    /**
+     * Return the actor code the represent the business identifier.
+     * @return {@link ActorCode} non-null actor code
+     */
+    ActorCode getActorCode();
+
+
+    /**
+     * Returns the type of actor this principal represents.
+     *
+     * <p>
+     * This value is used to determine how the principal is translated into a
+     * business-level {@link Actor}.
+     * </p>
+     *
+     * @ type {@link ActorType}return non-null actor type
+     */
+    ActorType getActorType();
+
 
 
     /**
@@ -108,23 +129,7 @@ public interface AuthenticatedPrincipal {
      */
     Collection<? extends GrantedAuthority> getAuthorities();
 
-    /**
-     * Returns the type of actor this principal represents.
-     *
-     * <p>
-     * This value is used to determine how the principal is translated into a
-     * business-level {@link Actor}.
-     * </p>
-     *
-     * @ type {@link ActorType}return non-null actor type
-     */
-    ActorType getActorType();
 
-    /**
-     * Return the actor code the represent the business identifier.
-     * @return {@link ActorCode} non-null actor code
-     */
-    ActorCode getActorCode();
 
     /**
      * Validates whether this principal supports a given token subject.
@@ -140,4 +145,6 @@ public interface AuthenticatedPrincipal {
     default boolean supportsToken(String subject) {
         return getSubject().equals(subject);
     }
+
+
 }

@@ -1,9 +1,7 @@
 package com.khaled_amin.book_social_network.auth.account.application.service;
 
 import com.khaled_amin.book_social_network.auth.account.api.dto.*;
-import com.khaled_amin.book_social_network.auth.account.api.mapper.AuthenticationMapper;
-import com.khaled_amin.book_social_network.auth.account.application.port.in.AuthenticationService;
-import com.khaled_amin.book_social_network.auth.account.application.port.out.AccountAuthenticationProvider;
+import com.khaled_amin.book_social_network.auth.account.api.mapper.AccountAuthenticationMapper;
 import com.khaled_amin.book_social_network.auth.account.application.config.AuthenticationProperties;
 import com.khaled_amin.book_social_network.core.api.ActionResponse;
 import com.khaled_amin.book_social_network.email.application.port.in.EmailService;
@@ -23,6 +21,7 @@ import com.khaled_amin.book_social_network.identity.user.account.domain.command.
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
 import com.khaled_amin.book_social_network.security.jwt.JwtService;
+import com.khaled_amin.book_social_network.security.provider.AccountCredentialAuthenticationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +36,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationServiceImpl implements AuthenticationService {
+public class AccountAuthenticationServiceImpl implements AccountAuthenticationService {
 
 
     private final VerificationService verificationService;
@@ -45,11 +44,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailService emailService;
     private final RoleService roleService;
     private final JwtService jwtService;
-    private final AuthenticationMapper authenticationMapper;
+    private final AccountAuthenticationMapper accountAuthenticationMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationProperties authProperties;
     private final EmailProperties emailProperties;
-    private final AccountAuthenticationProvider authenticationProvider;
+    private final AccountCredentialAuthenticationService authenticationService;
+
 
 
     @Transactional
@@ -85,12 +85,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public RegistrationResponse register(RegistrationRequest request){
+    public AccountRegistrationResponse register(AccountRegistrationRequest request){
 
         List<Role> defaultRole = roleService.getDefaultRoles();
         String encodedPassword = encodePassword(request.getPassword());
 
-        AccountCreateCommand command = authenticationMapper.toCommand(request, encodedPassword);
+        AccountCreateCommand command = accountAuthenticationMapper.toCommand(request, encodedPassword);
 
         Account newAccount = accountService.create(command, defaultRole);
 
@@ -101,12 +101,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         sendActivationEmail(newAccount, activationCode);
 
-        return authenticationMapper.toRegistrationResponse(newAccount);
+        return accountAuthenticationMapper.toRegistrationResponse(newAccount);
     }
 
     @Override
     @Transactional
-    public ActivationResponse activate(ActivationRequest request){
+    public AccountActivationResponse activate(AccountActivationRequest request){
 
         VerificationResult result = verificationService.validateToken(
                 request.getCode(),
@@ -117,26 +117,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         Account activatedAccount = accountService.activate(actorCode);
 
-        return authenticationMapper.toActivationResponse(activatedAccount);
+        return accountAuthenticationMapper.toActivationResponse(activatedAccount);
     }
+
 
     @Override
     @Transactional
-    public LoginResponse login(LoginRequest request) {
+    public AccountLoginResponse login(AccountLoginRequest request) {
 
-         AccountPrincipal principal = authenticationProvider.authenticate(
+        AccountPrincipal principal = authenticationService.authenticate(
                 request.getUsername(),
                 request.getPassword()
         );
 
         String jwtToken = jwtService.generateToken(principal);
 
-        return authenticationMapper.toLoginResponse(jwtToken,principal);
+        return accountAuthenticationMapper.toLoginResponse(jwtToken,principal);
     }
+
+
 
     @Transactional
     @Override
-    public ActionResponse requestResetPassword(ResetPasswordRequest request) {
+    public ActionResponse requestResetPassword(AccountResetPasswordRequest request) {
 
 
         Optional<Account> optionalAccount = accountService.getOptionalByEmail(request.getEmailAddress());
@@ -165,7 +168,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public ActionResponse confirmResetPassword(ConfirmResetPasswordRequest request) {
+    public ActionResponse confirmResetPassword(AccountConfirmResetPasswordRequest request) {
 
         // Validate token
         VerificationResult result = verificationService.validateToken(

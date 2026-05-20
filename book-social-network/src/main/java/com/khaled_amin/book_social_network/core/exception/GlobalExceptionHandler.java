@@ -1,9 +1,11 @@
 package com.khaled_amin.book_social_network.core.exception;
 
 
+import org.springframework.security.access.AccessDeniedException;
 import com.khaled_amin.book_social_network.core.api.ErrorResponse;
 import com.khaled_amin.book_social_network.core.api.ApiErrorResponse;
 import com.khaled_amin.book_social_network.core.api.ApiResponseFactory;
+import com.khaled_amin.book_social_network.security.exception.SecurityError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import com.khaled_amin.book_social_network.security.exception.SecurityException;
@@ -76,6 +78,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleSecurityException(SecurityException ex, HttpServletRequest request) {
 
         BaseError error = ex.getError();
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(error.getStatus().value())
+                .code(error.getCode())
+                .message(error.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(error.getStatus())
+                .body(ApiResponseFactory.error(errorResponse));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+
+        SecurityError error = SecurityError.ACCESS_DENIED;
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(error.getStatus().value())

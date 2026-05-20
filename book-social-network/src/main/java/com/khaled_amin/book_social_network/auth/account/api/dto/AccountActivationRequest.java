@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActivationRequest {
+public class AccountActivationRequest {
     @NotBlank(message = "Activation code must not be blank")
     private String code;
 }

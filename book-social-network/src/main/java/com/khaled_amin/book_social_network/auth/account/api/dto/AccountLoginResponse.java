@@ -9,7 +9,7 @@
 
     @Getter
     @SuperBuilder
-    public class LoginResponse {
+    public class AccountLoginResponse {
 
 
         @JsonProperty("account_info")
@@ -24,16 +24,15 @@
         @Getter
         @SuperBuilder
         public static class AccountInfo {
-            private Long id;
 
-            @JsonProperty("actor_type")
-            private String actorType;
+            private String username;
 
             @JsonProperty("actor_code")
             private String actorCode;
 
-            // ACCOUNT / CLIENT
-            private String username;
+            @JsonProperty("actor_type")
+            private String actorType;
+
             private List<String> roles;
         }
     }

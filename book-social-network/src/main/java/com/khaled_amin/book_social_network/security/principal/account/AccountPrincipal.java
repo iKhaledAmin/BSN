@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import java.security.Principal;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,92 +15,56 @@ import java.util.stream.Stream;
 
 
 @RequiredArgsConstructor
-public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPrincipal {
+public class AccountPrincipal implements AuthenticatedPrincipal {
 
-    @Getter
-    private final Long id;
 
     private final String username;
-    private final String password;
+    private final ActorCode accountCode;
+
     private final boolean active;
     private final boolean locked;
 
     @Getter
-    private final Set<String> roleNames;
-
+    private final Set<String> roles;
     @Getter
     private final Set<String> permissions;
 
     private final Set<GrantedAuthority> authorities;
 
-    private final ActorCode accountCode;
+
 
 
     public static AccountPrincipal of(
-            Long id,
-            String username,
-            String password,
-            boolean active,
-            boolean locked,
-            Set<String> roleNames,
-            Set<String> permissions,
-            ActorCode accountCode
+            String username, ActorCode accountCode,
+            boolean active, boolean locked,
+            Set<String> roles, Set<String> permissions
     ) {
         Set<GrantedAuthority> authorities = Stream.concat(
                         // Roles
-                        roleNames.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)),
+                        roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)),
 
                         // Permissions / Capabilities
                         permissions.stream().map(SimpleGrantedAuthority::new)
                 )
                 .collect(Collectors.toUnmodifiableSet());
 
-        return new AccountPrincipal(id, username, password, active, locked, roleNames, permissions, authorities, accountCode);
+        return new AccountPrincipal(username, accountCode, active, locked, roles, permissions, authorities);
     }
 
-
-
-
-    // -------------------- UserDetails --------------------
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return !locked;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return active;
-    }
-
-    // ------------------- Principal -------------------
-
-    @Override
-    public String getName() {
-        return username;
-    }
-
-    // -------------------- AuthenticatedPrincipal --------------------
 
     @Override
     public String getSubject() {
         return username;
+    }
+
+    @Override
+    public ActorCode getActorCode() {
+        return accountCode;
+    }
+
+    @Override
+    public ActorType getActorType() {
+        return ActorType.ACCOUNT;
     }
 
 
@@ -116,16 +78,11 @@ public class AccountPrincipal implements UserDetails, Principal, AuthenticatedPr
         return locked;
     }
 
-    @Override
-    public ActorType getActorType() {
-        return ActorType.ACCOUNT;
-    }
 
     @Override
-    public ActorCode getActorCode() {
-        return accountCode;
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
     }
-
 
 }
 

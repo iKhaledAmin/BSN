@@ -24,6 +24,10 @@ public class JwtPayload {
      private final Date issuedAt;
      private final Date expiration;
 
-     // Authorization (roles for account or scopes for client)
-     private final Set<String> authorities;
+     // ACCOUNT
+     private final Set<String> roles;
+     private final Set<String> permissions;
+
+     // CLIENT
+     private final Set<String> scopes;
 }

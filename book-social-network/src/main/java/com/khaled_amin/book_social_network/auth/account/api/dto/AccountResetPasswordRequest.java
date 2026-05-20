@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResetPasswordRequest {
+public class AccountResetPasswordRequest {
     @NotEmpty(message = "Email address is mandatory")
     @NotBlank(message = "Email address is mandatory")
     @Size(max = 50, message = "Email address is too long")

@@ -8,7 +8,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegistrationRequest {
+public class AccountRegistrationRequest {
     @NotEmpty(message = "First name is mandatory")
     @NotBlank(message = "First name is mandatory")
     @Pattern(regexp = "^[a-zA-Z ]+$", message = "First name must contain only letters")

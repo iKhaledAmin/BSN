@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class CapabilityController {
 
 
     @Operation(summary = "Update capabilities metadata")
+    @PreAuthorize("hasAuthority('capability_update')")
     @PutMapping("/{code}")
     public ResponseEntity<ApiResponse<CapabilityResponse>> update(@PathVariable String code, @Valid @RequestBody CapabilityUpdateRequest request) {
 
@@ -47,6 +49,7 @@ public class CapabilityController {
     }
 
     @Operation(summary = "Get capabilities by code")
+    @PreAuthorize("hasAuthority('capability_read')")
     @GetMapping("/{code}")
     public ResponseEntity<ApiResponse<CapabilityResponse>> getByCode(@PathVariable String code) {
 
@@ -59,6 +62,7 @@ public class CapabilityController {
     }
 
     @Operation(summary = "Get all capabilities")
+    @PreAuthorize("hasAuthority('capability_read')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CapabilityResponse>>> getAll(
             @RequestParam(required = false) CapabilityModule module

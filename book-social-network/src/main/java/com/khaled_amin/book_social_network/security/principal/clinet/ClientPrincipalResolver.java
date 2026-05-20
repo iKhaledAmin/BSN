@@ -31,12 +31,14 @@ public class ClientPrincipalResolver implements PrincipalResolver {
                         .withDebug("subject", payload.getSubject()));
 
         return  ClientPrincipal.of(
-                client.getId(),
                 client.getClientId(),
+                payload.getActorCode(),
+
                 client.getStatus().isActive(),
                 client.getStatus().isLocked(),
-                client.getScopes(),
-                client.getClientCode()
+
+                payload.getScopes()
+
         );
     }
 }

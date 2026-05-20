@@ -1,10 +1,7 @@
 package com.khaled_amin.book_social_network.auth.account.api.mapper;
 
 
-import com.khaled_amin.book_social_network.auth.account.api.dto.ActivationResponse;
-import com.khaled_amin.book_social_network.auth.account.api.dto.LoginResponse;
-import com.khaled_amin.book_social_network.auth.account.api.dto.RegistrationRequest;
-import com.khaled_amin.book_social_network.auth.account.api.dto.RegistrationResponse;
+import com.khaled_amin.book_social_network.auth.account.api.dto.*;
 import com.khaled_amin.book_social_network.core.mapper.GlobalMapperConfig;
 import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountCreateCommand;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
@@ -19,40 +16,39 @@ import java.util.Set;
 
 
 @Mapper(config = GlobalMapperConfig.class,uses = JwtMapper.class)
-public interface AuthenticationMapper {
+public interface AccountAuthenticationMapper {
 
 
     // ---------------- Registration ----------------
 
     @Mapping(target = "status", expression = "java(account.getAccountStatus().name())")
     @Mapping(target = "email", source = "emailAddress")
-    RegistrationResponse toRegistrationResponse(Account account);
+    AccountRegistrationResponse toRegistrationResponse(Account account);
 
     // ---------------- Activation ----------------
 
     @Mapping(target = "status", expression = "java(account.getAccountStatus().name())")
     @Mapping(target = "email", source = "emailAddress")
-    ActivationResponse toActivationResponse(Account account);
+    AccountActivationResponse toActivationResponse(Account account);
 
     // ---------------- Login ----------------
 
     @Mapping(target = "account", source = "principal")
     @Mapping(target = "token", source = "jwtToken")
-    LoginResponse toLoginResponse(String jwtToken, AccountPrincipal principal);
+    AccountLoginResponse toLoginResponse(String jwtToken, AccountPrincipal principal);
 
-    @Mapping(target = "id", source = "id")
     @Mapping(target = "actorType", expression = "java(principal.getActorType().name())")
     @Mapping(target = "actorCode", expression = "java(principal.getActorCode().getValue())")
-    @Mapping(target = "username", source = "username")
-    @Mapping(target = "roles", expression = "java(mapRoles(principal.getRoleNames()))")
-    LoginResponse.AccountInfo toAccountInfo(AccountPrincipal principal);
+    @Mapping(target = "username", source = "subject")
+    @Mapping(target = "roles", expression = "java(mapRoles(principal.getRoles()))")
+    AccountLoginResponse.AccountInfo toAccountInfo(AccountPrincipal principal);
 
     // ---------------- Helpers ----------------
 
     default List<String> mapRoles(Set<String> roles) {
         return roles == null ? List.of() : new ArrayList<>(roles);
     }
-    default AccountCreateCommand toCommand(RegistrationRequest request, String encodedPassword) {
+    default AccountCreateCommand toCommand(AccountRegistrationRequest request, String encodedPassword) {
         return AccountCreateCommand.of(
                 request.getUsername(),
                 encodedPassword,

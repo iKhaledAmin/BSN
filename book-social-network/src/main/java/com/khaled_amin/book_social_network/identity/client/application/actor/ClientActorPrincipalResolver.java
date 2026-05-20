@@ -26,6 +26,11 @@ public class ClientActorPrincipalResolver implements ActorPrincipalResolver {
             );
         }
 
+        // TODO: note that the scopes that come from the client principal in this format
+        //  "SCOPE_<resource>:<action>"  example "SCOPE_books:read"
+        //  but internally we use unique format as a capability
+        //  "<resource>_<action>"  example "books_read"
+        //  so later we need to convert the scopes to the internal format
         return new ClientActor(
                 client.getActorCode(),
                 client.getScopes()

@@ -32,15 +32,16 @@ public class AccountPrincipalResolver implements PrincipalResolver {
                         .withDebug("reason", "Account not found")
                         .withDebug("subject", payload.getSubject()));
 
+
         return AccountPrincipal.of(
-                account.getId(),
-                account.getUsername(),
-                account.getPassword(),
+                payload.getSubject(),
+                payload.getActorCode(),
+
                 account.getAccountStatus().isActive(),
                 account.getAccountStatus().isLocked(),
-                account.getRoleNames(),
-                account.getPermissions(),
-                account.getAccountCode()
+
+                payload.getRoles(),
+                payload.getPermissions()
         );
     }
 }

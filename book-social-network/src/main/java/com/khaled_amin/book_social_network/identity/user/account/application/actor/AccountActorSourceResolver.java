@@ -25,6 +25,7 @@ public class AccountActorSourceResolver implements ActorSourceResolver {
         }
         return new AccountActor(
                 account.getAccountCode(),
+                account.getRoleNames(),
                 account.getRoleNames()
         );
     }

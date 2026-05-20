@@ -28,7 +28,8 @@ public class AccountActorPrincipalResolver implements ActorPrincipalResolver {
 
         return new AccountActor(
                 account.getActorCode(),
-                account.getRoleNames()
+                account.getRoles(),
+                account.getPermissions()
         );
     }
 }

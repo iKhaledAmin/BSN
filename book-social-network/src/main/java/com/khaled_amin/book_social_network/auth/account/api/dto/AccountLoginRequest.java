@@ -4,17 +4,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
-public class ConfirmResetPasswordRequest {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AccountLoginRequest {
 
-    @NotBlank(message = "Reset code must not be blank")
-    private String code;
+    @NotEmpty(message = "Username is mandatory")
+    @NotBlank(message = "Username is mandatory")
+    @JsonProperty("username")
+    private String username;
 
     @NotEmpty(message = "Password is mandatory")
     @NotBlank(message = "Password is mandatory")
-    @Size(min = 8, max = 50, message = "Password must be between 8 and 50 characters")
-    @JsonProperty("new_password")
+    @JsonProperty("password")
     private String password;
+
 }

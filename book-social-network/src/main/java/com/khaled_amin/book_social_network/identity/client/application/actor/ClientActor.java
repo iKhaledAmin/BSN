@@ -21,18 +21,18 @@ import java.util.Set;
  */
 public class ClientActor extends AbstractActor {
 
-    private final Set<String> scopeNames;
+    private final Set<String> scopes;
 
-    public ClientActor(ActorCode actorCode, Set<String> scopeNames) {
+    public ClientActor(ActorCode actorCode, Set<String> scopes) {
         super(
                 ActorIdentity.of(ActorType.CLIENT, actorCode)
         );
 
-        this.scopeNames = scopeNames;
+        this.scopes = scopes;
     }
 
     @Override
     public boolean hasAuthority(String authority) {
-        return scopeNames.contains(authority);
+        return scopes.contains(authority);
     }
 }
