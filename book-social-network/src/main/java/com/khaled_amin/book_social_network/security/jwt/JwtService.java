@@ -187,20 +187,19 @@ public  class JwtService {
         if (isTokenExpired(payload)) {
             throw InvalidTokenException.invalid().withDebug("reason", "Token expired");
         }
-
-        if (!principal.isActive()) {
-            throw InvalidTokenException.principalDisabled()
-                    .withDebug("reason", "Principal is disabled")
-                    .withDebug("getActorType", principal.getActorType())
-                    .withDebug("subject", principal.getSubject());
-        }
-
         if (principal.isLocked()) {
-            throw InvalidTokenException.principalLocked()
-                    .withDebug("reason", "Principal is locked")
-                    .withDebug("getActorType", principal.getActorType())
+            throw InvalidTokenException.principalLocked("Account is locked")
+                    .withDebug("reason", "Account is locked")
+                    .withDebug("getActorType", principal.getActorType().name())
                     .withDebug("subject", principal.getSubject());
         }
+        if (!principal.isActive()) {
+            throw InvalidTokenException.principalNotActive("Account is disabled or suspended")
+                    .withDebug("reason", "Account is disabled or suspended")
+                    .withDebug("getActorType", principal.getActorType())
+                    .withDebug("username", principal.getSubject());
+        }
+
     }
 
 

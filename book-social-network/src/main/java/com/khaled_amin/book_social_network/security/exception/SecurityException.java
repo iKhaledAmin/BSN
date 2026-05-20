@@ -7,6 +7,9 @@ public class SecurityException extends BusinessException {
     protected SecurityException(BaseError error) {
         super(error);
     }
+    protected SecurityException(BaseError error,String message){
+        super(error,message);
+    }
     protected SecurityException(BaseError error, Throwable cause) {
         super(error, cause);
     }
@@ -22,19 +25,23 @@ public class SecurityException extends BusinessException {
         );
     }
 
-    // ================= DISABLED =================
-
-    public static SecurityException principalDisabled() {
-        return new SecurityException(
-                SecurityError.PRINCIPAL_DISABLED
-        );
-    }
-
     // ================= LOCKED =================
 
-    public static SecurityException principalLocked() {
+    public static SecurityException principalLocked(String message) {
         return new SecurityException(
-                SecurityError.PRINCIPAL_LOCKED
+                SecurityError.PRINCIPAL_LOCKED,
+                message
         );
     }
+
+    // ================= NOT ACTIVE =================
+
+    public static SecurityException principalNotActive(String message) {
+        return new SecurityException(
+                SecurityError.PRINCIPAL_NOT_ACTIVE,
+                message
+        );
+    }
+
+
 }

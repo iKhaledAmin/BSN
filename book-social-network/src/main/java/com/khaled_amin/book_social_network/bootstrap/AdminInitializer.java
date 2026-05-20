@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.bootstrap;
 
-import com.khaled_amin.book_social_network.auth.account.application.port.in.AuthenticationService;
+import com.khaled_amin.book_social_network.auth.account.application.service.AccountAuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -12,13 +12,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminInitializer implements CommandLineRunner {
 
-    private final AuthenticationService authenticationService;
+    private final AccountAuthenticationService accountAuthenticationService;
     private final BootstrapProperties properties;
 
     @Override
     public void run(String... args) {
 
-        authenticationService.createBootstrapAdmin(
+        accountAuthenticationService.createBootstrapAdmin(
                 properties.admin().username(),
                 properties.admin().password(),
                 properties.admin().email()

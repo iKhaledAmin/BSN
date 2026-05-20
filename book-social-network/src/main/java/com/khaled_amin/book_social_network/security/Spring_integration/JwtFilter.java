@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.security.Spring_integration;
 
-import com.khaled_amin.book_social_network.security.exception.InvalidTokenException;
+import com.khaled_amin.book_social_network.security.exception.SecurityException;
 import com.khaled_amin.book_social_network.security.exception.JwtAuthenticationException;
 import com.khaled_amin.book_social_network.security.exception.PrincipalResolutionException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
@@ -50,15 +50,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
             // Resolve correct principal (ACCOUNT / CLIENT)
             AuthenticatedPrincipal principal = resolverRegistry.resolve(payload);
-
             // Validate using PAYLOAD (NOT TOKEN)
             jwtService.validateToken(payload, principal);
-
             // Build Authentication
             UsernamePasswordAuthenticationToken auth = buildAuthentication(principal);
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-        } catch (InvalidTokenException | PrincipalResolutionException | IllegalArgumentException ex)  {
+        } catch ( SecurityException | PrincipalResolutionException | IllegalArgumentException ex)  {
 
             // todo later
             // Log internalServer debug info

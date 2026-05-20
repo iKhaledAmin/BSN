@@ -26,13 +26,16 @@ public class AccountCredentialAuthenticationService
             throw SecurityException.invalidCredentials();
         }
 
-        if (!account.getAccountStatus().isActive()) {
-            throw SecurityException.principalDisabled();
+        if (account.getAccountStatus().isLocked()) {
+            throw SecurityException.principalLocked("Account is locked");
         }
 
-        if (account.getAccountStatus().isLocked()) {
-            throw SecurityException.principalLocked();
+
+        if (!account.getAccountStatus().isActive()) {
+            throw SecurityException.principalNotActive("Account is disabled or suspended");
         }
+
+
 
         return AccountPrincipal.of(
                 account.getUsername(),

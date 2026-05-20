@@ -11,6 +11,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -27,7 +28,8 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(error.getStatus().value())
                 .code(error.getCode())
-                .message(error.getMessage())
+                .message(ex.getMessage())
+                .details(Map.of())
                 .path(request.getRequestURI())
                 .build();
 

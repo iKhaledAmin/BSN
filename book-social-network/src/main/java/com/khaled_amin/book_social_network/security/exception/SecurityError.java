@@ -40,9 +40,9 @@ public enum SecurityError implements BaseError {
 
     // ================= PRINCIPAL STATE =================
 
-    PRINCIPAL_DISABLED("SECURITY_ACCOUNT_DISABLED", HttpStatus.UNAUTHORIZED, "Principal is disabled"),
+    PRINCIPAL_NOT_ACTIVE("SECURITY_PRINCIPAL_NOT_ACTIVE", HttpStatus.UNAUTHORIZED, "Principal is not active"),
 
-    PRINCIPAL_LOCKED("SECURITY_ACCOUNT_LOCKED", HttpStatus.UNAUTHORIZED, "Principal is locked")
+    PRINCIPAL_LOCKED("SECURITY_PRINCIPAL_LOCKED", HttpStatus.UNAUTHORIZED, "Principal is locked")
 
 
 
