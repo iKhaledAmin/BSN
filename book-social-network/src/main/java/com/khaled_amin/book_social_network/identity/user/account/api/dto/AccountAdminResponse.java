@@ -13,19 +13,13 @@ import java.util.List;
 @SuperBuilder
 public class AccountAdminResponse extends AccountBaseResponse {
 
-    @JsonProperty("account_id")
-    private Long id;
-
-    @JsonProperty("created_at")
+    @JsonProperty("join_at")
     private LocalDateTime createdAt;
 
-    @JsonProperty("updated_at")
-    private LocalDateTime updatedAt;
-
     @JsonProperty("last_login")
-    private LocalDateTime lastLoginDate;
+    private LocalDateTime lastLogin;
 
-    @JsonProperty("account_roles_detailed")
-    private List<AccountRoleResponse> detailedRoles;
+    @JsonProperty("roles")
+    private List<AccountRoleResponse> roles;
 
 }

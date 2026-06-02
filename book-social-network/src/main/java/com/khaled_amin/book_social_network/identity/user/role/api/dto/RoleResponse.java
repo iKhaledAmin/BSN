@@ -3,7 +3,8 @@ package com.khaled_amin.book_social_network.identity.user.role.api.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -15,7 +16,7 @@ public class RoleResponse {
     @JsonProperty("display_name")
     private String displayName;
 
-    @JsonProperty("value")
+    @JsonProperty("description")
     private String description;
 
     @JsonProperty("is_default")
@@ -23,4 +24,7 @@ public class RoleResponse {
 
     @JsonProperty("is_protected")
     private Boolean protectedRole;
+
+    @JsonProperty("capabilities")
+    private List<RoleCapabilityResponse> capabilities;
 }

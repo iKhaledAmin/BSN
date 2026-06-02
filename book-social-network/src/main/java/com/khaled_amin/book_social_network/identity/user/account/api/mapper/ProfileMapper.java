@@ -11,8 +11,6 @@ import org.mapstruct.Mapper;
 @Mapper(config = GlobalMapperConfig.class)
 public interface ProfileMapper extends BaseMapper<ProfileResponse, Profile> {
 
-
-
     default ProfileUpdateCommand toCommand(ProfileUpdateRequest request) {
         if (request == null) return null;
 

@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.core.provider;
 
-import com.khaled_amin.book_social_network.identity.core.resolver.ActorSourceResolverRegistry;
-import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipalResolverRegistry;
+import com.khaled_amin.book_social_network.identity.core.registry.ActorSourceResolverRegistry;
+import com.khaled_amin.book_social_network.identity.core.registry.ActorPrincipalResolverRegistry;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;

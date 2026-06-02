@@ -1,30 +1,30 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.command;
 
 
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.Email;
+import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
+import com.khaled_amin.book_social_network.identity.user.account.domain.value.EmailAddress;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.EncodedPassword;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.Username;
 
 
 public record AccountCreateCommand(
+        ActorCode accountCode,
         Username username,
         EncodedPassword encodedPassword,
-        Email email,
-        ProfileCreateCommand profileCommand
+        EmailAddress emailAddress
 ) {
 
-    public static AccountCreateCommand of(
+    public static AccountCreateCommand  of(
+            ActorCode accountCode,
             String username,
             String encodedPassword,
-            String email,
-            String firstName,
-            String lastName
+            String email
     ) {
         return new AccountCreateCommand(
+                accountCode,
                 Username.of(username),
                 EncodedPassword.of(encodedPassword),
-                Email.of(email),
-                ProfileCreateCommand.of(firstName, lastName)
+                EmailAddress.of(email)
         );
     }
 

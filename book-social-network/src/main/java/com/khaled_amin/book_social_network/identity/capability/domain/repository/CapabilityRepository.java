@@ -14,14 +14,12 @@ public interface CapabilityRepository {
     boolean existsByCode(CapabilityCode code);
 
     Optional<Capability> findByCode(CapabilityCode code);
-    
-    Optional<Capability> findOptionalByCodeAndModule(CapabilityCode code, CapabilityModule module);
+
+    Optional<Capability> findByCodeAndModule(CapabilityCode code, CapabilityModule module);
     
     boolean existsByCodeAndModule(CapabilityCode code, CapabilityModule module);
 
     List<Capability> findAllByModule(CapabilityModule module);
 
     List<Capability> findAll();
-
-    boolean existsByName(String name);
 }

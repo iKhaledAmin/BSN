@@ -1,14 +1,15 @@
 package com.khaled_amin.book_social_network.security.jwt;
 
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
+import com.khaled_amin.book_social_network.core.exception.validation.ValidationException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
+import com.khaled_amin.book_social_network.security.exception.AuthenticationException;
+import com.khaled_amin.book_social_network.security.exception.AuthorizationException;
 import com.khaled_amin.book_social_network.security.jwt.claims.JwtClaimsContributor;
 import com.khaled_amin.book_social_network.security.jwt.claims.JwtClaimsContributorRegistry;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
-import com.khaled_amin.book_social_network.security.exception.InvalidTokenException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -70,7 +71,7 @@ public  class JwtService {
      *
      * <p>
      * Actor-specific claims are delegated to specialized contributors
-     * to keep this service independent of authorization model details.
+     * to keep this service independent of authorization model clientDetails.
      * </p>
      *
      * @param extraClaims additional custom claims to include in the token
@@ -110,36 +111,51 @@ public  class JwtService {
      *
      * @param token {@link String} raw JWT token
      * @return payload {@link JwtPayload} extracted JWT payload
-     * @throws InvalidTokenException if the token is invalid, malformed,
+     * @throws SecurityException if the token is invalid, malformed,
      * expired, unsupported, or missing required claims
      */
     public JwtPayload extractPayload(String token) {
 
         Claims claims = extractAllClaims(token);
 
-        // SUBJECT
+        // ================= SUBJECT =================
+
         String subject = claims.getSubject();
+
         if (subject == null || subject.isBlank()) {
-            throw InvalidTokenException.invalid()
-                    .withDebug("reason", "Token subject is missing");
+
+            throw AuthenticationException.invalidToken()
+                    .withDebugDetails("reason", "Token subject is missing");
         }
+
+        // ================= ACTOR =================
 
         ActorType actorType = extractActorType(claims);
 
         ActorCode actorCode = extractActorCode(claims);
 
+        // ================= TIME CLAIMS =================
+
         Date issuedAt = claims.getIssuedAt();
+
         Date expiration = claims.getExpiration();
+
         if (expiration == null) {
-            throw InvalidTokenException.invalid()
-                    .withDebug("reason", "Token expiration claim is missing");
+
+            throw AuthenticationException.invalidToken()
+                    .withDebugDetails("reason", "Token expiration claim is missing");
         }
 
+        // ================= AUTHORIZATION CLAIMS =================
+
         Set<String> roles = extractRoles(claims);
+
         Set<String> permissions = extractPermissions(claims);
+
         Set<String> scopes = extractScopes(claims);
 
-        // JWT PAYLOAD
+        // ================= PAYLOAD =================
+
         return new JwtPayload(
                 subject,
                 actorType,
@@ -168,38 +184,62 @@ public  class JwtService {
      *
      * @param payload {@link JwtPayload} extracted JWT payload
      * @param principal {@link AuthenticatedPrincipal}resolved authenticated principal
-     * @throws InvalidTokenException if validation fails
+     * @throws SecurityException if validation fails
      */
     public void validateToken(JwtPayload payload, AuthenticatedPrincipal principal) {
 
+        // ================= TOKEN CONSISTENCY =================
+
         if (!principal.supportsToken(payload.getSubject())) {
-            throw InvalidTokenException.invalid().withDebug("reason", "Token subject mismatch");
+
+            throw AuthenticationException.invalidToken()
+                    .withDebugDetails("reason", "Token subject mismatch")
+                    .withDebugDetails("tokenSubject", payload.getSubject())
+                    .withDebugDetails("principalSubject", principal.getSubject());
         }
 
         if (payload.getActorType() != principal.getActorType()) {
-            throw InvalidTokenException.invalid().withDebug("reason", "Actor type mismatch");
+
+            throw AuthenticationException.invalidToken()
+                    .withDebugDetails("reason", "Actor type mismatch")
+                    .withDebugDetails("tokenActorType", payload.getActorType())
+                    .withDebugDetails("principalActorType", principal.getActorType());
         }
 
         if (!payload.getActorCode().equals(principal.getActorCode())) {
-            throw InvalidTokenException.invalid().withDebug("reason", "Actor code mismatch");
+
+            throw AuthenticationException.invalidToken()
+                    .withDebugDetails("reason", "Actor code mismatch")
+                    .withDebugDetails("tokenActorCode", payload.getActorCode())
+                    .withDebugDetails("principalActorCode", principal.getActorCode());
         }
+
+        // ================= TOKEN STATE =================
 
         if (isTokenExpired(payload)) {
-            throw InvalidTokenException.invalid().withDebug("reason", "Token expired");
-        }
-        if (principal.isLocked()) {
-            throw InvalidTokenException.principalLocked("Account is locked")
-                    .withDebug("reason", "Account is locked")
-                    .withDebug("getActorType", principal.getActorType().name())
-                    .withDebug("subject", principal.getSubject());
-        }
-        if (!principal.isActive()) {
-            throw InvalidTokenException.principalNotActive("Account is disabled or suspended")
-                    .withDebug("reason", "Account is disabled or suspended")
-                    .withDebug("getActorType", principal.getActorType())
-                    .withDebug("username", principal.getSubject());
+
+            throw AuthenticationException.expiredToken()
+                    .withDebugDetails("reason", "Token expired")
+                    .withDebugDetails("expiration", payload.getExpiration());
         }
 
+        // ================= PRINCIPAL STATE =================
+
+        if (principal.isLocked()) {
+            String principalType = principal.getActorType().name();
+            throw AuthorizationException.principalLocked(principalType.toLowerCase(Locale.ROOT))
+                    .withDebugDetails("reason", "Principal is locked")
+                    .withDebugDetails("actorType",principalType)
+                    .withDebugDetails("subject", principal.getSubject());
+        }
+
+        if (!principal.isActive()) {
+            String principalType = principal.getActorType().name();
+            throw AuthorizationException.principalInactive(principalType.toLowerCase(Locale.ROOT))
+                    .withDebugDetails("reason", "Principal is inactive")
+                    .withDebugDetails("actorType",principalType)
+                    .withDebugDetails("subject", principal.getSubject());
+        }
     }
 
 
@@ -210,7 +250,7 @@ public  class JwtService {
      * @param claimsResolver function used to extract the target claim
      * @param <T> extracted claim type
      * @return extracted claim value
-     * @throws InvalidTokenException if the token is invalid or cannot be parsed
+     * @throws SecurityException if the token is invalid or cannot be parsed
      */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
@@ -234,14 +274,15 @@ public  class JwtService {
             String actorTypeRaw = claims.get(CLAIM_ACTOR_TYPE, String.class);
 
             if (actorTypeRaw == null || actorTypeRaw.isBlank()) {
-                throw InvalidTokenException.invalid()
-                        .withDebug("reason", "Actor type claim is missing");
+                throw AuthenticationException.invalidToken()
+                        .withDebugDetails("reason", "Actor type claim is missing");
             }
 
             return ActorType.from(actorTypeRaw);
 
-        } catch (ActorResolutionException | RequiredTypeException ex) {
-            throw InvalidTokenException.invalid(ex).withDebug("reason", "Invalid actor type");
+        } catch (RequiredTypeException | ValidationException ex) {
+            throw AuthenticationException.invalidToken(ex)
+                    .withDebugDetails("reason", "Invalid actor type");
         }
     }
 
@@ -252,16 +293,17 @@ public  class JwtService {
             String actorCodeRaw = claims.get(CLAIM_ACTOR_CODE, String.class);
 
             if (actorCodeRaw == null || actorCodeRaw.isBlank()) {
-                throw InvalidTokenException.invalid()
-                        .withDebug("reason", "Actor code claim is missing");
+
+                throw AuthenticationException.invalidToken()
+                        .withDebugDetails("reason", "Actor code claim is missing");
             }
 
             return ActorCode.of(actorCodeRaw);
 
-        } catch (RequiredTypeException ex) {
+        } catch (RequiredTypeException | ValidationException ex) {
 
-            throw InvalidTokenException.invalid(ex)
-                    .withDebug("reason", "Invalid actor code");
+            throw AuthenticationException.invalidToken(ex)
+                    .withDebugDetails("reason", "Invalid actor code");
         }
     }
 
@@ -312,7 +354,7 @@ public  class JwtService {
      *
      * @param token {@link String} raw JWT token
      * @return date {@link Date} token expiration date
-     * @throws InvalidTokenException if the token is invalid or cannot be parsed
+     * @throws SecurityException if the token is invalid or cannot be parsed
      */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -330,17 +372,18 @@ public  class JwtService {
                     .getPayload();
 
         } catch (ExpiredJwtException ex) {
-            throw InvalidTokenException.expired(ex).withDebug("reason", "JWT token expired");
+            throw AuthenticationException.expiredToken(ex);
         } catch (MalformedJwtException ex) {
-            throw InvalidTokenException.malformed(ex).withDebug("reason", "Malformed JWT token");
+            throw AuthenticationException.malformedToken(ex);
         } catch (SignatureException ex) {
-            throw InvalidTokenException.signatureInvalid(ex).withDebug("reason", "Invalid JWT signature");
+            throw AuthenticationException.invalidTokenSignature(ex);
         } catch (UnsupportedJwtException ex) {
-            throw InvalidTokenException.invalid(ex).withDebug("reason", "Unsupported JWT token");
+            throw AuthenticationException.invalidToken(ex)
+                    .withDebugDetails("reason", "Unsupported JWT token");
         } catch (IllegalArgumentException ex) {
-            throw InvalidTokenException.invalid(ex).withDebug("reason", "JWT token is empty or invalid");
+            throw AuthenticationException.invalidToken(ex)
+                    .withDebugDetails("reason", "JWT token is empty or invalid");
         }
-
     }
 
     private SecretKey getSignInKey() {

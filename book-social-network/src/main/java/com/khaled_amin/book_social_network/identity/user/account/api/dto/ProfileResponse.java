@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.identity.user.account.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.khaled_amin.book_social_network.identity.user.account.domain.model.Gender;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.ProfileStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +13,6 @@ import java.time.LocalDate;
 @Setter
 @SuperBuilder
 public class ProfileResponse {
-
-    @JsonProperty("profile_id")
-    private Long id;
 
     @JsonProperty("first_name")
     private String firstName;
@@ -30,6 +28,9 @@ public class ProfileResponse {
 
     @JsonProperty("profession")
     private String profession;
+
+    @JsonProperty("gender")
+    private Gender gender;
 
     @JsonProperty("profile_status")
     private ProfileStatus profileStatus;

@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.policy;
 
-import com.khaled_amin.book_social_network.core.policy.core.BasePolicyContext;
+import com.khaled_amin.book_social_network.core.policy.BasePolicyContext;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;

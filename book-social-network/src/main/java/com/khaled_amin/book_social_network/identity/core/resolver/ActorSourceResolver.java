@@ -1,10 +1,10 @@
 package com.khaled_amin.book_social_network.identity.core.resolver;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
-
+import com.khaled_amin.book_social_network.identity.core.registry.ActorSourceResolverRegistry;
 
 
 /**
@@ -44,7 +44,7 @@ import com.khaled_amin.book_social_network.identity.core.model.ActorType;
  *
  * <h3>Failure Semantics</h3>
  * <ul>
- *   <li>Throw {@link ActorResolutionException} when the source type does not match</li>
+ *   <li>Throw {@link TechnicalException} when the source type does not match</li>
  *   <li>This indicates a developer or configuration error, not a user error</li>
  *   <li>Must not attempt implicit casting or silent fallback</li>
  * </ul>
@@ -79,7 +79,7 @@ import com.khaled_amin.book_social_network.identity.core.model.ActorType;
  *   <li>Works in conjunction with {@link ActorSource} contract</li>
  * </ul>
  *
- * <h3>⚠️ Security Consideration</h3>
+ * <h3>⚠️ SECURITY Consideration</h3>
  * <p>
  * Since {@link ActorSource} is a sensitive contract, resolvers must ensure:
  * </p>
@@ -93,7 +93,7 @@ import com.khaled_amin.book_social_network.identity.core.model.ActorType;
  * @see ActorSource
  * @see ActorType
  * @see ActorSourceResolverRegistry
- * @see ActorResolutionException
+ * @see TechnicalException
  */
 
 public interface ActorSourceResolver {
@@ -110,7 +110,7 @@ public interface ActorSourceResolver {
      *
      * @param source {@link ActorSource} domain object implementing
      * @return non-null {@link Actor}
-     * @throws ActorResolutionException if the source type does not match
+     * @throws TechnicalException if the source type does not match
      */
     Actor resolve(ActorSource source);
 }

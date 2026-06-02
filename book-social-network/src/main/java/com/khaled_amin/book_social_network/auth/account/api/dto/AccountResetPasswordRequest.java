@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountResetPasswordRequest {
-    @NotEmpty(message = "Email address is mandatory")
-    @NotBlank(message = "Email address is mandatory")
-    @Size(max = 50, message = "Email address is too long")
-    @Email(message = "Invalid email address")
+    @NotEmpty(message = "EmailAddress address is mandatory")
+    @NotBlank(message = "EmailAddress address is mandatory")
+    @Size(max = 50, message = "EmailAddress address is too long")
+    @Email(message = "Invalid emailAddress address")
     @JsonProperty("email_address")
     private String emailAddress;
 }

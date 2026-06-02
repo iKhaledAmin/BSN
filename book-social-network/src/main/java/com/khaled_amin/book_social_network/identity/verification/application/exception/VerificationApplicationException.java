@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.verification.application.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BusinessError;
-import com.khaled_amin.book_social_network.core.exception.BusinessException;
+import com.khaled_amin.book_social_network.core.exception.business.BusinessError;
+import com.khaled_amin.book_social_network.core.exception.business.BusinessException;
 
 public class VerificationApplicationException extends BusinessException {
 

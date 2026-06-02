@@ -2,6 +2,8 @@ package com.khaled_amin.book_social_network.identity.core.generator;
 
 
 import com.github.f4b6a3.ulid.UlidCreator;
+import com.khaled_amin.book_social_network.core.exception.validation.ValidationException;
+import com.khaled_amin.book_social_network.identity.core.exception.IdentityTechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,14 @@ public class UlidActorCodeGenerator implements ActorCodeGenerator {
         // Domain actors get generated unique identity
         String value = actorType.getCodePrefix() + "_" + UlidCreator.getUlid();
 
-        return ActorCode.of(value);
+
+        try {
+            return ActorCode.of(value);
+        }catch (ValidationException e){
+            throw IdentityTechnicalException.invalidGeneratedActorCode(e)
+                    .withDebugDetails("reason",e.getMessage())
+                    .withDebugDetails("actorType", actorType)
+                    .withDebugDetails("generatedValue",value);
+        }
     }
 }

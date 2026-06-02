@@ -11,6 +11,10 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 public class AccountBaseResponse {
+
+    @JsonProperty("account_code")
+    private String accountCode;
+
     @JsonProperty("username")
     private String username;
 
@@ -20,6 +24,6 @@ public class AccountBaseResponse {
     @JsonProperty("account_status")
     private AccountStatus accountStatus ;
 
-    @JsonProperty("profile_data")
+    @JsonProperty("profile")
     private ProfileResponse profile;
 }

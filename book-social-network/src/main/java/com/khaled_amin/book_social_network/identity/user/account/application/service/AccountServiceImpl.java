@@ -1,28 +1,31 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.service;
 
+import com.khaled_amin.book_social_network.core.pagination.PageResult;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.core.provider.ActorProvider;
-import com.khaled_amin.book_social_network.identity.core.exception.IdentityException;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.Email;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountCreateRequest;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountPageRequest;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountUpdateRequest;
+import com.khaled_amin.book_social_network.identity.user.account.api.mapper.AccountMapper;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.EncodedPassword;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.user.account.application.policy.AccountPolicyContextFactory;
 import com.khaled_amin.book_social_network.identity.user.account.application.policy.AccountPolicyEngine;
-import com.khaled_amin.book_social_network.core.servise.EntityRetrievalService;
+import com.khaled_amin.book_social_network.identity.user.account.domain.value.RawPassword;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountBusinessException;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountTechnicalException;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import com.khaled_amin.book_social_network.identity.user.role.application.service.RoleService;
-import com.khaled_amin.book_social_network.identity.user.account.application.exception.AccountApplicationException;
 import com.khaled_amin.book_social_network.identity.user.account.application.validation.AccountApplicationValidator;
-import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountCreateCommand;
 import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountUpdateCommand;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.AccountFactory;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.identity.user.account.domain.repository.AccountRepository;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.AccountId;
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,22 +37,26 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountFactory accountFactory;
+    private final AccountMapper accountMapper;
     private final RoleService roleService;
     private final ActorProvider actorProvider;
-    private final EntityRetrievalService entityRetrievalService;
     private final AccountPolicyEngine accountPolicyEngine;
     private final AccountApplicationValidator accountValidator;
     private final AccountPolicyContextFactory policyContextFactory;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Transactional
     @Override
-    public Account create(AccountCreateCommand command, List<Role> roles) {
+    public Account create(AccountCreateRequest request) {
 
         Actor actor = actorProvider.getCurrent();
+        List<RoleName> roleNames = RoleName.of(request.getRoleNames());
+        List<Role> roles = roleService.getAllByNames(roleNames);
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // Application validation
-        accountValidator.validateCreate(command,roles);
+        accountValidator.validateCreate(request);
 
         // Policy validation
         accountPolicyEngine.canCreate(
@@ -57,7 +64,14 @@ public class AccountServiceImpl implements AccountService {
         );
 
         // Domain logic
-        Account account = accountFactory.create(command, roles);
+        Account account = accountFactory.create(
+                request.getUsername(),
+                encodedPassword,
+                request.getEmailAddress(),
+                request.getFirstName(),
+                request.getLastName(),
+                roles
+        );
 
         // Persist
         return accountRepository.save(account);
@@ -66,19 +80,19 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account update(ActorCode accountCode, AccountUpdateCommand command) {
+    public Account update(ActorCode accountCode, AccountUpdateRequest request) {
 
         Account target = getByAccountCode(accountCode);
+        AccountUpdateCommand command = accountMapper.toCommand(request);
         Actor actor = actorProvider.getCurrent();
 
         // Application validation
-        accountValidator.validateUpdate(target, command);
+        accountValidator.validateUpdate(target, request);
 
         // Policy validation
         accountPolicyEngine.canUpdate(
                 policyContextFactory.forUpdate(actor, target)
         );
-
         // Domain logic
         target.update(command);
 
@@ -96,9 +110,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public void resetPassword(ActorCode accountCode, EncodedPassword encodedPassword) {
+    public void resetPassword(ActorCode accountCode,RawPassword rawPassword) {
+
         Account target = getByAccountCode(accountCode);
+
+        EncodedPassword encodedPassword = EncodedPassword.of(
+                passwordEncoder.encode(rawPassword.toString())
+        );
+
         target.resetPassword(encodedPassword);
+
         accountRepository.save(target);
     }
 
@@ -124,12 +145,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account assignRoles(ActorCode accountCode, List<String> roleNames) {
+    public Account assignRoles(ActorCode accountCode, List<RoleName> roleNames) {
 
-        List<RoleName> normalizedRoleNames = normalizeRoleNames(roleNames);
+        // todo validate roleNames not null or empty
+
+
         Account target = getByAccountCode(accountCode);
         Actor actor = actorProvider.getCurrent();
-        List<Role> fetchedRoles = roleService.getAllByNames(normalizedRoleNames);
+        List<Role> fetchedRoles = roleService.getAllByNames(roleNames);
 
         // Policy validation
         for (Role role : fetchedRoles) {
@@ -171,14 +194,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account replaceRoles(ActorCode accountCode, List<String> roleNames) {
+    public Account replaceRoles(ActorCode accountCode, List<RoleName> roleNames) {
 
-
-        List<RoleName> normalizedRoleNames = normalizeRoleNames(roleNames);
         Account target = getByAccountCode(accountCode);
         Actor actor = actorProvider.getCurrent();
 
-        List<Role> fetchedRoles = roleService.getAllByNames(normalizedRoleNames);
+        List<Role> fetchedRoles = roleService.getAllByNames(roleNames);
 
         // Policy validation
         accountPolicyEngine.canRepaceRoles(
@@ -195,40 +216,18 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.save(target);
     }
 
+    @Override
+    public void login(ActorCode accountCode) {
+        Account account = getByAccountCode(accountCode);
+        account.login();
+        accountRepository.save(account);
+    }
+
     // -------------------------------- Retrieval -------------------------------- //
 
-    @Override
-    public Optional<Account> getOptionalById(Long id) {
-        return entityRetrievalService.getOptionalById(Account.class, id);
-    }
 
     @Override
-    public Account getById(Long id) {
-        return entityRetrievalService.getById(
-                Account.class,
-                id,
-                AccountApplicationException::notFound
-        );
-    }
-
-    @Override
-    public Account getById(AccountId accountId) {
-        return getById(accountId.value());
-    }
-
-    @Override
-    public Optional<Account> getOptionalByUsername(String username) {
-        return accountRepository.findByUsername(username);
-    }
-
-    @Override
-    public Account getByUsername(String username) {
-        return getOptionalByUsername(username)
-                .orElseThrow(AccountApplicationException::notFound);
-    }
-
-    @Override
-    public boolean existsByRoleName(String roleName) {
+    public boolean existsByRoleName(RoleName roleName) {
         return accountRepository.existsByRoleName(roleName);
     }
 
@@ -237,43 +236,9 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByEmail(email);
     }
 
-
     @Override
-    public Account getByEmail(String email) {
-        return getOptionalByEmail(email)
-                .orElseThrow(AccountApplicationException::notFound);
-    }
-
-    @Override
-    public Account getByEmail(Email email) {
-        return getByEmail(email.value());
-    }
-
-    @Override
-    public Account getByIdentity(ActorIdentity identity) {
-
-        if (identity == null) {
-            throw IdentityException.notFound()
-                    .withDetail("reason", "Actor identity cannot be null");
-        }
-
-        ActorCode accountCode = identity.getActorCode();
-
-        Account account = getOptionalByAccountCode(accountCode)
-                .orElseThrow(() -> AccountApplicationException.notFound()
-                        .withDetail("reason", "Account not found for given identity")
-                        .withDetail("actorType", identity.getActorType().name())
-                        .withDetail("actorCode", identity.getActorCode().toString())
-                );
-
-        if (!account.getActorIdentity().sameAs(identity)) {
-            throw AccountApplicationException.notFound()
-                    .withDetail("reason", "Account not found for given identity")
-                    .withDetail("actorType", identity.getActorType().name())
-                    .withDetail("actorCode", identity.getActorCode().toString());
-        }
-
-        return account;
+    public Optional<Account> getOptionalByUsername(String username) {
+        return accountRepository.findByUsername(username);
     }
 
     public Optional<Account> getOptionalByAccountCode(ActorCode accountCode) {
@@ -281,16 +246,43 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public Account getByAccountCode(ActorCode accountCode){
-        return getOptionalByAccountCode(accountCode).orElseThrow(() -> AccountApplicationException.notFound()
-                .withDetail("reason", "Account not found for given code")
-                .withDetail("actorCode", accountCode.getValue())
+        return getOptionalByAccountCode(accountCode).orElseThrow(() -> AccountBusinessException.notFound()
+                .withClientDetails("reason", "Account not found for given code")
+                .withClientDetails("actorCode", accountCode.getValue())
         );
     }
 
     @Override
-    public Optional<Account> getOptionalByRoleName(String roleName) {
-        return accountRepository.findByRoleName(roleName);
+    public Account getByIdentity(ActorIdentity identity) {
+
+        if (identity == null) {
+            throw AccountTechnicalException.nullActorIdentity();
+        }
+
+        ActorCode accountCode = identity.getActorCode();
+
+        Account account = getOptionalByAccountCode(accountCode)
+                .orElseThrow(() -> AccountBusinessException.notFound()
+                        .withClientDetails("reason", "Account not found for given identity")
+                        .withClientDetails("actorType", identity.getActorType().name())
+                        .withClientDetails("actorCode", identity.getActorCode().toString())
+                );
+
+        if (!account.getActorIdentity().sameAs(identity)) {
+            throw AccountBusinessException.notFound()
+                    .withClientDetails("reason", "Account not found for given identity")
+                    .withClientDetails("actorType", identity.getActorType().name())
+                    .withClientDetails("actorCode", identity.getActorCode().toString());
+        }
+
+        return account;
     }
+
+
+    public PageResult<Account> getAll(AccountPageRequest request) {
+        return accountRepository.findAll(request);
+    }
+
 
     // ------------------------------- End Retrieval ------------------------------ //
 
@@ -320,8 +312,7 @@ public class AccountServiceImpl implements AccountService {
             );
 
             if (currentSuperAdminCount <= 1) {
-                throw AccountApplicationException
-                        .lastSuperAdmin();
+                throw AccountBusinessException.lastSuperAdminRemovalNotAllowed();
             }
         }
     }
@@ -329,24 +320,4 @@ public class AccountServiceImpl implements AccountService {
     // --------------------------- End Application Business Rule ------------------------- //
 
 
-    // --------------------------- Private Helper Methods ------------------------- //
-
-
-    private List<Long> normalizeRoleIds(List<Long> roleIds) {
-        return roleIds.stream()
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-    }
-
-    private List<RoleName> normalizeRoleNames(List<String> roleNames) {
-
-        return roleNames.stream()
-                .filter(Objects::nonNull)
-                .map(RoleName::of)
-                .distinct()
-                .toList();
-    }
-
-    // --------------------------- End Private Helper Methods ------------------------- //
 }

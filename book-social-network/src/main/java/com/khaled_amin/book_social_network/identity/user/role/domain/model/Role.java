@@ -2,11 +2,10 @@ package com.khaled_amin.book_social_network.identity.user.role.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
 import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
-import com.khaled_amin.book_social_network.identity.user.role.domain.command.UpdateRoleCommand;
-import com.khaled_amin.book_social_network.identity.user.role.domain.exception.RoleDomainException;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleDescription;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleDisplayName;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
+import com.khaled_amin.book_social_network.identity.user.role.domain.command.RoleCreateCommand;
+import com.khaled_amin.book_social_network.identity.user.role.domain.command.RoleUpdateCommand;
+import com.khaled_amin.book_social_network.identity.user.role.exception.RoleBusinessException;
+import com.khaled_amin.book_social_network.identity.user.role.exception.RoleTechnicalException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,6 +15,7 @@ import java.util.stream.Collectors;
 
 
 @Getter
+@Setter(AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,7 +50,6 @@ public class Role extends AuditableEntity {
 
     @Column(
             name = "description",
-            nullable = false,
             columnDefinition = "varchar(255)"
     )
     private String description;
@@ -93,83 +92,69 @@ public class Role extends AuditableEntity {
 
 // ------------------------------------ Business Methods -------------------------------- //
 
-    public static Role create(
-            RoleName roleName,
-            RoleDisplayName displayName,
-            RoleDescription description,
-            RoleType roleType,
-            boolean isDefaultRole,
-            boolean isProtectedRole
-    ){
+    public static Role create(RoleCreateCommand command){
+        if (command == null) {
+            throw RoleTechnicalException.nullCreateCommand();
+        }
 
-        boolean finalProtected = isProtectedRole || isDefaultRole || roleType == RoleType.SYSTEM;
+        ensureCanCreate(command);
 
         Role newRole = Role.builder()
-                .name(roleName.value())
-                .displayName(displayName.value())
-                .description(description.value())
-                .defaultRole(isDefaultRole)
-                .protectedRole(finalProtected)
-                .roleType(roleType)
+                .name(command.name().toString())
+                .displayName(command.displayName().toString())
+                .description(command.description().toString())
+                .defaultRole(command.defaultRole())
+                .protectedRole(command.protectedRole())
+                .roleType(command.roleType())
                 .build();
 
-        newRole.validateState();
+        newRole.enforceInvariants();
         return newRole;
     }
 
 
-    public void update(UpdateRoleCommand command) {
+    public void update(RoleUpdateCommand command) {
 
         if (command == null) {
-            throw RoleDomainException
-                    .invalidCommand()
-                    .withDetail("reason", "UpdateRoleCommand object must not be null");
+            throw RoleTechnicalException.nullUpdateCommand();
         }
 
-        if (command.displayName() != null) {
-            this.displayName = command.displayName().value();
-        }
+        ensureCanUpdate(command);
 
-        if (command.description() != null) {
-            this.description = command.description().value();
-        }
+        command.displayName().ifPresent(displayName -> this.displayName = displayName.toString() );
+        command.description().ifPresent(description -> this.description = description.toString() );
+        command.defaultRole().ifPresent(defaultRole -> this.defaultRole = defaultRole );
+        command.protectedRole().ifPresent(protectedRole -> this.protectedRole = protectedRole );
 
-        if (command.defaultRole() != null) {
-            this.defaultRole = command.defaultRole();
-        }
+        enforceInvariants();
 
-        if (command.protectedRole() != null) {
-            this.protectedRole = command.protectedRole();
-            validateProtectedRoleViolation();
-        }
-
-        validateState();
     }
 
-
-    public boolean isSystemRole() { return roleType.isSystem();}
-    public boolean isBusinessRole(){ return roleType.isBusiness();}
-
-    public void addCapability(Capability capability){
-        validateToAddCapability(capability);
-        RoleCapability roleCapability = RoleCapability.create(capability,this);
-        roleCapabilities.add(roleCapability);
-    }
-
-    public void addCapabilities(Set<Capability> capabilities){
-        if (capabilities == null)
-            throw RoleDomainException.invalid()
-                    .withDetail("reason", "Capabilities list cannot be null");
-
-        capabilities.forEach(this::addCapability);
+    public void delete(){
+        ensureCanDelete(this);
     }
 
     public void removeCapability(Capability capability){
-        validateToRemoveCapability(capability);
+        if (capability == null) {
+            throw RoleTechnicalException.nullCapability();
+        }
+
+        ensureCanRemoveCapability(capability);
+
         roleCapabilities.removeIf(rc -> rc.getCapability().equals(capability));
     }
 
+    public void addCapability(Capability capability){
+        if (capability == null) {
+            throw RoleTechnicalException.nullCapability();
+        }
 
+        ensureCanAddCapability(capability);
+
+        RoleCapability roleCapability = RoleCapability.create(capability,this);
+
+        roleCapabilities.add(roleCapability);
+    }
 
     public Set<Capability> getCapabilities() {
         return roleCapabilities.stream()
@@ -202,55 +187,70 @@ public class Role extends AuditableEntity {
 // ------------------------------------ Validation Methods -------------------------------- //
 
 
-    private void validateState() {
-        if (name == null || name.isBlank())
-            throw RoleDomainException.invalidRoleState().withDetail("reason", "Role name must not be null or empty");
+    private void enforceInvariants() {
 
-        if (displayName == null || displayName.isBlank())
-            throw RoleDomainException.invalidRoleState().withDetail("reason", "Role display name must not be null or empty");
-
-        if (description == null || description.isBlank())
-            throw RoleDomainException.invalidRoleState().withDetail("reason", "Role description must not be null or empty");
-
-        if (roleType == null)
-            throw RoleDomainException.invalidRoleType().withDetail("reason", "Role type must not be null");
-
-        if (isSystemRole() && !isProtectedRole())
-            throw RoleDomainException.invalidRoleState().withDetail("reason", "System role must be protected");
-
-        if (isDefaultRole() && !isProtectedRole())
-            throw RoleDomainException.invalidRoleState().withDetail("reason", "Default role must be protected");
-
-    }
-
-    private void validateProtectedRoleViolation() {
-        if (!isProtectedRole() && (isDefaultRole() || isSystemRole()))
-            throw RoleDomainException.protectedRoleViolation().withDetail("reason", "This role may be a system role or default role");
-    }
-
-    private void validateToAddCapability(Capability capability){
-        if (capability == null) {
-            throw RoleDomainException.invalid().withDetail("reason", "Capability cannot be null");
+        if (roleType.isSystem() && !isProtectedRole()) {
+            throw RoleBusinessException.systemRoleMustBeProtected()
+                    .withDebugDetails("roleName", name);
         }
+
+        if (isDefaultRole() && !isProtectedRole()) {
+            throw RoleBusinessException.defaultRoleMustBeProtected()
+                    .withDebugDetails("roleName", name);
+        }
+    }
+
+    private static void ensureCanCreate(RoleCreateCommand command) {
+        if (command.defaultRole() && !command.protectedRole()) {
+            throw RoleBusinessException.defaultRoleMustBeProtected();
+        }
+
+        if (command.roleType().isSystem() && !command.protectedRole()) {
+            throw RoleBusinessException.systemRoleMustBeProtected();
+        }
+    }
+
+    private void ensureCanUpdate(RoleUpdateCommand command){
+
+        if (command.protectedRole().isPresent() && command.defaultRole().isPresent()) {
+            boolean protectedRole = command.protectedRole().get();
+            boolean defaultRole = command.defaultRole().get();
+
+            if (defaultRole && !protectedRole) {
+                throw RoleBusinessException.defaultRoleMustBeProtected();
+            }
+        }
+
+        if(roleType.isSystem()){
+            throw RoleBusinessException.systemRoleCannotBeModified();
+        }
+    }
+
+    private void ensureCanDelete(Role role) {
+        if (role.isProtectedRole())
+            throw RoleBusinessException.protectedRoleCannotBeDeleted()
+                    .withDebugDetails("roleName", role.getName());
+    }
+
+    private void ensureCanAddCapability(Capability capability){
 
         if (this.hasCapability(capability.getCode())) {
-            throw RoleDomainException
-                    .capabilityAlreadyAdded()
-                    .withDetail("capabilityCode", capability.getCode());
+            throw RoleBusinessException.capabilityAlreadyAssigned()
+                    .withClientDetails("capabilityCode", capability.getCode())
+                    .withDebugDetails("roleName",this.name);
         }
     }
 
-    private void validateToRemoveCapability(Capability capability) {
-        if (capability == null) {
-            throw RoleDomainException.invalid().withDetail("reason", "Capability cannot be null");
-        }
+    private void ensureCanRemoveCapability(Capability capability) {
 
         if (!this.hasCapability(capability.getCode())) {
-            throw RoleDomainException
-                    .capabilityNotIncluded()
-                    .withDetail("capabilityCode", capability.getCode());
+            throw RoleBusinessException.capabilityNotAssigned()
+                    .withClientDetails("capabilityCode", capability.getCode())
+                    .withDebugDetails("roleName",this.name);
         }
     }
+
+
 
 // ------------------------------------ End Validation Methods -------------------------------- //
 

@@ -34,7 +34,7 @@ public class CapabilityRepositoryImpl implements CapabilityRepository {
     }
 
     @Override
-    public Optional<Capability> findOptionalByCodeAndModule(CapabilityCode code, CapabilityModule module) {
+    public Optional<Capability> findByCodeAndModule(CapabilityCode code, CapabilityModule module) {
         return capabilityJpaRepository.findByCodeAndModule(code.value(),module.name());
     }
 
@@ -45,17 +45,13 @@ public class CapabilityRepositoryImpl implements CapabilityRepository {
 
     @Override
     public List<Capability> findAllByModule(CapabilityModule module) {
-        return capabilityJpaRepository.findAllByModule(module.name());
+        System.out.println("ggdd");
+        return capabilityJpaRepository.findAllByModule(module);
     }
 
     @Override
     public List<Capability> findAll() {
         return capabilityJpaRepository.findAll();
-    }
-
-    @Override
-    public boolean existsByName(String name) {
-        return capabilityJpaRepository.existsByName(name);
     }
 
 }

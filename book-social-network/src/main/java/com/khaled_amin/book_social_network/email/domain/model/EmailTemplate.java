@@ -1,8 +1,10 @@
 package com.khaled_amin.book_social_network.email.domain.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum EmailTemplate {
 
     ACCOUNT_ACTIVATION("account_activation","Activate your account"),
@@ -14,8 +16,4 @@ public enum EmailTemplate {
     private final String name;
     private final String subject;
 
-    EmailTemplate(String name,String subject) {
-        this.name = name;
-        this.subject = subject;
-    }
 }

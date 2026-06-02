@@ -15,23 +15,18 @@ public enum RoleCapability implements CapabilityDefinition {
             "role",
             "create",
             "Create Roles",
-            "Allows creating new business roles"
+            "Allows creating new business roles",
+            true
     ),
 
-    ROLE_READ(
-            "ROLE_READ",
-            "role",
-            "read",
-            "Read Roles",
-            "Allows viewing role details"
-    ),
 
     ROLE_UPDATE(
             "ROLE_UPDATE",
             "role",
             "update",
             "Update Roles",
-            "Allows updating existing roles"
+            "Allows updating existing roles",
+            true
     ),
 
     ROLE_DELETE(
@@ -39,15 +34,27 @@ public enum RoleCapability implements CapabilityDefinition {
             "role",
             "delete",
             "Delete Roles",
-            "Allows deleting non protected roles"
+            "Allows deleting non protected roles",
+            true
     ),
 
-    ROLE_ASSIGN_CAPABILITY(
-            "ROLE_ASSIGN_CAPABILITY",
+    ROLE_READ(
+            "ROLE_READ",
             "role",
-            "assign_capability",
-            "Assign Capability To Role",
-            "Allows assigning capabilities to roles"
+            "read",
+            "Read Roles",
+            "Allows viewing role clientDetails",
+            true
+    ),
+
+
+    ROLE_ADD_CAPABILITY(
+            "ROLE_ADD_CAPABILITY",
+            "role",
+            "add_capability",
+            "Add Capability To Role",
+            "Allows adding capabilities to roles",
+            true
     ),
 
     ROLE_REMOVE_CAPABILITY(
@@ -55,7 +62,8 @@ public enum RoleCapability implements CapabilityDefinition {
             "role",
             "remove_capability",
             "Remove Capability From Role",
-            "Allows removing capabilities from roles"
+            "Allows removing capabilities from roles",
+            true
     )
 
 
@@ -67,19 +75,22 @@ public enum RoleCapability implements CapabilityDefinition {
     private final CapabilityAction action;
     private final CapabilityName name;
     private final CapabilityDescription description;
+    private final boolean systemManaged;
 
     RoleCapability(
             String code,
             String resource,
             String action,
             String name,
-            String description
+            String description,
+            boolean systemManaged
     ) {
         this.code = CapabilityCode.of(code);
         this.resource = CapabilityResource.of(resource);
         this.action = CapabilityAction.of(action);
         this.name = CapabilityName.of(name);
         this.description = CapabilityDescription.of(description);
+        this.systemManaged = systemManaged;
     }
 
     @Override

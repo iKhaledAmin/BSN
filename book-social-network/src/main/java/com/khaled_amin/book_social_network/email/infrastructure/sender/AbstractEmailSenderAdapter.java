@@ -1,21 +1,22 @@
 package com.khaled_amin.book_social_network.email.infrastructure.sender;
 
-import com.khaled_amin.book_social_network.email.application.exception.EmailApplicationException;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.email.application.model.EmailMessage;
 import com.khaled_amin.book_social_network.email.application.port.out.EmailSender;
+import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 
 /**
  * Abstract base implementation of {@link EmailSender} that enforces
- * consistent exception handling across all email sender adapters.
+ * consistent exception handling across all emailAddress sender adapters.
  *
  * <p>
  * Implements the <b>Template Method pattern</b> to standardize the execution
- * flow of email delivery while delegating the actual sending logic to subclasses.
+ * flow of emailAddress delivery while delegating the actual sending logic to subclasses.
  * </p>
  *
  * <h3>Responsibilities</h3>
  * <ul>
- *   <li>Provide a unified entry point for email delivery</li>
+ *   <li>Provide a unified entry point for emailAddress delivery</li>
  *   <li>Handle exception translation from infrastructure to application layer</li>
  *   <li>Delegate actual sending logic to subclasses</li>
  * </ul>
@@ -24,13 +25,13 @@ import com.khaled_amin.book_social_network.email.application.port.out.EmailSende
  * <ul>
  *   <li>Invoke {@link #doSend(EmailMessage)}</li>
  *   <li>Catch and translate infrastructure exceptions</li>
- *   <li>Ensure only {@link EmailApplicationException} escapes the boundary</li>
+ *   <li>Ensure only {@link EmailTechnicalException} escapes the boundary</li>
  * </ul>
  *
  * <h3>Failure Semantics</h3>
  * <ul>
- *   <li>Re-throws {@link EmailApplicationException} without modification</li>
- *   <li>Wraps any other exception into {@link EmailApplicationException}</li>
+ *   <li>Re-throws {@link EmailTechnicalException} without modification</li>
+ *   <li>Wraps any other exception into {@link EmailTechnicalException}</li>
  * </ul>
  *
  * <h3>Extension Guidelines</h3>
@@ -50,24 +51,24 @@ public abstract class AbstractEmailSenderAdapter implements EmailSender {
     public final void send(EmailMessage message) {
         try {
             doSend(message);
-        } catch (EmailApplicationException ex) {
+        } catch (TechnicalException ex) {
             throw ex; // rethrow application exception
         } catch (Exception ex) {
-            throw EmailApplicationException.sendFailed(ex); // translate to application exception
+            throw EmailTechnicalException.emailSendingFailed(ex); //
         }
     }
 
     /**
-     * Performs the actual email sending logic.
+     * Performs the actual emailAddress sending logic.
      *
      * <p>
      * This method is implemented by concrete adapters to integrate
-     * with specific email delivery mechanisms (e.g., SMTP, APIs).
+     * with specific emailAddress delivery mechanisms (e.g., SMTP, APIs).
      * </p>
      *
      * <h3>Contract</h3>
      * <ul>
-     *   <li>Execute the delivery of the given email message</li>
+     *   <li>Execute the delivery of the given emailAddress message</li>
      * </ul>
      *
      * <h3>Constraints</h3>
@@ -76,7 +77,7 @@ public abstract class AbstractEmailSenderAdapter implements EmailSender {
      *   <li>Any thrown exception will be handled by the template method</li>
      * </ul>
      *
-     * @param message the email message to send
+     * @param message the emailAddress message to send
      * @throws Exception any exception during delivery (will be translated)
      *
      * @see EmailSender#send(EmailMessage)

@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.email.application.port.in;
 
-import com.khaled_amin.book_social_network.email.application.exception.EmailApplicationException;
 import com.khaled_amin.book_social_network.email.application.model.EmailMessage;
+import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 import com.khaled_amin.book_social_network.email.application.port.out.EmailRepository;
 import com.khaled_amin.book_social_network.email.application.port.out.EmailSender;
 import com.khaled_amin.book_social_network.email.application.port.out.TemplateRenderer;
@@ -43,12 +43,12 @@ import java.util.Map;
  * <h3>Execution Semantics</h3>
  * <ul>
  *   <li>Operations are executed within an application-managed context</li>
- *   <li>Email processing may involve multiple steps (e.g., preparation, delivery, state handling)</li>
+ *   <li>email processing may involve multiple steps (e.g., preparation, delivery, state handling)</li>
  * </ul>
  *
  * <h3>Failure Semantics</h3>
  * <ul>
- *   <li>Failures are propagated as {@link EmailApplicationException}</li>
+ *   <li>Failures are propagated as {@link EmailTechnicalException}</li>
  *   <li>No silent failures are allowed</li>
  *   <li>Consumers should treat operations as <b>potentially failing</b> and handle accordingly</li>
  * </ul>
@@ -84,12 +84,12 @@ public interface EmailService {
      *
      * <h3>Failure Handling</h3>
      * <ul>
-     *   <li>Throws {@link EmailApplicationException} if processing or delivery fails</li>
+     *   <li>Throws {@link EmailTechnicalException} if processing or delivery fails</li>
      * </ul>
      *
      * @param command {@link EmailCreateCommand}  encapsulates email creation data
      * @param variables {@link Map(String, Object)} template variables used during content generation
-     * @throws EmailApplicationException if email processing or delivery fails
+     * @throws EmailTechnicalException if email processing or delivery fails
      *
      * @see EmailSender#send(EmailMessage)
      * @see TemplateRenderer#render(String, Map)
@@ -120,10 +120,10 @@ public interface EmailService {
      * <h3>Failure Handling</h3>
      * <ul>
      *   <li>Individual retry failures are handled internally</li>
-     *   <li>Throws {@link EmailApplicationException} only in case of critical failure of the retry process</li>
+     *   <li>Throws {@link EmailTechnicalException} only in case of critical failure of the retry process</li>
      * </ul>
      *
-     * @throws EmailApplicationException if the retry process fails critically
+     * @throws EmailTechnicalException if the retry process fails critically
      *
      * @see EmailRepository#findRetryableEmails(LocalDateTime, int)
      * @see EmailSender#send(EmailMessage)

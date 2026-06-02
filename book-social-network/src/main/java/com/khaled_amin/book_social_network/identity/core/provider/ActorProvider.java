@@ -1,8 +1,8 @@
 package com.khaled_amin.book_social_network.identity.core.provider;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 
 /**
@@ -24,7 +24,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * <ul>
  *   <li>Current execution context</li>
  *   <li>Domain identity sources ({@link ActorSource})</li>
- *   <li>Security-layer principals ({@link AuthenticatedPrincipal})</li>
+ *   <li>SECURITY-layer principals ({@link AuthenticatedPrincipal})</li>
  * </ul>
  *
  * <h3>General Contract Rules</h3>
@@ -38,7 +38,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * <h3>Failure Behavior</h3>
  * <ul>
  *   <li>Any unsupported, invalid, or unrecognized identity input results in
- *       {@link ActorResolutionException}</li>
+ *       {@link TechnicalException}</li>
  *   <li>Such failures indicate system misconfiguration or invalid usage</li>
  *   <li>These errors are considered system-level and must not be exposed directly to end users</li>
  * </ul>
@@ -52,7 +52,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * @see Actor
  * @see ActorSource
  * @see AuthenticatedPrincipal
- * @see ActorResolutionException
+ * @see TechnicalException
  */
 public interface ActorProvider {
 
@@ -73,7 +73,7 @@ public interface ActorProvider {
      * </ul>
      *
      * @return current execution {@link Actor}
-     * @throws ActorResolutionException if the security context is invalid or cannot be interpreted
+     * @throws TechnicalException if the security context is invalid or cannot be interpreted
      */
     Actor getCurrent();
 
@@ -94,7 +94,7 @@ public interface ActorProvider {
      *
      * @param source domain identity representation
      * @return resolved {@link Actor}
-     * @throws ActorResolutionException if the source cannot be mapped to a valid actor
+     * @throws TechnicalException if the source cannot be mapped to a valid actor
      */
     Actor getFrom(ActorSource source);
 
@@ -113,7 +113,7 @@ public interface ActorProvider {
      *
      * @param principal authenticated security principal
      * @return resolved {@link Actor}
-     * @throws ActorResolutionException if the principal type is unknown or unsupported
+     * @throws TechnicalException if the principal type is unknown or unsupported
      */
     Actor getFrom(AuthenticatedPrincipal principal);
 

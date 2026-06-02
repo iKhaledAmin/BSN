@@ -18,7 +18,7 @@ public class EmailRetryScheduler {
             emailService.retryFailedEmails();
         } catch (RuntimeException ex) {
             // todo: log
-           // log.error("Email retry job failed", ex);
+           // log.error("EmailAddress retry job failed", ex);
         }
 
     }

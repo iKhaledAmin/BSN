@@ -1,21 +1,21 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.value;
 
-import com.khaled_amin.book_social_network.identity.capability.domain.exception.CapabilityDomainException;
+import com.khaled_amin.book_social_network.identity.capability.exception.CapabilityValidationException;
 
 public record CapabilityAction(String value) {
 
-    public static final int MAX_LENGTH = 50;
+    public static final int MAX_LENGTH = 100;
 
     /**
      * Canonical authorization action format.
-     *
+     * <p>
      * Examples:
-     * - create
-     * - read
-     * - update
-     * - delete
-     * - approve
-     * - reset_password
+     * <li> create
+     * <li> read
+     * <li> update
+     * <li> delete
+     * <li> approve
+     * <li> reset_password
      */
     public static final String PATTERN = "^[a-z]+(?:_[a-z]+)*$";
 
@@ -31,20 +31,23 @@ public record CapabilityAction(String value) {
     private static void validate(String value) {
 
         if (value == null || value.isBlank()) {
-            throw CapabilityDomainException.invalidCapability()
-                    .withDetail("reason", "Capability action must not be null or empty");
-        }
-
-        if (!value.matches(PATTERN)) {
-            throw CapabilityDomainException.invalidCapability()
-                    .withDetail("value", value)
-                    .withDetail("reason", "Capability action must contain only lowercase letters and underscores");
+            throw CapabilityValidationException.invalidAction()
+                    .withDebugDetails("reason", "Capability action must not be null or empty")
+                    .withDebugDetails("receivedValue", value);
         }
 
         if (value.length() > MAX_LENGTH) {
-            throw CapabilityDomainException.invalidCapability()
-                    .withDetail("reason", "Capability action too long")
-                    .withDetail("maxLength", MAX_LENGTH);
+            throw CapabilityValidationException.invalidAction()
+                    .withDebugDetails("maxLength", MAX_LENGTH)
+                    .withDebugDetails("actualLength", value.length())
+                    .withDebugDetails("receivedValue", value);
+        }
+
+        if (!value.matches(PATTERN)) {
+            throw CapabilityValidationException.invalidAction()
+                    .withDebugDetails("expectedFormat", "lowercase_with_underscores")
+                    .withDebugDetails("receivedValue", value)
+                    .withDebugDetails("pattern", PATTERN);
         }
     }
 

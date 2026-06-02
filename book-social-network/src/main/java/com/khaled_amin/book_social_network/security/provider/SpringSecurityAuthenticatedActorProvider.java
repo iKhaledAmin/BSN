@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.security.provider;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
-import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipalResolverRegistry;
+import com.khaled_amin.book_social_network.identity.core.registry.ActorPrincipalResolverRegistry;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.model.AnonymousActor;
 import com.khaled_amin.book_social_network.identity.core.model.SystemActor;
 import com.khaled_amin.book_social_network.identity.core.provider.AuthenticatedActorProvider;
+import com.khaled_amin.book_social_network.security.exception.SecurityTechnicalException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -49,8 +49,13 @@ public class SpringSecurityAuthenticatedActorProvider implements AuthenticatedAc
 
 
         // Unknown → fallback
-        throw ActorResolutionException.unsupportedActorType();
-    }
+        throw SecurityTechnicalException.unsupportedPrincipalType(principal.getClass())
+                .withDebugDetails("principalType", principal.getClass().getName())
+                .withDebugDetails("authenticationType", auth.getClass().getName())
+                .withDebugDetails("authenticated", auth.isAuthenticated())
+                .withDebugDetails("authenticationName", auth.getName());
 
+       // return SystemActor.INSTANCE;
+    }
 
 }

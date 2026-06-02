@@ -46,6 +46,13 @@ public class AccountActor extends AbstractActor {
         return roles.contains(role);
     }
 
+    public boolean hasAnyRole(String... roles) {
+        for (String role : roles) {
+            if (hasRole(role)) return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean hasAuthority(String authority) {
         return permissions.contains(authority);

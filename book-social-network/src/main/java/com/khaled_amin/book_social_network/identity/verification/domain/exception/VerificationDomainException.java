@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.verification.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BusinessError;
-import com.khaled_amin.book_social_network.core.exception.BusinessException;
+import com.khaled_amin.book_social_network.core.exception.business.BusinessError;
+import com.khaled_amin.book_social_network.core.exception.business.BusinessException;
 
 public class VerificationDomainException extends BusinessException {
 
@@ -14,7 +14,7 @@ public class VerificationDomainException extends BusinessException {
     }
 
     public static VerificationDomainException invalidToken() {
-        return of(VerificationDomainError.INVALID_TOKEN);
+        return of(VerificationDomainError.TOKEN_CODE_INVALID);
     }
 
     public static VerificationDomainException expired() {

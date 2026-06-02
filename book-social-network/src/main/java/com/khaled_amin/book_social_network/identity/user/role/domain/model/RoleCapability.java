@@ -2,7 +2,7 @@ package com.khaled_amin.book_social_network.identity.user.role.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
 import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
-import com.khaled_amin.book_social_network.identity.user.role.domain.exception.RoleDomainException;
+import com.khaled_amin.book_social_network.identity.user.role.exception.RoleTechnicalException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +22,7 @@ import lombok.*;
         @AttributeOverride(
                 name = "createdAt",
                 column = @Column(
-                        name = "assigned_at",
+                        name = "added_at",
                         nullable = false,
                         updatable = false
                 )
@@ -31,7 +31,7 @@ import lombok.*;
         @AttributeOverride(
                 name = "createdBy.actorType",
                 column = @Column(
-                        name = "assigned_by_actor_type",
+                        name = "added_by_actor_type",
                         nullable = false,
                         updatable = false
                 )
@@ -40,13 +40,13 @@ import lombok.*;
         @AttributeOverride(
                 name = "createdBy.actorCode.value",
                 column = @Column(
-                        name = "assigned_by_actor_code",
+                        name = "added_by_actor_code",
                         nullable = false,
                         updatable = false
                 )
         )
 })
-public class RoleCapability  extends AuditableEntity {
+public class RoleCapability extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,11 +64,9 @@ public class RoleCapability  extends AuditableEntity {
     // -------------------------------------- Business Methods ---------------------------------- //
 
     public static RoleCapability create(Capability capability, Role role){
-        if (role == null)
-            throw RoleDomainException.invalid().withDetail("reason", "Role cannot be null");
+        if (role == null) throw RoleTechnicalException.nullRole();
 
-        if (capability == null)
-            throw RoleDomainException.invalid().withDetail("reason", "Capability cannot be null");
+        if (capability == null) throw RoleTechnicalException.nullCapability();
 
         return RoleCapability.builder()
                 .capability(capability)

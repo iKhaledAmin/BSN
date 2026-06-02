@@ -1,9 +1,15 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.value;
 
-import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
-
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountValidationException;
 
 public record FirstName(String value) {
+
+    public static final int MAX_LENGTH = 50;
+
+    /**
+     * Human-readable first name format.
+     */
+    public static final String PATTERN = "^[A-Za-z]+(?: [A-Za-z]+)*$";
 
     public FirstName {
         value = normalize(value);
@@ -11,30 +17,39 @@ public record FirstName(String value) {
     }
 
     private static String normalize(String value) {
-        return value == null ? null : value.trim();
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private static void validate(String value) {
+
         if (value == null || value.isBlank()) {
-            throw AccountDomainException
-                    .invalidFirstName()
-                    .withDetail("reason", "First value must not be empty");
+            throw AccountValidationException.invalidFirstName()
+                    .withClientDetails("reason", "First name must not be null or empty");
         }
 
-        if (!value.matches("^[a-zA-Z ]+$")) {
-            throw AccountDomainException
-                    .invalidFirstName()
-                    .withDetail("reason", "Only letters allowed");
+        if (value.length() > MAX_LENGTH) {
+            throw AccountValidationException.invalidFirstName()
+                    .withClientDetails("reason", "First name exceeds maximum allowed length")
+                    .withClientDetails("maxLength", MAX_LENGTH)
+                    .withDebugDetails("actualLength", value.length())
+                    .withDebugDetails("receivedValue", value);
         }
 
-        if (value.length() > 50) {
-            throw AccountDomainException
-                    .invalidFirstName()
-                    .withDetail("reason", "Too long");
+        if (!value.matches(PATTERN)) {
+            throw AccountValidationException.invalidFirstName()
+                    .withClientDetails("reason", "First name must contain only letters and spaces")
+                    .withClientDetails("expectedFormat", "letters_and_spaces_only")
+                    .withDebugDetails("receivedValue", value)
+                    .withDebugDetails("pattern", PATTERN);
         }
     }
 
-    public static FirstName of(String firstName) {
-        return new FirstName(firstName);
+    public static FirstName of(String value) {
+        return new FirstName(value);
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }

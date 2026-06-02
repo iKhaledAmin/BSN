@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.actor;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
+import com.khaled_amin.book_social_network.identity.core.exception.IdentityTechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipalResolver;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
@@ -20,7 +20,7 @@ public class AccountActorPrincipalResolver implements ActorPrincipalResolver {
     public Actor resolve(AuthenticatedPrincipal principal) {
 
         if (!(principal instanceof AccountPrincipal account)) {
-            throw ActorResolutionException.principalTypeMismatch(
+            throw IdentityTechnicalException.principalTypeMismatch(
                     AccountPrincipal.class,
                     principal.getClass()
             );

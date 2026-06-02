@@ -5,7 +5,4 @@ public interface BaseMapper<RESPONSE, ENTITY> {
 
     // Response
     RESPONSE toResponse(ENTITY entity);
-
-    //  deep clone
-    //ENTITY deepClone(ENTITY source);
 }

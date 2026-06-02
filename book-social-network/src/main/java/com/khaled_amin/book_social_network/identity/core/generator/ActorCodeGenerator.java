@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.identity.core.generator;
 
+import com.khaled_amin.book_social_network.identity.core.exception.IdentityTechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 
@@ -72,6 +73,7 @@ public interface ActorCodeGenerator {
      *
      * @param actorType {@link ActorType} target actor type
      * @return generated non-null {@link ActorCode}
+     * @throws IdentityTechnicalException if the generation fails
      */
     ActorCode generate(ActorType actorType);
 }

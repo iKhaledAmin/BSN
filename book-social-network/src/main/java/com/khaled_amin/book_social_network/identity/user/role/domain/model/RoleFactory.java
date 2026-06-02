@@ -1,43 +1,47 @@
 package com.khaled_amin.book_social_network.identity.user.role.domain.model;
 
-import com.khaled_amin.book_social_network.identity.user.role.domain.command.CreateRoleCommand;
-import com.khaled_amin.book_social_network.identity.user.role.domain.exception.RoleDomainException;
+import com.khaled_amin.book_social_network.identity.user.role.domain.command.RoleCreateCommand;
+import com.khaled_amin.book_social_network.identity.user.role.exception.RoleTechnicalException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RoleFactory {
 
-    public Role createBusinessRole(CreateRoleCommand command) {
-        if (command == null) {
-            throw RoleDomainException
-                    .invalidCommand()
-                    .withDetail("reason", "CreateRoleCommand object must not be null");
-        }
+    public Role createBusinessRole(
+            String name,
+            String displayName,
+            String description,
+            boolean defaultRole,
+            boolean protectedRole
+            ) {
 
-        return Role.create(
-                command.name(),
-                command.displayName(),
-                command.description(),
-                RoleType.BUSINESS,
-                command.defaultRole(),
-                command.protectedRole()
+        RoleCreateCommand command = RoleCreateCommand.of(
+                name,
+                displayName,
+                description,
+                defaultRole,
+                protectedRole,
+                RoleType.BUSINESS
         );
+
+        return Role.create(command);
     }
     public Role createSystemRole(SystemRole systemRole) {
         if (systemRole == null) {
-            throw RoleDomainException
-                    .invalidSystemRole()
-                    .withDetail("reason", "SystemRole object must not be null");
+            throw RoleTechnicalException.nullSystemRole();
         }
 
-        return Role.create(
-                systemRole.getName(),
-                systemRole.getDisplayName(),
-                systemRole.getDescription(),
-                RoleType.SYSTEM,
+        RoleCreateCommand command = RoleCreateCommand.of(
+                systemRole.getName().toString(),
+                systemRole.getDisplayName().toString(),
+                systemRole.getDescription().toString(),
                 systemRole.isDefaultRole(),
-                true
+                true,
+                RoleType.SYSTEM
         );
+
+
+        return Role.create(command);
     }
 
 }

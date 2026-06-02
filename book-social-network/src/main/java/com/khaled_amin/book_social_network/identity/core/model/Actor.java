@@ -25,13 +25,13 @@ import java.util.List;
  * <ul>
  *   <li><b>{@link Actor}</b> → Business identity abstraction (application layer)</li>
  *   <li><b>{@link ActorSource}</b> → Domain entity representation of identity ownership</li>
- *   <li><b>{@link AuthenticatedPrincipal}</b> → Security representation (authentication layer)</li>
+ *   <li><b>{@link AuthenticatedPrincipal}</b> → SECURITY representation (authentication layer)</li>
  * </ul>
  *
  *
  * <h3>Design Principles</h3>
  * <ul>
- *   <li>Decouples business logic from infrastructure concerns (e.g., Spring Security)</li>
+ *   <li>Decouples business logic from infrastructure concerns (e.g., Spring SECURITY)</li>
  *   <li>Provides a unified representation for all actor types</li>
  *   <li>Enables cross-cutting concerns (e.g., auditing, authorization)</li>
  *   <li>Supports extensibility (Open/Closed) for future actor types (e.g., services, external systems)</li>

@@ -5,15 +5,16 @@ import com.khaled_amin.book_social_network.identity.capability.domain.model.Capa
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
+import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountCreateCommand;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountBusinessException;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountTechnicalException;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountUpdateCommand;
-import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.Email;
 import com.khaled_amin.book_social_network.identity.user.account.domain.value.EncodedPassword;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.Username;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,8 @@ public class Account extends AuditableEntity implements ActorSource {
     @Column(name = "email_address",nullable = false, unique = true)
     private String emailAddress;
 
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -80,6 +83,8 @@ public class Account extends AuditableEntity implements ActorSource {
     // ------------------------------------ End Relationships -------------------------------- //
 
 
+    // ------------------------------------- Actor Source ------------------------------------- //
+
     @Override
     public ActorType getActorType() {
         return ActorType.ACCOUNT;
@@ -90,37 +95,37 @@ public class Account extends AuditableEntity implements ActorSource {
         return accountCode;
     }
 
+    // ------------------------------------- End Actor Source ---------------------------------- //
+
 
 
     // ------------------------------------ Business Methods -------------------------------- //
 
-    public static Account create(
-              Username username,
-              EncodedPassword encodedPassword,
-              Email emailAddress,
-              ActorCode accountCode,
-              Profile profile,
-              List<Role> roles
-    ) {
+    public static Account create(AccountCreateCommand command, Profile profile, List<Role> roles){
 
-        if (roles == null || roles.isEmpty()) {
-            throw AccountDomainException
-                    .invalidRoles()
-                    .withDetail("reason", "roles cannot be null or empty");
+        if (command == null){
+            throw AccountTechnicalException.nullAccountCreateCommand();
         }
 
-        if (profile == null){
-            throw AccountDomainException
-                    .invalidProfile()
-                    .withDetail("reason", "profile cannot be null");
+        if (profile == null) {
+            throw AccountTechnicalException.nullProfile();
+        }
+
+        if (roles == null) {
+            throw AccountTechnicalException.nullRoleList();
+        }
+
+        if (roles.isEmpty()) {
+            throw AccountBusinessException.emptyRoleList()
+                    .withClientDetails("reason", "Account must have at least one role");
         }
 
 
         Account account = Account.builder()
-                .username(username.value())
-                .password(encodedPassword.value())
-                .emailAddress(emailAddress.value())
-                .accountCode(accountCode)
+                .accountCode(command.accountCode())
+                .username(command.username().toString())
+                .password(command.encodedPassword().toString())
+                .emailAddress(command.emailAddress().toString())
                 .accountStatus(AccountStatus.getDefault())
                 .build();
 
@@ -128,23 +133,20 @@ public class Account extends AuditableEntity implements ActorSource {
         account.attachProfile(profile);
         account.assignRoles(roles);
 
-        account.validateState();
+        account.enforceInvariants();
 
         return account;
 
 
     }
 
-
     public void update(AccountUpdateCommand command) {
 
         if (command == null) {
-            throw AccountDomainException
-                    .invalidAccount()
-                    .withDetail("reason", "Update command cannot be null");
+            throw AccountTechnicalException.nullAccountUpdateCommand();
         }
 
-        // Update email
+        // Update emailAddress
         command.email()
                 .ifPresent(e -> this.emailAddress = e.value());
 
@@ -152,7 +154,7 @@ public class Account extends AuditableEntity implements ActorSource {
         command.profileCommand()
                 .ifPresent(pc -> this.profile.update(pc));
 
-        validateState();
+        enforceInvariants();
     }
 
     private void attachProfile(Profile profile) {
@@ -183,7 +185,7 @@ public class Account extends AuditableEntity implements ActorSource {
 
         roles.forEach(this::assignRole);
 
-        this.validateState();
+        this.enforceInvariants();
     }
 
     public void removeRole(Role role) {
@@ -192,7 +194,7 @@ public class Account extends AuditableEntity implements ActorSource {
 
         accountRoles.removeIf(ar -> ar.getRole().getId().equals(role.getId()));
 
-        validateState();
+        enforceInvariants();
     }
 
 
@@ -236,10 +238,13 @@ public class Account extends AuditableEntity implements ActorSource {
 
     public void resetPassword(EncodedPassword newPassword) {
         if (this.password.equals(newPassword.value())) {
-            throw AccountDomainException.samePassword()
-                    .withDetail("reason", "New password cannot be the same as the old password");
+            throw AccountBusinessException.passwordResetNotAllowed();
         }
         this.password = newPassword.value();
+    }
+
+    public void login() {
+        lastLogin = LocalDateTime.now();
     }
 
     public void activate() { setAccountStatus(AccountStatus.ACTIVE); }
@@ -252,149 +257,116 @@ public class Account extends AuditableEntity implements ActorSource {
 
     // ------------------------------------ Validation Methods -------------------------------- //
 
-    private void validateState(){
+    private void enforceInvariants() {
 
-        if (username == null || username.isBlank()){
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Username must be not be null or empty");
-        }
-
-        if (emailAddress == null || emailAddress.isBlank()) {
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Email must be not be null or empty");
-        }
-
-        if (password == null || password.isBlank()) {
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Password must be not be null or empty");
-        }
-
-        if (accountCode == null) {
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Account code must not be null");
-        }
-
-        if (profile == null) {
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Profile must not be null");
-        }
-
-        if(accountStatus == null){
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Account status must not be null");
-        }
-
-        validateAccountRolesState();
+        validateSystemRoleExists();
+        validateNoDuplicateRoles();
     }
 
-    private void validateAccountRolesState() {
-        Set<Role> roles = this.getRoles();
+    private void validateSystemRoleExists() {
 
-        if (roles == null || roles.isEmpty()) {
-            throw AccountDomainException.invalidAccountState().withDetail("reason", "Account roles must not be null or empty");
+        boolean hasSystemRole = this.accountRoles
+                .stream()
+                .map(AccountRole::getRole)
+                .anyMatch(role -> role.getRoleType().isSystem());
+
+        if (!hasSystemRole) {
+            throw AccountBusinessException.missingSystemRole();
         }
+    }
 
-        boolean hasSystemRole = false;
-        Set<String> uniqueRoleNames = new HashSet<>();
+    private void validateNoDuplicateRoles() {
 
-        for (Role role : roles) {
+        Set<String> seen = new HashSet<>();
 
-            if (role == null) {
-                throw AccountDomainException.invalidAccountState().withDetail("reason", "Account role must not be null");
-            }
+        for (AccountRole accountRole : accountRoles) {
+
+            Role role = accountRole.getRole();
 
             String roleName = role.getName();
 
-            if (roleName == null || roleName.isBlank()) {
-                throw AccountDomainException.invalidAccountState().withDetail("reason", "Account role name must be not null or empty");
-            }
-
-            if (!uniqueRoleNames.add(roleName)) {
-                throw AccountDomainException.invalidAccountState()
-                        .withDetail("roleName", roleName)
-                        .withDetail("reason", "Duplicate role name");
-            }
-
-            if (role.isSystemRole()) {
-                hasSystemRole = true;
+            if (!seen.add(roleName)) {
+                throw AccountBusinessException.duplicateRoles()
+                        .withClientDetails("roleName", roleName);
             }
         }
-
-        if (!hasSystemRole) {
-            throw AccountDomainException
-                    .invalidAccountState().withDetail("reason", "Account must have at least one system role");
-        }
-
     }
 
 
-    private void validateCanAttachProfile(Profile profile){
+    private void validateCanAttachProfile(Profile profile) {
 
         if (profile == null) {
-            throw AccountDomainException
-                    .invalidProfile()
-                    .withDetail("reason", "Profile must not be null");
+            throw AccountTechnicalException.nullProfile();
         }
 
-        if (this.getProfile() != null) {
-            throw AccountDomainException.profileAlreadyAttached();
+        if (this.profile != null) {
+            throw AccountTechnicalException.profileAlreadyAttached();
         }
     }
 
     private void validateCanAssignRole(Role role){
         if (role == null) {
-            throw AccountDomainException.invalidRole();
+            throw AccountTechnicalException.nullRole();
         }
 
         if (this.hasRole(role.getName())) {
-            throw AccountDomainException
-                    .roleAlreadyAssigned()
-                    .withDetail("roleName", role.getName());
+            throw AccountBusinessException.roleAssignNotAllowed()
+                    .withClientDetails("reason", "Role already assigned to this account")
+                    .withClientDetails("roleName", role.getName());
         }
     }
 
     private void validateCanRemoveRole(Role role) {
 
         if (role == null || role.getId() == null) {
-            throw AccountDomainException
-                    .invalidRole()
-                    .withDetail("reason", "Account role must not be null");
+            throw AccountTechnicalException.nullRole();
         }
 
         if (!this.hasRole(role.getName())) {
-            throw AccountDomainException
-                    .roleNotAssigned()
-                    .withDetail("reason", "This account does not have this role")
-                    .withDetail("roleName",role.getName());
+            throw AccountBusinessException.roleRemovalNotAllowed()
+                    .withClientDetails("reason", "This account does not have this role")
+                    .withClientDetails("roleName", role.getName());
         }
 
         boolean hasAnotherRole = false;
         boolean hasAnotherSystemRole = false;
 
         for (AccountRole ar : this.accountRoles) {
-            Role r = ar.getRole();
 
-            if (Objects.equals(r.getName(), role.getName())) {
-                continue; // simulate removal
+            Role currentRole = ar.getRole();
+
+            if (Objects.equals(currentRole.getName(), role.getName())) {
+                continue;
             }
 
             hasAnotherRole = true;
 
-            if (r.isSystemRole()) {
+            if (currentRole.getRoleType().isSystem()) {
                 hasAnotherSystemRole = true;
             }
         }
 
         if (!hasAnotherRole) {
-            throw AccountDomainException.emptyRoles();
+            throw AccountBusinessException.roleRemovalNotAllowed()
+                    .withClientDetails("reason", "Account must contain at least one role");
         }
 
         if (!hasAnotherSystemRole) {
-            throw AccountDomainException.missingSystemRole();
+            throw AccountBusinessException.roleRemovalNotAllowed()
+                    .withClientDetails("reason", "Account must contain at least one system role");
         }
     }
 
 
     private static void validateCanReplaceRoles(List<Role> newRoles) {
 
-        if (newRoles == null || newRoles.isEmpty()) {
-            throw AccountDomainException
-                    .invalidRoles()
-                    .withDetail("reason", "Account roles must not be null or empty");
+        if (newRoles == null) {
+            throw AccountTechnicalException.nullRoleList();
+        }
+
+        if (newRoles.isEmpty()) {
+            throw AccountBusinessException.emptyRoleList()
+                    .withClientDetails("reason", "Account must have at least one role");
         }
 
         boolean hasSystemRole = false;
@@ -403,32 +375,24 @@ public class Account extends AuditableEntity implements ActorSource {
         for (Role role : newRoles) {
 
             if (role == null) {
-                throw AccountDomainException
-                        .invalidRole()
-                        .withDetail("reason", "Account role must not be null");
+                throw AccountTechnicalException.nullRole();
             }
 
             String roleName = role.getName();
 
-            if (roleName == null || roleName.isBlank()) {
-                throw AccountDomainException
-                        .invalidRole()
-                        .withDetail("reason", "Account role value must be not null or empty");
-            }
 
             if (!uniqueRoleNames.add(roleName)) {
-                throw AccountDomainException
-                        .duplicateRoles()
-                        .withDetail("roleName", roleName);
+                throw AccountBusinessException.duplicateRoles()
+                        .withClientDetails("roleName", roleName);
             }
 
-            if (role.isSystemRole()) {
+            if (role.getRoleType().isSystem()) {
                 hasSystemRole = true;
             }
         }
 
         if (!hasSystemRole) {
-            throw AccountDomainException.missingSystemRole();
+            throw AccountBusinessException.missingSystemRole();
         }
     }
 

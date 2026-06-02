@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.core.model;
 
-import com.khaled_amin.book_social_network.identity.core.exception.IdentityException;
+import com.khaled_amin.book_social_network.identity.core.exception.IdentityTechnicalException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -34,7 +34,7 @@ import java.util.Objects;
  *     <li>Audit logging and traceability</li>
  *     <li>Ownership modeling</li>
  *     <li>Cross-module communication</li>
- *     <li>Security and actor resolution</li>
+ *     <li>SECURITY and actor resolution</li>
  *     <li>Event and transaction attribution</li>
  * </ul>
  *
@@ -60,7 +60,7 @@ import java.util.Objects;
  *     <li>Globally unique</li>
  *     <li>Safe for external exposure</li>
  *     <li>Portable across modules/services</li>
- *     <li>Independent from database implementation details</li>
+ *     <li>Independent from database implementation clientDetails</li>
  * </ul>
  *
  * <h3>Examples</h3>
@@ -218,13 +218,13 @@ public class ActorIdentity {
     private void validate(ActorType actorType, ActorCode actorCode) {
 
         if (actorType == null) {
-            throw IdentityException.invalidIdentity()
-                    .withDetail("reason", "Actor type must not be null");
+            throw IdentityTechnicalException.invalid()
+                    .withDebugDetails("reason", "Actor type must not be null");
         }
 
         if (actorCode == null) {
-            throw IdentityException.invalidIdentity()
-                    .withDetail("reason", "Actor code must not be null");
+            throw IdentityTechnicalException.invalid()
+                    .withDebugDetails("reason", "Actor code must not be null");
         }
     }
 

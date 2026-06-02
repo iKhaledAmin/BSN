@@ -11,7 +11,7 @@ public class EmailFactory {
 
     public Email create(EmailCreateCommand command, String body) {
 
-        // TODO: Add attachments for email (future feature)
+        // TODO: Add attachments for emailAddress (future feature)
         // Attachment attachments = createAttachments(command);
 
         return Email.create(

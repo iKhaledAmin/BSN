@@ -1,8 +1,9 @@
 package com.khaled_amin.book_social_network.identity.core.resolver;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
+import com.khaled_amin.book_social_network.identity.core.registry.ActorPrincipalResolverRegistry;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 
 /**
@@ -42,7 +43,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  *
  * <h3>Failure Semantics</h3>
  * <ul>
- *   <li>Throw {@link ActorResolutionException} when the principal type does not match</li>
+ *   <li>Throw {@link TechnicalException} when the principal type does not match</li>
  *   <li>This indicates a developer or configuration error, not a user error</li>
  *   <li>Exceptions should not be translated to business-level exceptions</li>
  * </ul>
@@ -75,14 +76,14 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * <ul>
  *   <li>This interface belongs to the core identity layer</li>
  *   <li>Implementations live in feature modules (e.g., account, client)</li>
- *   <li>Prevents leakage of security framework details into domain/application layers</li>
+ *   <li>Prevents leakage of security framework clientDetails into domain/application layers</li>
  * </ul>
  *
  * @see Actor
  * @see AuthenticatedPrincipal
  * @see ActorType
  * @see ActorPrincipalResolverRegistry
- * @see ActorResolutionException
+ * @see TechnicalException
  */
 public interface ActorPrincipalResolver {
 
@@ -98,7 +99,7 @@ public interface ActorPrincipalResolver {
      *
      * @param principal {@link AuthenticatedPrincipal} from the security layer
      * @return non-null {@link Actor}
-     * @throws ActorResolutionException if the principal type does not match
+     * @throws TechnicalException if the principal type does not match
      */
     Actor resolve(AuthenticatedPrincipal principal);
 }

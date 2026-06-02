@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.core.model;
 
-import com.khaled_amin.book_social_network.core.policy.core.AbstractPolicy;
+import com.khaled_amin.book_social_network.core.policy.AbstractPolicy;
 import com.khaled_amin.book_social_network.identity.core.generator.ActorCodeGenerator;
 import com.khaled_amin.book_social_network.identity.core.resolver.ActorSourceResolver;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
@@ -30,7 +30,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * <ul>
  *     <li>Authorization and policy evaluation</li>
  *     <li>Audit logging and traceability</li>
- *     <li>Security and authentication flows</li>
+ *     <li>SECURITY and authentication flows</li>
  *     <li>Cross-module identity propagation</li>
  *     <li>Ownership and attribution models</li>
  * </ul>
@@ -115,7 +115,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  *     <li>Objects that should never participate in authorization</li>
  * </ul>
  *
- * <h3>Security Considerations</h3>
+ * <h3>SECURITY Considerations</h3>
  * <p>
  * Implementing this interface is a security-sensitive architectural decision.
  * Any implementing type becomes part of the system identity boundary and may:

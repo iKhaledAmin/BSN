@@ -1,10 +1,10 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.value;
 
-import com.khaled_amin.book_social_network.identity.capability.domain.exception.CapabilityDomainException;
+import com.khaled_amin.book_social_network.identity.capability.exception.CapabilityValidationException;
 
 public record CapabilityDescription(String value) {
 
-    public static final int MAX_LENGTH = 500;
+    public static final int MAX_LENGTH = 250;
 
     public CapabilityDescription {
         value = normalize(value);
@@ -24,16 +24,17 @@ public record CapabilityDescription(String value) {
 
     private static void validate(String value) {
 
-        // Optional field
-        if (value == null || value.isEmpty()) {
+        // optional field
+        if (value == null) {
             return;
         }
 
         if (value.length() > MAX_LENGTH) {
-            throw CapabilityDomainException
-                    .invalidCommand()
-                    .withDetail("reason", "Capability description too long")
-                    .withDetail("maxLength", MAX_LENGTH);
+            throw CapabilityValidationException.invalidDescription()
+                    .withClientDetails("reason", "Capability description exceeds maximum allowed length")
+                    .withClientDetails("maxLength", MAX_LENGTH)
+                    .withDebugDetails("actualLength", value.length())
+                    .withDebugDetails("receivedValue", value);
         }
     }
 

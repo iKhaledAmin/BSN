@@ -1,10 +1,10 @@
 package com.khaled_amin.book_social_network.identity.core.provider;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.model.AnonymousActor;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.SystemActor;
-import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipalResolverRegistry;
+import com.khaled_amin.book_social_network.identity.core.registry.ActorPrincipalResolverRegistry;
 
 /**
  * Provides access to the current authenticated {@link Actor}.
@@ -19,7 +19,7 @@ import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipal
  * <h3>Purpose</h3>
  * <ul>
  *   <li>Expose a consistent way to access the current {@link Actor}</li>
- *   <li>Decouple application logic from security framework details</li>
+ *   <li>Decouple application logic from security framework clientDetails</li>
  *   <li>Ensure all business operations operate on a unified identity model</li>
  * </ul>
  *
@@ -43,10 +43,10 @@ import com.khaled_amin.book_social_network.identity.core.resolver.ActorPrincipal
  * <h3>Failure Semantics</h3>
  * <ul>
  *   <li>Failures during resolution (e.g., missing resolver, type mismatch)
- *       must propagate as {@link ActorResolutionException}</li>
+ *       must propagate as {@link TechnicalException}</li>
  *   <li>Such failures indicate configuration or developer mistakes, not user errors</li>
  *   <li>If the authentication or principal type is not recognized or unsupported,
- *       the implementation must throw {@link ActorResolutionException}
+ *       the implementation must throw {@link TechnicalException}
  *       and must not fall back to any default actor</li>
  * </ul>
  *
@@ -72,7 +72,7 @@ public interface AuthenticatedActorProvider {
      * </p>
      *
      * @return non-null {@link Actor}
-     * @throws ActorResolutionException If the authentication or principal type is not recognized or unsupported
+     * @throws TechnicalException If the authentication or principal type is not recognized or unsupported
      */
     Actor getCurrentActor();
 }

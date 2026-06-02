@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.core.model;
 
-import com.khaled_amin.book_social_network.identity.core.exception.IdentityException;
+import com.khaled_amin.book_social_network.identity.core.exception.IdentityValidationException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  * Immutable value object representing the globally unique external identifier
@@ -24,7 +23,7 @@ import java.util.regex.Pattern;
  * <h3>Purpose</h3>
  * <ul>
  *   <li>Provide a stable identity across bounded contexts</li>
- *   <li>Decouple business identity from database implementation details</li>
+ *   <li>Decouple business identity from database implementation clientDetails</li>
  *   <li>Support heterogeneous actor sources (ACCOUNT, CLIENT, SYSTEM, etc.)</li>
  *   <li>Enable safe external exposure of actor references</li>
  * </ul>
@@ -74,14 +73,28 @@ import java.util.regex.Pattern;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ActorCode {
 
-    private static final Pattern FORMAT = Pattern.compile("^[A-Z0-9_\\-]{3,100}$");
+    private static final int MAX_LENGTH = 100;
+
+    /**
+     * Canonical actor code format.
+     * <p>
+     * Examples:
+     * <ul>
+     *     <li>ACC_01JTX9Y8G7M4K1A2F3D4E5H6J7</li>
+     *     <li>CLI_01JTXA6P8D9F2S4K5M7N8Q1W2E</li>
+     *     <li>SYS_INTERNAL</li>
+     * </ul>
+     */
+    private static final String PATTERN = "^[A-Z0-9]+(?:[_-][A-Z0-9]+)*$";
+
 
     @Column(name = "actor_code", nullable = false, updatable = false)
     private String value;
 
     private ActorCode(String value) {
+        value = normalize(value);
         validate(value);
-        this.value = normalize(value);
+        this.value = value;
     }
 
     /**
@@ -101,11 +114,7 @@ public class ActorCode {
      * @return true if equal
      */
     public boolean sameAs(ActorCode other) {
-        if (other == null) {
-            return false;
-        }
-
-        return this.value.equals(other.value);
+        return other != null && value.equals(other.value);
     }
 
     @Override
@@ -113,23 +122,28 @@ public class ActorCode {
         return value;
     }
 
-    private void validate(String value) {
-
-        if (value == null || value.isBlank()) {
-            throw IdentityException.invalidIdentity()
-                    .withDetail("reason", "Actor code must not be null or blank");
-        }
-
-        String normalized = normalize(value);
-
-        if (!FORMAT.matcher(normalized).matches()) {
-            throw IdentityException.invalidIdentity()
-                    .withDetail("reason", "Invalid actor code format")
-                    .withDetail("actorCode", value);
-        }
+    private static String normalize(String value) {
+        return value == null ? null : value.trim().toUpperCase(Locale.ROOT);
     }
 
-    private String normalize(String value) {
-        return value.trim().toUpperCase(Locale.ROOT);
+    private static void validate(String value) {
+
+        if (value == null || value.isBlank()) {
+            throw IdentityValidationException.invalidActorCode()
+                    .withClientDetails("reason", "Actor code must not be null or blank");
+        }
+
+        if (value.length() > MAX_LENGTH) {
+            throw IdentityValidationException.invalidActorCode()
+                    .withDebugDetails("maxLength", MAX_LENGTH)
+                    .withDebugDetails("actualLength", value.length())
+                    .withDebugDetails("receivedValue", value);
+        }
+
+        if (!value.matches(PATTERN)) {
+            throw IdentityValidationException.invalidActorCode()
+                    .withDebugDetails("receivedValue", value)
+                    .withDebugDetails("pattern", PATTERN);
+        }
     }
 }

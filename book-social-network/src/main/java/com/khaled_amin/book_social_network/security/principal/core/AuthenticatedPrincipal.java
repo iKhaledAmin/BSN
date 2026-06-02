@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 
 /**
- * Security-layer identity contract representing an authenticated system principal.
+ * SECURITY-layer identity contract representing an authenticated system principal.
  *
  * <p>
  * This interface is the canonical representation of an authenticated entity within
@@ -19,7 +19,7 @@ import java.util.Collection;
  *
  * <h3>Conceptual Model</h3>
  * <ul>
- *   <li><b>{@link AuthenticatedPrincipal}</b> → Security representation (authentication layer)</li>
+ *   <li><b>{@link AuthenticatedPrincipal}</b> → SECURITY representation (authentication layer)</li>
  *   <li><b>{@link Actor}</b> → Business identity abstraction (application layer)</li>
  *   <li><b>{@link ActorSource}</b> → Domain entity representation of identity ownership</li>
  * </ul>
@@ -48,7 +48,7 @@ import java.util.Collection;
  *   <li><b>Authorities</b>: granted permissions used by authorization layer</li>
  * </ul>
  *
- * <h3>Security Constraints</h3>
+ * <h3>SECURITY Constraints</h3>
  * <ul>
  *   <li>Implementations must be created only from trusted authentication sources</li>
  *   <li>No mutable identity fields after construction</li>
@@ -65,7 +65,7 @@ import java.util.Collection;
  * <h3>Design Note</h3>
  * <p>
  * This contract is intentionally minimal and framework-agnostic to avoid coupling
- * the business identity model to Spring Security internals.
+ * the business identity model to Spring SECURITY internals.
  * </p>
  */
 public interface AuthenticatedPrincipal {

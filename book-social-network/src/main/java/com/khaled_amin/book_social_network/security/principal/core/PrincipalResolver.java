@@ -1,9 +1,7 @@
 package com.khaled_amin.book_social_network.security.principal.core;
 
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
-import com.khaled_amin.book_social_network.security.exception.InvalidTokenException;
 import com.khaled_amin.book_social_network.security.jwt.JwtPayload;
-import com.khaled_amin.book_social_network.security.exception.SecurityException;
 
 /**
  * Strategy contract responsible for transforming a validated authentication token payload
@@ -19,7 +17,7 @@ import com.khaled_amin.book_social_network.security.exception.SecurityException;
  * <ul>
  *   <li>Convert JWT authentication claims into a concrete security principal</li>
  *   <li>Support multiple authentication domains (e.g., ACCOUNT, CLIENT)</li>
- *   <li>Decouple authentication source resolution from Spring Security internals</li>
+ *   <li>Decouple authentication source resolution from Spring SECURITY internals</li>
  * </ul>
  *
  * <h3>Resolution Model</h3>

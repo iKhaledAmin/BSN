@@ -3,7 +3,7 @@ package com.khaled_amin.book_social_network.security.principal.clinet;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.identity.client.domain.model.Client;
 import com.khaled_amin.book_social_network.identity.client.domain.repository.ClientRepository;
-import com.khaled_amin.book_social_network.security.exception.InvalidTokenException;
+import com.khaled_amin.book_social_network.security.exception.AuthenticationException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import com.khaled_amin.book_social_network.security.jwt.JwtPayload;
 import com.khaled_amin.book_social_network.security.principal.core.PrincipalResolver;
@@ -26,9 +26,10 @@ public class ClientPrincipalResolver implements PrincipalResolver {
     public AuthenticatedPrincipal resolve(JwtPayload payload) {
 
         Client client = clientRepository.findByClientId(payload.getSubject())
-                .orElseThrow(() -> InvalidTokenException.invalid()
-                        .withDebug("reason", "Client not found")
-                        .withDebug("subject", payload.getSubject()));
+                .orElseThrow(() -> AuthenticationException.principalNotFound("Client not found")
+                        .withDebugDetails("clientId", payload.getSubject())
+                        .withDebugDetails("actorCode", payload.getActorCode())
+                        .withDebugDetails("actorType", payload.getActorType().name()));
 
         return  ClientPrincipal.of(
                 client.getClientId(),

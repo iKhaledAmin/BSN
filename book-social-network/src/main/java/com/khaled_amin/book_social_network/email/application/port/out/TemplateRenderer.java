@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.email.application.port.out;
 
-import com.khaled_amin.book_social_network.email.application.exception.EmailApplicationException;
+import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 import com.khaled_amin.book_social_network.email.infrastructure.config.EmailProperties;
 
 import java.util.Map;
@@ -97,7 +97,7 @@ public interface TemplateRenderer {
      * @param templateName {@link String} the logical name or identifier of the template
      * @param variables {@link Map(String, Object)} key-value pairs used for template population
      * @return fully rendered template content
-     * @throws EmailApplicationException if rendering fails
+     * @throws EmailTechnicalException if rendering fails
      */
     String render(String templateName, Map<String, Object> variables);
 }

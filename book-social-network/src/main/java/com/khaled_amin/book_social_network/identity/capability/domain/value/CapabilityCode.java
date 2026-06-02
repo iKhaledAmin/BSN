@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.value;
 
-import com.khaled_amin.book_social_network.identity.capability.domain.exception.CapabilityDomainException;
+import com.khaled_amin.book_social_network.identity.capability.exception.CapabilityValidationException;
 
 public record CapabilityCode(String value) {
 
@@ -8,12 +8,11 @@ public record CapabilityCode(String value) {
 
     /**
      * Canonical internal capabilities format.
-     *
+     * <p>
      * Examples:
-     * - STOCK_ITEM_READ
-     * - STOCK_ITEM_WRITE
-     * - USER_CREATE
-     * - ORDER_APPROVE
+     * <li> STOCK_ITEM_READ
+     * <li> USER_CREATE
+     * <li> ORDER_APPROVE
      */
     private static final String PATTERN = "^[A-Z]+(?:_[A-Z]+)*$";
 
@@ -29,20 +28,21 @@ public record CapabilityCode(String value) {
     private static void validate(String value) {
 
         if (value == null || value.isBlank()) {
-            throw CapabilityDomainException.invalidCapability()
-                    .withDetail("reason", "Capability code must not be null or empty");
-        }
-
-        if (!value.matches(PATTERN)) {
-            throw CapabilityDomainException.invalidCapability()
-                    .withDetail("value", value)
-                    .withDetail("reason", "Capability code must contain only uppercase letters and underscores");
+            throw CapabilityValidationException.invalidCode()
+                    .withClientDetails("reason", "Capability code must not be null or empty");
         }
 
         if (value.length() > MAX_LENGTH) {
-            throw CapabilityDomainException.invalidCapability()
-                    .withDetail("reason", "Capability code too long")
-                    .withDetail("maxLength", MAX_LENGTH);
+            throw CapabilityValidationException.invalidCode()
+                    .withDebugDetails("maxLength", MAX_LENGTH)
+                    .withDebugDetails("actualLength", value.length())
+                    .withDebugDetails("receivedValue", value);
+        }
+
+        if (!value.matches(PATTERN)) {
+            throw CapabilityValidationException.invalidCode()
+                    .withDebugDetails("receivedValue", value)
+                    .withDebugDetails("pattern", PATTERN);
         }
     }
 

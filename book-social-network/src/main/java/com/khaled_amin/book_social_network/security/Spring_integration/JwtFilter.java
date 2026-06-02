@@ -1,8 +1,8 @@
 package com.khaled_amin.book_social_network.security.Spring_integration;
 
-import com.khaled_amin.book_social_network.security.exception.SecurityException;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.security.exception.JwtAuthenticationException;
-import com.khaled_amin.book_social_network.security.exception.PrincipalResolutionException;
+import com.khaled_amin.book_social_network.core.exception.security.SecurityException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import com.khaled_amin.book_social_network.security.principal.core.PrincipalResolverRegistry;
 import com.khaled_amin.book_social_network.security.jwt.JwtPayload;
@@ -56,7 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken auth = buildAuthentication(principal);
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-        } catch ( SecurityException | PrincipalResolutionException | IllegalArgumentException ex)  {
+        } catch (SecurityException | TechnicalException ex)  {
 
             // todo later
             // Log internalServer debug info

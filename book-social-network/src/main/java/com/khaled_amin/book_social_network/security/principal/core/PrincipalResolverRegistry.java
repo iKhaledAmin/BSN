@@ -1,9 +1,8 @@
 package com.khaled_amin.book_social_network.security.principal.core;
 
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
-import com.khaled_amin.book_social_network.security.exception.PrincipalResolutionException;
+import com.khaled_amin.book_social_network.security.exception.SecurityTechnicalException;
 import com.khaled_amin.book_social_network.security.jwt.JwtPayload;
-import com.khaled_amin.book_social_network.security.exception.SecurityException;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
@@ -43,13 +42,13 @@ import java.util.Map;
  * <h3>Failure Semantics</h3>
  * <ul>
  *   <li>If multiple resolvers are registered for the same {@link ActorType}:
- *       {@link PrincipalResolutionException#duplicateResolver(ActorType)} is thrown at startup</li>
+ *       {@link SecurityTechnicalException#duplicatePrincipalResolver(ActorType)} is thrown at startup</li>
  *   <li>If no resolver exists for a given {@link ActorType}:
- *       {@link PrincipalResolutionException#missingResolver(ActorType)} is thrown at runtime</li>
+ *       {@link SecurityTechnicalException#nullPrincipalResolver(ActorType)} is thrown at runtime</li>
  *   <li>All failures are considered system-level configuration errors, not user errors</li>
  * </ul>
  *
- * <h3>Security Notes</h3>
+ * <h3>SECURITY Notes</h3>
  * <ul>
  *   <li>This component operates only on validated JWT payloads</li>
  *   <li>No authentication or validation is performed here</li>
@@ -67,7 +66,7 @@ import java.util.Map;
  * @see AuthenticatedPrincipal
  * @see JwtPayload
  * @see ActorType
- * @see PrincipalResolutionException
+ * @see SecurityTechnicalException
  */
 @Component
 public class PrincipalResolverRegistry {
@@ -82,7 +81,7 @@ public class PrincipalResolverRegistry {
             ActorType type = resolver.getType();
 
             if (map.containsKey(type)) {
-                throw PrincipalResolutionException.duplicateResolver(type);
+                throw SecurityTechnicalException.duplicatePrincipalResolver(type);
             }
 
             map.put(type, resolver);
@@ -131,7 +130,7 @@ public class PrincipalResolverRegistry {
      * <ul>
      *   <li>
      *       If no resolver exists for the payload actor type:
-     *       {@link PrincipalResolutionException#missingResolver(ActorType)}
+     *       {@link SecurityTechnicalException#nullPrincipalResolver(ActorType)}
      *       is thrown.
      *   </li>
      *   <li>
@@ -143,7 +142,7 @@ public class PrincipalResolverRegistry {
      *   </li>
      * </ul>
      *
-     * <h3>Security Notes</h3>
+     * <h3>SECURITY Notes</h3>
      * <ul>
      *   <li>This method performs no JWT validation</li>
      *   <li>This method performs no authorization checks</li>
@@ -152,7 +151,6 @@ public class PrincipalResolverRegistry {
      *
      * @param payload {@link JwtPayload} validated JWT payload containing identity claims
      * @return resolved principal {@link AuthenticatedPrincipal} associated with the payload
-     * @throws PrincipalResolutionException if no resolver exists for the actor type
      * @throws SecurityException if principal resolution fails
      */
     public AuthenticatedPrincipal resolve(JwtPayload payload) {
@@ -160,7 +158,7 @@ public class PrincipalResolverRegistry {
         PrincipalResolver resolver = principalResolverMap.get(payload.getActorType());
 
         if (resolver == null) {
-            throw PrincipalResolutionException.missingResolver(payload.getActorType());
+            throw SecurityTechnicalException.nullPrincipalResolver(payload.getActorType());
         }
 
         return resolver.resolve(payload);

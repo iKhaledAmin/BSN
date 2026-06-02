@@ -8,6 +8,18 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class PageInfoResponse {
 
+    @JsonProperty("first")
+    private boolean first;
+
+    @JsonProperty("last")
+    private boolean last;
+
+    @JsonProperty("has_next")
+    private boolean hasNext;
+
+    @JsonProperty("has_previous")
+    private boolean hasPrevious;
+
     @JsonProperty("page")
     private int page;
 
@@ -18,6 +30,6 @@ public class PageInfoResponse {
     private long totalElements;
 
     @JsonProperty("total_pages")
-    private int totalPages;
+    private long totalPages;
 
 }

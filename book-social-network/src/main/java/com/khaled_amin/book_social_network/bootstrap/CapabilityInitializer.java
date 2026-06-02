@@ -2,7 +2,7 @@ package com.khaled_amin.book_social_network.bootstrap;
 
 import com.khaled_amin.book_social_network.identity.capability.application.port.CapabilityService;
 import com.khaled_amin.book_social_network.identity.capability.domain.definition.CapabilityDefinition;
-import com.khaled_amin.book_social_network.identity.capability.domain.registry.CapabilityRegistry;
+import com.khaled_amin.book_social_network.identity.capability.application.registry.CapabilityRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

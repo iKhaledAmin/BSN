@@ -16,9 +16,8 @@ public interface RoleRepository {
     boolean existsByName(String name);
     boolean existsByDisplayName(String displayName);
 
-    List<Role> findAll();
-
-    List<Role> findAllById(List<Long> roleIds);
-
     List<Role> findAllByNameIn(List<String> names);
+
+
+    List<Role> findAll();
 }

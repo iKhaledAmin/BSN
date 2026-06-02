@@ -21,7 +21,8 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "read_self",
             "Read Own Account",
-            "Allows authenticated users to view their own account details"
+            "Allows authenticated users to view their own account clientDetails",
+            false
     ),
 
     ACCOUNT_UPDATE_SELF(
@@ -29,7 +30,8 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "update_self",
             "Update Own Account",
-            "Allows authenticated users to update their own account information"
+            "Allows authenticated users to update their own account information",
+            false
     ),
 
     // -------------------------------- Administrative Operations -------------------------------- //
@@ -39,7 +41,17 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "read",
             "Read Accounts",
-            "Allows viewing account details for any account"
+            "Allows viewing account clientDetails for any account",
+            false
+    ),
+
+    ACCOUNT_CREATE(
+            "ACCOUNT_CREATE",
+            "account",
+            "create",
+            "Create Accounts",
+            "Allows admins to create new accounts",
+            false
     ),
 
     ACCOUNT_UPDATE(
@@ -47,15 +59,18 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "update",
             "Update Accounts",
-            "Allows updating account information for any account"
+            "Allows updating account information for any account",
+            false
     ),
+
 
     ACCOUNT_ASSIGN_ROLE(
             "ACCOUNT_ASSIGN_ROLE",
             "account",
             "assign_role",
             "Assign Account Roles",
-            "Allows assigning roles to accounts"
+            "Allows assigning roles to accounts",
+            false
     ),
 
     ACCOUNT_REMOVE_ROLE(
@@ -63,7 +78,8 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "remove_role",
             "Remove Account Roles",
-            "Allows removing assigned roles from accounts"
+            "Allows removing assigned roles from accounts",
+            false
     ),
 
     ACCOUNT_REPLACE_ROLES(
@@ -71,7 +87,8 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "replace_roles",
             "Replace Account Roles",
-            "Allows replacing all assigned account roles"
+            "Allows replacing all assigned account roles",
+            false
     ),
 
     // -------------------------------- Activation -------------------------------- //
@@ -81,23 +98,18 @@ public enum AccountCapability implements CapabilityDefinition {
             "account",
             "activate",
             "Activate Accounts",
-            "Allows activating disabled or pending accounts"
+            "Allows activating disabled or pending accounts",
+            false
     ),
 
-//    ACCOUNT_DISABLE(
-//            "ACCOUNT_DISABLE",
-//            "account",
-//            "disable",
-//            "Disable Accounts",
-//            "Allows disabling active accounts"
-//    ),
 
     ACCOUNT_RESET_PASSWORD(
             "ACCOUNT_RESET_PASSWORD",
             "account",
             "reset_password",
             "Reset Account Passwords",
-            "Allows resetting passwords for accounts"
+            "Allows resetting passwords for accounts",
+            false
     );
 
     private final CapabilityCode code;
@@ -105,20 +117,21 @@ public enum AccountCapability implements CapabilityDefinition {
     private final CapabilityAction action;
     private final CapabilityName name;
     private final CapabilityDescription description;
+    private final boolean systemManaged;
 
     AccountCapability(
-            String code,
-            String resource,
-            String action,
-            String name,
-            String description
+            String code, String resource,
+            String action, String name,
+            String description, boolean systemManaged
     ) {
         this.code = CapabilityCode.of(code);
         this.resource = CapabilityResource.of(resource);
         this.action = CapabilityAction.of(action);
         this.name = CapabilityName.of(name);
         this.description = CapabilityDescription.of(description);
+        this.systemManaged = systemManaged;
     }
+
 
     @Override
     public CapabilityModule getModule() {

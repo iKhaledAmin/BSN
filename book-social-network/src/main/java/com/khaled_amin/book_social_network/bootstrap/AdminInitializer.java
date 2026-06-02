@@ -1,10 +1,16 @@
 package com.khaled_amin.book_social_network.bootstrap;
 
-import com.khaled_amin.book_social_network.auth.account.application.service.AccountAuthenticationService;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountCreateRequest;
+import com.khaled_amin.book_social_network.identity.user.account.application.service.AccountService;
+import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
+import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 
 @Component
@@ -12,16 +18,29 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminInitializer implements CommandLineRunner {
 
-    private final AccountAuthenticationService accountAuthenticationService;
+    private final AccountService accountService;
     private final BootstrapProperties properties;
 
     @Override
     public void run(String... args) {
 
-        accountAuthenticationService.createBootstrapAdmin(
-                properties.admin().username(),
-                properties.admin().password(),
-                properties.admin().email()
-        );
+        RoleName superAdminRoleName = SystemRole.SUPER_ADMIN.getName();
+
+        if (accountService.existsByRoleName(superAdminRoleName)) {
+            return;
+        }
+
+        AccountCreateRequest request = AccountCreateRequest.builder()
+                .username(properties.admin().username())
+                .password(properties.admin().password())
+                .emailAddress(properties.admin().email())
+                .firstName("System")
+                .lastName("Administrator")
+                .roleNames(List.of(superAdminRoleName.toString()))
+                .build();
+
+        Account account = accountService.create(request);
+
+        accountService.activate(account.getAccountCode());
     }
 }

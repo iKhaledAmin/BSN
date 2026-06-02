@@ -19,30 +19,31 @@ public class AccountFactory {
     private final ActorCodeGenerator actorCodeGenerator;
 
 
-    public Account create(AccountCreateCommand command, List<Role> roles) {
+    public Account create(
+            String username,
+            String encodedPassword,
+            String email,
+            String firstName,
+            String lastName,
+            List<Role> roles
+    ){
 
         ActorCode accountCode = actorCodeGenerator.generate(ActorType.ACCOUNT);
-        Profile profile = createProfile(command.profileCommand());
 
-        return Account.create(
-                command.username(),
-                command.encodedPassword(),
-                command.email(),
-                accountCode,
-                profile,
-                roles
-        );
+        AccountCreateCommand command = AccountCreateCommand.of(accountCode, username, encodedPassword, email);
 
+        Profile profile = createProfile(firstName, lastName);
+
+        return Account.create(command, profile, roles);
     }
 
 
 
+    private Profile createProfile(String firstName,String lastName) {
 
-    private Profile createProfile(ProfileCreateCommand command) {
-        return Profile.create(
-                command.firstName(),
-                command.lastName()
-        );
+        ProfileCreateCommand command = ProfileCreateCommand.of(firstName, lastName);
+
+        return Profile.create(command);
     }
 
 }

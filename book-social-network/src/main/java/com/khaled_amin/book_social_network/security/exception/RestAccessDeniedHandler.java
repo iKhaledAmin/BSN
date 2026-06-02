@@ -1,6 +1,5 @@
 package com.khaled_amin.book_social_network.security.exception;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khaled_amin.book_social_network.core.api.ApiResponseFactory;
 import com.khaled_amin.book_social_network.core.api.ErrorResponse;
@@ -21,15 +20,19 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException ex
+    public void handle(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AccessDeniedException ex
     ) throws IOException {
 
-        SecurityError error = SecurityError.ACCESS_DENIED;
+        AuthorizationError error = AuthorizationError.ACCESS_DENIED;
+
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(error.getStatus().value())
                 .code(error.getCode())
-                .message(error.getMessage())
+                .message(ex.getMessage())
                 .details(Map.of())
                 .path(request.getRequestURI())
                 .build();

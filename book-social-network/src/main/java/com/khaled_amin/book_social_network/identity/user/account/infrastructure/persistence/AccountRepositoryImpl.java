@@ -1,9 +1,14 @@
 package com.khaled_amin.book_social_network.identity.user.account.infrastructure.persistence;
 
-import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
+import com.khaled_amin.book_social_network.core.pagination.PageResult;
+import com.khaled_amin.book_social_network.core.pagination.PageResultFactory;
+import com.khaled_amin.book_social_network.core.pagination.PageableFactory;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountPageRequest;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.identity.user.account.domain.repository.AccountRepository;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -36,8 +41,8 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public boolean existsByRoleName(String roleName) {
-        return accountJpaRepository.existsByAccountRolesRoleName(roleName);
+    public boolean existsByRoleName(RoleName roleName) {
+        return accountJpaRepository.existsByAccountRolesRoleName(roleName.toString());
     }
 
     @Override
@@ -61,7 +66,13 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public Optional<Account> findByRoleName(String roleName) {
-        return accountJpaRepository.findByAccountRolesRoleName(roleName);
+    public PageResult<Account> findAll(AccountPageRequest request) {
+
+        Page<Account> page = accountJpaRepository.findAll(
+                PageableFactory.from(request)
+        );
+
+        return PageResultFactory.from(page);
     }
+
 }

@@ -1,9 +1,15 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.value;
 
-import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
-
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountValidationException;
 
 public record Username(String value) {
+
+    public static final int MAX_LENGTH = 100;
+
+    /**
+     * Canonical username format.
+     */
+    public static final String PATTERN = "^[a-zA-Z0-9._]+$";
 
     public Username {
         value = normalize(value);
@@ -15,20 +21,35 @@ public record Username(String value) {
     }
 
     private static void validate(String value) {
+
         if (value == null || value.isBlank()) {
-            throw AccountDomainException
-                    .invalidUsername()
-                    .withDetail("reason", "Username must not be null or empty");
+            throw AccountValidationException.invalidUsername()
+                    .withClientDetails("reason", "Username must not be null or empty");
         }
 
-        if (value.length() > 50) {
-            throw AccountDomainException
-                    .invalidUsername()
-                    .withDetail("reason", "Username too long");
+        if (value.length() > MAX_LENGTH) {
+            throw AccountValidationException.invalidUsername()
+                    .withClientDetails("reason", "Username exceeds maximum allowed length")
+                    .withClientDetails("maxLength", MAX_LENGTH)
+                    .withDebugDetails("actualLength", value.length())
+                    .withDebugDetails("receivedValue", value);
+        }
+
+        if (!value.matches(PATTERN)) {
+            throw AccountValidationException.invalidUsername()
+                    .withClientDetails("reason", "Username format is invalid")
+                    .withClientDetails("expectedFormat", "letters_numbers_dots_underscores")
+                    .withDebugDetails("receivedValue", value)
+                    .withDebugDetails("pattern", PATTERN);
         }
     }
 
-    public static Username of(String username) {
-        return new Username(username);
+    public static Username of(String value) {
+        return new Username(value);
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }

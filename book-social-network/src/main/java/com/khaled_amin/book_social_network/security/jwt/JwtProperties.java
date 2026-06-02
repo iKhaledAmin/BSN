@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.security.jwt;
 
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
+import com.khaled_amin.book_social_network.security.exception.SecurityTechnicalException;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -31,16 +32,22 @@ public class JwtProperties {
     public void validate() {
 
         if (expirationConfigs == null || expirationConfigs.isEmpty()) {
-            throw new IllegalStateException("JWT expiration configs must not be null or empty");
+
+            throw SecurityTechnicalException.invalidConfiguration(
+                    "JWT expiration configs must not be null or empty"
+            );
         }
 
-        // Ensure all ActorTypes are configured
         for (ActorType type : ActorType.values()) {
-            if (type == ActorType.SYSTEM || type == ActorType.ANONYMOUS)
+
+            if (type == ActorType.SYSTEM || type == ActorType.ANONYMOUS) {
                 continue;
+            }
+
             if (!expirationConfigs.containsKey(type)) {
-                throw new IllegalStateException(
-                        "Missing JWT expiration config for account type: " + type
+
+                throw SecurityTechnicalException.invalidConfiguration(
+                        "Missing JWT expiration config for actor type: " + type
                 );
             }
         }
@@ -51,11 +58,13 @@ public class JwtProperties {
     }
 
     private ExpirationConfig getConfig(ActorType type) {
+
         ExpirationConfig expirationConfig = expirationConfigs.get(type);
 
         if (expirationConfig == null) {
-            throw new IllegalStateException(
-                    "JWT expiration config not found for account type: " + type
+
+            throw SecurityTechnicalException.invalidConfiguration(
+                    "JWT expiration config not found for actor type: " + type
             );
         }
 

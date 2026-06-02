@@ -16,7 +16,4 @@ public class Meta {
     @JsonProperty("request_id")
     private String requestId;
 
-    @JsonProperty("version")
-    private String version;
-
 }

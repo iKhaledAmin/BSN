@@ -1,15 +1,10 @@
 package com.khaled_amin.book_social_network.identity.user.role.api.mapper;
 
+
 import com.khaled_amin.book_social_network.core.mapper.BaseMapper;
 import com.khaled_amin.book_social_network.core.mapper.GlobalMapperConfig;
-import com.khaled_amin.book_social_network.identity.user.role.api.dto.RoleCreateRequest;
 import com.khaled_amin.book_social_network.identity.user.role.api.dto.RoleResponse;
-import com.khaled_amin.book_social_network.identity.user.role.api.dto.RoleUpdateRequest;
-import com.khaled_amin.book_social_network.identity.user.role.domain.command.CreateRoleCommand;
-import com.khaled_amin.book_social_network.identity.user.role.domain.command.UpdateRoleCommand;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleDescription;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleDisplayName;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -18,9 +13,15 @@ import java.util.List;
 import java.util.Set;
 
 
-@Mapper(config = GlobalMapperConfig.class)
+@Mapper(
+        config = GlobalMapperConfig.class,
+        uses = {RoleCapabilityMapper.class}
+)
 public interface RoleMapper extends BaseMapper<RoleResponse,Role> {
 
+    @Mapping(target = "capabilities", source = "roleCapabilities")
+    @Override
+    RoleResponse toResponse(Role role);
 
     @Named("roleToName")
     default String map(Role role) {
@@ -35,26 +36,5 @@ public interface RoleMapper extends BaseMapper<RoleResponse,Role> {
                 .toList();
     }
 
-
-    @Mapping(target = "name", expression = "java(RoleName.of(request.getName()))")
-    @Mapping(target = "displayName", expression = "java(RoleDisplayName.of(request.getName()))")
-    @Mapping(target = "description", expression = "java(RoleDescription.of(request.getDescription()))")
-    @Mapping(target = "defaultRole", source = "defaultRole")
-    @Mapping(target = "protectedRole", source = "protectedRole")
-    CreateRoleCommand toCommand(RoleCreateRequest request);
-
-
-    UpdateRoleCommand toCommand(RoleUpdateRequest request);
-
-
-    // ---------- Helpers ----------
-
-    default RoleDisplayName mapDisplayName(String value) {
-        return value == null ? null : RoleDisplayName.of(value);
-    }
-
-    default RoleDescription mapDescription(String value) {
-        return value == null ? null : RoleDescription.of(value);
-    }
 
 }

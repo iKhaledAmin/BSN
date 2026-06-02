@@ -107,7 +107,7 @@ public class VerificationToken {
     public void canBeUsedFor(TokenType expectedType) {
         if(!this.tokenType.same(expectedType)){
             throw VerificationDomainException.invalidToken()
-                    .withDetail("reason","Wrong token type");
+                    .withClientDetails("reason","Wrong token type");
         }
     }
 
@@ -125,27 +125,27 @@ public class VerificationToken {
 
         if (code == null || code.isBlank()) {
             throw VerificationDomainException.invalidState()
-                    .withDetail("reason", "Token code must not be null");
+                    .withClientDetails("reason", "Token code must not be null");
         }
 
         if (tokenType == null) {
             throw VerificationDomainException.invalidState()
-                    .withDetail("reason", "Token type must not be null");
+                    .withClientDetails("reason", "Token type must not be null");
         }
 
         if (target == null) {
             throw VerificationDomainException.invalidState()
-                    .withDetail("reason", "Target account must not be null");
+                    .withClientDetails("reason", "Target account must not be null");
         }
 
         if (expiresAt == null || createdAt == null) {
             throw VerificationDomainException.invalidState()
-                    .withDetail("reason", "Timestamps must not be null");
+                    .withClientDetails("reason", "Timestamps must not be null");
         }
 
         if (expiresAt.isBefore(createdAt)) {
             throw VerificationDomainException.invalidState()
-                    .withDetail("reason", "Expiration must be after creation");
+                    .withClientDetails("reason", "Expiration must be after creation");
         }
     }
 

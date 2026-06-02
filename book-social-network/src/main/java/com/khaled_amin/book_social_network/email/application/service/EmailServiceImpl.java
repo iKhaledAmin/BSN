@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.email.application.service;
 
-import com.khaled_amin.book_social_network.email.application.exception.EmailApplicationException;
+import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 import com.khaled_amin.book_social_network.email.infrastructure.config.EmailProperties;
 import com.khaled_amin.book_social_network.email.application.model.EmailMessage;
 import com.khaled_amin.book_social_network.email.application.port.in.EmailService;
@@ -22,15 +22,15 @@ import java.util.Map;
  * Default implementation of {@link EmailService}.
  *
  * <p>
- * Orchestrates the full email delivery workflow including:
+ * Orchestrates the full emailAddress delivery workflow including:
  * template rendering, domain entity creation, persistence,
  * delivery attempts, and retry handling.
  * </p>
  *
  * <h3>Workflow Overview</h3>
  * <ul>
- *   <li>Render email content from template</li>
- *   <li>Create domain email entity</li>
+ *   <li>Render emailAddress content from template</li>
+ *   <li>Create domain emailAddress entity</li>
  *   <li>Persist initial state</li>
  *   <li>Attempt delivery via {@link EmailSender}</li>
  *   <li>Update state based on result</li>
@@ -40,7 +40,7 @@ import java.util.Map;
  * <ul>
  *   <li>Retries are executed based on configured policy</li>
  *   <li>Only eligible emails are selected for retry</li>
- *   <li>Each retry updates the email state accordingly</li>
+ *   <li>Each retry updates the emailAddress state accordingly</li>
  * </ul>
  *
  * <h3>Design Notes</h3>
@@ -75,10 +75,11 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception ex) {
             // Template rendering failed
             // todo: log the failure
-            throw EmailApplicationException.renderFailed(ex);
+            throw EmailTechnicalException.templateRenderingFailed(ex)
+                    .withDebugDetails("template", command.template().toString());
         }
 
-        // Create Email
+        // Create EmailAddress
         Email email = emailFactory.create(command, renderedBody);
 
         // Persist initial state (PENDING)
@@ -98,7 +99,8 @@ public class EmailServiceImpl implements EmailService {
             emailRepository.save(email); // Persist failed state
 
             // todo: log the failure
-            throw EmailApplicationException.sendFailed(ex);
+            throw EmailTechnicalException.emailSendingFailed(ex)
+                    .withDebugDetails("emailId", email.getId());
         }
 
     }
@@ -151,8 +153,9 @@ public class EmailServiceImpl implements EmailService {
             email.markAsFailed(ex.getMessage());
             emailRepository.save(email); // persist FAILED state
 
-            throw EmailApplicationException.sendFailed(ex);
-        }
+            throw EmailTechnicalException.emailSendingFailed(ex)
+                    .withDebugDetails("emailId", email.getId())
+                    .withDebugDetails("retryCount", email.getRetryCount());        }
 
     }
 

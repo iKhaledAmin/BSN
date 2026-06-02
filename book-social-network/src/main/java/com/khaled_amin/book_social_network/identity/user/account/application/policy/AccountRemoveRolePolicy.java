@@ -1,11 +1,11 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.policy;
 
-import com.khaled_amin.book_social_network.core.policy.core.AbstractPolicy;
+import com.khaled_amin.book_social_network.core.policy.AbstractPolicy;
+import com.khaled_amin.book_social_network.identity.user.account.application.actor.AccountActor;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountPolicyException;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountTechnicalException;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
-import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
-import com.khaled_amin.book_social_network.identity.core.model.ActorType;
-import com.khaled_amin.book_social_network.identity.user.account.application.exception.AccountPolicyException;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import org.springframework.stereotype.Component;
@@ -17,14 +17,22 @@ public class AccountRemoveRolePolicy extends AbstractPolicy<AccountPolicyContext
     @Override
     public void validateContext(AccountPolicyContext context) {
 
+        if (context == null)
+            throw AccountTechnicalException.invalidPolicyContext()
+                    .withDebugDetails("reason", "Account policy context is null");
+
+        if(context.getActor() == null)
+            throw AccountTechnicalException.invalidPolicyContext()
+                    .withDebugDetails("reason","Actor is null");
+
         if (context.getTarget() == null) {
-            throw AccountPolicyException
-                    .invalidPolicyContext("Target must not be null");
+            throw AccountTechnicalException.invalidPolicyContext()
+                    .withDebugDetails("reason","Target account is null");
         }
 
         if (context.getRequestedRole() == null) {
-            throw AccountPolicyException
-                    .invalidPolicyContext("Role must not be null");
+            throw AccountTechnicalException.invalidPolicyContext()
+                    .withDebugDetails("reason","Requested role is null");
         }
     }
 
@@ -35,9 +43,8 @@ public class AccountRemoveRolePolicy extends AbstractPolicy<AccountPolicyContext
 
     @Override
     protected void deny(String reason) {
-        throw AccountPolicyException
-                .roleRemovalForbidden()
-                .withDetail("reason", reason);
+        throw AccountPolicyException.roleRemovalForbidden()
+                .withClientDetails("reason", reason);
     }
 
     @Override
@@ -55,39 +62,29 @@ public class AccountRemoveRolePolicy extends AbstractPolicy<AccountPolicyContext
     @Override
     protected void handleAccount(AccountPolicyContext context) {
 
-        Actor actor = context.getActor();
+        AccountActor actor = (AccountActor) context.getActor();
         Account target = context.getTarget();
         Role role = context.getRequestedRole();
 
+        String superAdmin = SystemRole.SUPER_ADMIN.getName().toString();
+
         // Prevent self-role removal (except SUPER_ADMIN)
         // A account should not downgrade/remove their own privileges unless they are SUPER_ADMIN
-        if (actor.sameAs(targetIdentity(target))
-                && !actor.hasAuthority(SystemRole.SUPER_ADMIN.getName().value())) {
+        if (actor.sameAs(target.getActorIdentity()) && !actor.hasRole(superAdmin)) {
 
             deny("You cannot remove your own role");
         }
 
         // Only SUPER_ADMIN can remove SUPER_ADMIN role from any account
-        if (SystemRole.SUPER_ADMIN.getName().value().equals(role.getName())
-                && !actor.hasAuthority(SystemRole.SUPER_ADMIN.getName().value())) {
+        if (superAdmin.equals(role.getName()) && !actor.hasRole(superAdmin)) {
 
-            deny("Only SUPER_ADMIN can remove SUPER_ADMIN role");
+            deny("Only super admin can remove this role");
         }
 
         // System roles are critical → only SUPER_ADMIN is allowed
-        if (role.isSystemRole()
-                && !actor.hasAuthority(SystemRole.SUPER_ADMIN.getName().value())) {
+        if (role.getRoleType().isSystem() && !actor.hasRole(superAdmin)) {
 
-            deny("Only SUPER_ADMIN can remove system roles");
-        }
-
-        // Business roles can be managed by ADMIN or SUPER_ADMIN
-        if (role.isBusinessRole()
-                && !actor.hasAnyAuthority(
-                SystemRole.ADMIN.getName().value(),
-                SystemRole.SUPER_ADMIN.getName().value())) {
-
-            deny("Only ADMIN or SUPER_ADMIN can remove business roles");
+            deny("Only super admin can remove system roles");
         }
 
         allow();
@@ -95,10 +92,5 @@ public class AccountRemoveRolePolicy extends AbstractPolicy<AccountPolicyContext
 
     // -------------------- Helpers -------------------- //
 
-    private ActorIdentity targetIdentity(Account target) {
-        return ActorIdentity.of(
-                ActorType.ACCOUNT,
-                target.getActorCode()
-        );
-    }
+
 }

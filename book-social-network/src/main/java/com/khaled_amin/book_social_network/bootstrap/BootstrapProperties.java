@@ -22,8 +22,8 @@ public record BootstrapProperties(@NotNull @Valid Admin admin) {
             @Size(min = 6, message = "Admin password must be at least 6 characters")
             String password,
 
-            @NotBlank(message = "Admin email must not be blank")
-            @Email(message = "Admin email must be valid")
+            @NotBlank(message = "Admin emailAddress must not be blank")
+            @Email(message = "Admin emailAddress must be valid")
             String email
 
     ) {}

@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.security.jwt.claims;
 
+import com.khaled_amin.book_social_network.security.jwt.JwtService;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import io.jsonwebtoken.JwtBuilder;
 
@@ -11,7 +12,7 @@ import io.jsonwebtoken.JwtBuilder;
  * This abstraction allows each authenticated principal type
  * (e.g. AccountPrincipal, ClientPrincipal)
  * to define its own JWT structure independently without coupling
- * {@link com.khaled_amin.book_social_network.security.jwt.JwtService}
+ * {@link JwtService}
  * to actor-specific authorization logic.
  * </p>
  *

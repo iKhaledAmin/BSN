@@ -3,8 +3,9 @@ package com.khaled_amin.book_social_network.auth.account.api.mapper;
 
 import com.khaled_amin.book_social_network.auth.account.api.dto.*;
 import com.khaled_amin.book_social_network.core.mapper.GlobalMapperConfig;
-import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountCreateCommand;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountCreateRequest;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
+import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import com.khaled_amin.book_social_network.security.jwt.JwtMapper;
 import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
 import org.mapstruct.Mapper;
@@ -48,16 +49,7 @@ public interface AccountAuthenticationMapper {
     default List<String> mapRoles(Set<String> roles) {
         return roles == null ? List.of() : new ArrayList<>(roles);
     }
-    default AccountCreateCommand toCommand(AccountRegistrationRequest request, String encodedPassword) {
-        return AccountCreateCommand.of(
-                request.getUsername(),
-                encodedPassword,
-                request.getEmailAddress(),
-                request.getFirstName(),
-                request.getLastName()
-        );
-    }
 
-
+    AccountCreateRequest toCreateRequest(AccountRegistrationRequest request, List<String>roleNames);
 }
 

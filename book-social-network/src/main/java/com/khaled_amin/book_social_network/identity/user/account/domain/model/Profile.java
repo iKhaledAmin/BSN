@@ -1,10 +1,9 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.identity.user.account.domain.command.ProfileCreateCommand;
 import com.khaled_amin.book_social_network.identity.user.account.domain.command.ProfileUpdateCommand;
-import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.FirstName;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.LastName;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountTechnicalException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,25 +50,23 @@ public class Profile extends AuditableEntity {
 
     // ------------------------------------ Business Methods -------------------------------- //
 
-    public static Profile create(FirstName firstName,LastName lastName) {
+    public static Profile create(ProfileCreateCommand command) {
 
-        Profile profile = Profile.builder()
-                .firstName(firstName.value())
-                .lastName(lastName.value())
+        if (command == null){
+            throw AccountTechnicalException.nullProfileCreateCommand();
+        }
+
+        return Profile.builder()
+                .firstName(command.firstName().toString())
+                .lastName(command.lastName().toString())
                 .profileStatus(ProfileStatus.getDefault())
                 .build();
-
-        profile.validateState();
-
-        return profile;
     }
 
     public void update(ProfileUpdateCommand command) {
 
         if (command == null) {
-            throw AccountDomainException
-                    .invalidProfile()
-                    .withDetail("reason", "Update profile command must not be null");
+            throw AccountTechnicalException.nullProfileUpdateCommand();
         }
 
         command.firstName()
@@ -90,7 +87,6 @@ public class Profile extends AuditableEntity {
         command.profession()
                 .ifPresent(p -> this.profession = p.value());
 
-        this.validateState();
     }
 
     @Transient
@@ -98,26 +94,6 @@ public class Profile extends AuditableEntity {
         return firstName + " " + lastName;
     }
 
-
-    private void validateState() {
-        if (firstName == null || firstName.isBlank()) {
-            throw AccountDomainException
-                    .invalidFirstName()
-                    .withDetail("reason", "First value must not be null or blank");
-        }
-
-        if (lastName == null || lastName.isBlank()) {
-            throw AccountDomainException
-                    .invalidLastName()
-                    .withDetail("reason", "Last value must not be null or blank");
-        }
-
-        if (profileStatus == null){
-            throw AccountDomainException
-                    .invalidProfileStatus()
-                    .withDetail("reason", "Profile status must not be null");
-        }
-    }
     // ------------------------------------ End Business Methods -------------------------------- //
 
 }

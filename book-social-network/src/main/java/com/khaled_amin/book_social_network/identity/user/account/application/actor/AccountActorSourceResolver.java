@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.actor;
 
-import com.khaled_amin.book_social_network.identity.core.exception.ActorResolutionException;
+import com.khaled_amin.book_social_network.identity.core.exception.IdentityTechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.core.model.ActorSource;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
@@ -18,7 +18,7 @@ public class AccountActorSourceResolver implements ActorSourceResolver {
     public Actor resolve(ActorSource source) {
 
         if (!(source instanceof Account account)) {
-            throw ActorResolutionException.sourceTypeMismatch(
+            throw IdentityTechnicalException.sourceTypeMismatch(
                     Account.class,
                     source.getClass()
             );

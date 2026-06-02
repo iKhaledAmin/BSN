@@ -1,23 +1,21 @@
 package com.khaled_amin.book_social_network.identity.user.role.application.service;
 
-import com.khaled_amin.book_social_network.core.servise.EntityRetrievalService;
 import com.khaled_amin.book_social_network.identity.capability.application.port.CapabilityService;
 import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.CapabilityCode;
 import com.khaled_amin.book_social_network.identity.core.provider.ActorProvider;
-import com.khaled_amin.book_social_network.identity.user.role.application.exception.RoleApplicationException;
-import com.khaled_amin.book_social_network.identity.user.role.application.policy.RolePolicyContextFactory;
-import com.khaled_amin.book_social_network.identity.user.role.domain.command.CreateRoleCommand;
-import com.khaled_amin.book_social_network.identity.user.role.domain.command.UpdateRoleCommand;
+import com.khaled_amin.book_social_network.identity.user.role.api.dto.RoleCreateRequest;
+import com.khaled_amin.book_social_network.identity.user.role.api.dto.RoleUpdateRequest;
+import com.khaled_amin.book_social_network.identity.user.role.domain.command.RoleUpdateCommand;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.RoleFactory;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
-import com.khaled_amin.book_social_network.identity.user.role.application.policy.RolePolicyEngine;
-import com.khaled_amin.book_social_network.identity.user.role.application.validation.RoleApplicationValidator;
+import com.khaled_amin.book_social_network.identity.user.role.application.validation.RoleValidator;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import com.khaled_amin.book_social_network.identity.user.role.domain.repository.RoleRepository;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleId;
 import com.khaled_amin.book_social_network.identity.core.model.Actor;
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
+import com.khaled_amin.book_social_network.identity.user.role.exception.RoleBusinessException;
+import com.khaled_amin.book_social_network.identity.user.role.exception.RoleTechnicalException;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,12 +35,9 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final RoleFactory roleFactory;
-    private final RolePolicyEngine rolePolicyEngine;
     private final ActorProvider actorProvider;
     private final CapabilityService capabilityService;
-    private final EntityRetrievalService entityRetrievalService;
-    private final RoleApplicationValidator roleApplicationValidator;
-    private final RolePolicyContextFactory policyContextFactory;
+    private final RoleValidator roleValidator;
 
     public static final String DEFAULT_ROLES_CACHE = "defaultRoles";
 
@@ -49,25 +45,19 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
     @Override
-    public Role createBusinessRole(CreateRoleCommand command) {
-        if (command == null) {
-            throw RoleApplicationException
-                    .invalidCommand()
-                    .withDetail("reason", "Create command must not be null");
-        }
-
-        Actor actor = actorProvider.getCurrent();
+    public Role createBusinessRole(RoleCreateRequest request) {
 
         // Application validation
-        roleApplicationValidator.validateCreate(command);
-
-        // Policy validation
-        rolePolicyEngine.canCreateBusinessRole(
-                policyContextFactory.forCreateBusinessRole(actor, command)
-        );
+        roleValidator.ensureCanBeCreate(request);
 
         // Domain logic
-        Role role = roleFactory.createBusinessRole(command);
+        Role role = roleFactory.createBusinessRole(
+                request.getName(),
+                request.getDisplayName(),
+                request.getDescription(),
+                request.getDefaultRole(),
+                request.getProtectedRole()
+        );
 
         // Persistence
         return roleRepository.save(role);
@@ -77,22 +67,12 @@ public class RoleServiceImpl implements RoleService {
     @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
     @Override
     public Role createSystemRole(SystemRole systemRole){
-
         if (systemRole == null){
-            throw RoleApplicationException
-                    .invalidSystemRole()
-                    .withDetail("reason", "System role must not be null");
+           throw RoleTechnicalException.nullSystemRole();
         }
 
-        Actor actor = actorProvider.getCurrent();
-
         // Application validation
-        roleApplicationValidator.validateCreate(systemRole);
-
-        // Policy validation
-        rolePolicyEngine.canCreateSystemRole(
-                policyContextFactory.forCreateSystemRole(actor)
-        );
+        roleValidator.ensureCanBeCreate(systemRole);
 
         // Domain logic
         Role role = roleFactory.createSystemRole(systemRole);
@@ -105,24 +85,18 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
     @Override
-    public Role update(RoleName roleName, UpdateRoleCommand command) {
-
-        if (command == null) {
-            throw RoleApplicationException
-                    .invalidCommand()
-                    .withDetail("reason", "Update command must not be null");
-        }
-
+    public Role update(RoleName roleName, RoleUpdateRequest request) {
 
         Role existingRole = getByName(roleName);
-        Actor actor = actorProvider.getCurrent();
 
         // Application validation
-        roleApplicationValidator.validateUpdate(existingRole, command);
+        roleValidator.ensureCanBeUpdate(existingRole, request);
 
-        // Policy validation
-        rolePolicyEngine.canUpdateRole(
-                policyContextFactory.forUpdate(actor, existingRole, command)
+        RoleUpdateCommand command = RoleUpdateCommand.of(
+                request.getDisplayName(),
+                request.getDescription(),
+                request.getDefaultRole(),
+                request.getProtectedRole()
         );
 
         // Domain logic
@@ -133,18 +107,25 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Transactional
+    @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
+    @Override
+    public void delete(RoleName roleName) {
+
+        Role role = getByName(roleName);
+
+        // Application validation
+        roleValidator.ensureCanBeDelete(role);
+
+        // Domain logic
+        role.delete();
+
+        // Persistence
+        roleRepository.delete(role);
+    }
+
+    @Transactional
     @Override
     public Role addCapability(RoleName roleName, CapabilityCode code) {
-
-//        if (roleName == null) {
-//            throw .invalidRole()
-//                    .withDetail("reason", "Role name must not be null");
-//        }
-//
-//        if (code == null) {
-//            throw .invalidCapability()
-//                    .withDetail("reason", "Capability code must not be null");
-//        }
 
         Role role = getByName(roleName);
 
@@ -152,16 +133,13 @@ public class RoleServiceImpl implements RoleService {
 
         Actor actor = actorProvider.getCurrent();
 
-        /*
-         * POLICY VALIDATION
-         *
-         * Add later:
-         *
-         * rolePolicyEngine.canAssignCapability(...)
-         */
+        // Application validation
+        roleValidator.ensureCaAddCapability(capability,actor);
 
+        // Domain logic
         role.addCapability(capability);
 
+        // Persistence
         return roleRepository.save(role);
     }
 
@@ -170,54 +148,25 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role removeCapability(RoleName roleName, CapabilityCode code) {
 
-//        if (roleName == null) {
-//            throw .invalidRole()
-//                    .withDetail("reason", "Role name must not be null");
-//        }
-//
-//        if (code == null) {
-//            throw .invalidCapability()
-//                    .withDetail("reason", "Capability code must not be null");
-//        }
-
         Role role = getByName(roleName);
-
         Capability capability = capabilityService.getByCode(code);
-
-        Actor actor = actorProvider.getCurrent();
-
-        /*
-         * POLICY VALIDATION
-         *
-         * Add later:
-         *
-         * rolePolicyEngine.canRemoveCapability(...)
-         */
-
-        role.removeCapability(capability);
-
-        return roleRepository.save(role);
-    }
-
-    @Transactional
-    @CacheEvict(value = DEFAULT_ROLES_CACHE, allEntries = true)
-    @Override
-    public void delete(RoleName roleName) {
-
-        Role role = getByName(roleName);
         Actor actor = actorProvider.getCurrent();
 
         // Application validation
-        roleApplicationValidator.validateDelete(role.getId());
+        roleValidator.ensureCaRemoveCapability(capability,actor);
 
-        // Policy validation
-        rolePolicyEngine.canDeleteRole(
-                policyContextFactory.forDelete(actor, role)
-        );
+        // Domain logic
+        role.removeCapability(capability);
 
         // Persistence
-        roleRepository.delete(role);
+        return roleRepository.save(role);
     }
+
+
+
+
+
+
 
     // ----------------------------------------- Retrieval methods ----------------------------------------- //
 
@@ -228,10 +177,18 @@ public class RoleServiceImpl implements RoleService {
         List<Role> roles = roleRepository.findDefaultRoles();
 
         if (roles.isEmpty()) {
-            throw RoleApplicationException.defaultRoleNotConfigured();
+            throw RoleTechnicalException.invalidSystemRoleConfiguration();
         }
 
         return roles;
+    }
+
+    @Override
+    public List<String> getDefaultRoleNames() {
+        return getDefaultRoles()
+                .stream()
+                .map(Role::getName)
+                .toList();
     }
 
 
@@ -241,30 +198,14 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Optional<Role> getOptionalById(Long roleId) {
-        return entityRetrievalService.getOptionalById(Role.class, roleId);
-    }
-
-    @Override
-    public Role getById(Long roleId) {
-        return entityRetrievalService.getById(Role.class, roleId, RoleApplicationException::notFound);
-    }
-
-    @Override
-    public Role getById(RoleId roleId) {
-        return getById(roleId.value());
-    }
-
-    @Override
     public Optional<Role> getOptionalByName(String roleName) {
         return roleRepository.findByName(roleName);
     }
 
     @Override
     public Role getByName(String roleName) {
-        return getOptionalByName(roleName).orElseThrow(() -> RoleApplicationException.notFound()
-                .withDetail("reason", "Role not found for given name")
-                .withDetail("roleName",roleName)
+        return getOptionalByName(roleName).orElseThrow(() -> RoleBusinessException.notFound()
+                .withClientDetails("reason", "Role not found for given name")
         );
     }
 
@@ -276,12 +217,15 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<Role> getAllByNames(List<RoleName> roleNames) {
 
-        if (roleNames == null || roleNames.isEmpty())
-            throw RoleApplicationException.invalidRoles()
-                    .withDetail("reason", "Role names list must not be null or empty");
+        if (roleNames == null || roleNames.isEmpty()) {
+            return List.of();
+        }
 
-        List<String> names = roleNames.stream()
+        List<String> names = roleNames.
+                stream()
+                .filter(Objects::nonNull)
                 .map(RoleName::value)
+                .distinct()
                 .toList();
 
         List<Role> roles = roleRepository.findAllByNameIn(names);
@@ -296,9 +240,9 @@ public class RoleServiceImpl implements RoleService {
                     .filter(name -> !foundNames.contains(name))
                     .toList();
 
-            throw RoleApplicationException.rolesNotFound()
-                    .withDetail("requestedRoleNames", names)
-                    .withDetail("notFoundRoleNames", notFoundNames);
+            throw RoleBusinessException.someRolesNotFound()
+                    .withClientDetails("requestedRoleNames", names)
+                    .withClientDetails("notFoundRoleNames", notFoundNames);
         }
 
         return roles;

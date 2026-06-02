@@ -46,18 +46,14 @@ public class RoleRepositoryImpl implements RoleRepository {
         return roleJpaRepository.existsByDisplayName(displayName);
     }
 
-    @Override
-    public List<Role> findAll() {
-        return roleJpaRepository.findAll();
-    }
-
-    @Override
-    public List<Role> findAllById(List<Long> roleIds) {
-        return roleJpaRepository.findAllById(roleIds);
-    }
 
     @Override
     public List<Role> findAllByNameIn(List<String> names) {
         return roleJpaRepository.findAllByNameIn(names);
+    }
+
+    @Override
+    public List<Role> findAll() {
+        return roleJpaRepository.findAll();
     }
 }

@@ -30,7 +30,7 @@ import com.khaled_amin.book_social_network.identity.verification.domain.model.To
  * <h3>Usage</h3>
  * <ul>
  *   <li>Consumed by higher-level application services (e.g., AccountService, AuthService)</li>
- *   <li>Consumers must not depend on implementation details</li>
+ *   <li>Consumers must not depend on implementation clientDetails</li>
  * </ul>
  *
  * <h3>Execution Semantics</h3>

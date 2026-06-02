@@ -1,8 +1,8 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.identity.user.account.exception.AccountTechnicalException;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
-import com.khaled_amin.book_social_network.identity.user.account.domain.exception.AccountDomainException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -69,17 +69,12 @@ public class AccountRole extends AuditableEntity {
     public static AccountRole create(Account account, Role role) {
 
         if (account == null) {
-            throw AccountDomainException
-                    .invalidAccount()
-                    .withDetail("reason", "Account must not be null");
+            throw AccountTechnicalException.nullAccount();
         }
 
         if (role == null) {
-            throw AccountDomainException
-                    .invalidRole()
-                    .withDetail("reason", "Role must not be null");
+            throw AccountTechnicalException.nullRole();
         }
-
         return AccountRole.builder()
                 .account(account)
                 .role(role)

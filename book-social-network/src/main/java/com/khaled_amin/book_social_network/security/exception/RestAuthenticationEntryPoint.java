@@ -3,6 +3,8 @@ package com.khaled_amin.book_social_network.security.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khaled_amin.book_social_network.core.api.ApiResponseFactory;
 import com.khaled_amin.book_social_network.core.api.ErrorResponse;
+import com.khaled_amin.book_social_network.core.exception.security.SecurityError;
+import com.khaled_amin.book_social_network.core.exception.security.SecurityException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,15 +22,20 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex)
-            throws IOException {
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException ex
+    ) throws IOException {
 
-        SecurityError error = resolveSecurityError(ex);
+        SecurityException securityException = extractSecurityException(ex);
+
+        SecurityError error = securityException.getError();
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(error.getStatus().value())
                 .code(error.getCode())
-                .message(ex.getMessage())
+                .message(securityException.getMessage())
                 .details(Map.of())
                 .path(request.getRequestURI())
                 .build();
@@ -45,34 +52,36 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 response.getOutputStream(),
                 ApiResponseFactory.error(errorResponse)
         );
-
     }
 
-    private SecurityError resolveSecurityError(AuthenticationException ex) {
+    private SecurityException extractSecurityException(AuthenticationException ex) {
 
         Throwable cause = ex.getCause();
 
-        if (cause instanceof SecurityException securityException &&
-                securityException.getError() instanceof SecurityError securityError) {
-            return securityError;
+        if (cause instanceof SecurityException securityException) {
+            return securityException;
         }
 
-        return SecurityError.AUTHENTICATION_FAILED;
+        return com.khaled_amin.book_social_network.security.exception
+                .AuthenticationException
+                .authenticationFailed();
     }
 
     private String buildAuthenticateHeader(SecurityError error) {
 
-        return switch (error) {
+        String code = error.getCode();
 
-            case TOKEN_EXPIRED ->
+        return switch (code) {
+
+            case "SECURITY_TOKEN_EXPIRED" ->
                     "Bearer error=\"invalid_token\", error_description=\"The token expired\"";
 
-            case TOKEN_MISSING ->
+            case "SECURITY_TOKEN_MISSING" ->
                     "Bearer error=\"invalid_token\", error_description=\"Token missing\"";
 
-            case TOKEN_INVALID,
-                 TOKEN_MALFORMED,
-                 TOKEN_SIGNATURE_INVALID ->
+            case "SECURITY_TOKEN_INVALID",
+                 "SECURITY_TOKEN_MALFORMED",
+                 "SECURITY_TOKEN_SIGNATURE_INVALID" ->
                     "Bearer error=\"invalid_token\"";
 
             default ->

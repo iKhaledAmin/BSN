@@ -10,7 +10,7 @@ import java.util.Map;
 public abstract class BaseException extends RuntimeException {
 
     // safe for API
-    protected final Map<String, Object> details = new LinkedHashMap<>();
+    protected final Map<String, Object> clientDetails = new LinkedHashMap<>();
 
     // internalServer only (not exposed)
     protected final Map<String, Object> debugDetails = new LinkedHashMap<>();
@@ -29,16 +29,16 @@ public abstract class BaseException extends RuntimeException {
 
     // ---------------- SAFE DETAILS ---------------- //
 
-    public BaseException withDetail(String key, Object value) {
+    public BaseException withClientDetails(String key, Object value) {
         if (value != null) {
-            this.details.put(key, value);
+            this.clientDetails.put(key, value);
         }
         return this;
     }
 
     // ---------------- DEBUG DETAILS ---------------- //
 
-    public BaseException withDebug(String key, Object value) {
+    public BaseException withDebugDetails(String key, Object value) {
         if (value != null) {
             this.debugDetails.put(key, value);
         }

@@ -1,15 +1,15 @@
 package com.khaled_amin.book_social_network.identity.user.account.domain.capability;
 
-import com.khaled_amin.book_social_network.identity.capability.domain.registry.CapabilityProvider;
+import com.khaled_amin.book_social_network.identity.capability.application.provider.CapabilityProvider;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Set;
 
 @Component
 public class AccountCapabilityProvider implements CapabilityProvider {
 
     @Override
-    public List<AccountCapability> getCapabilities() {
-        return List.of(AccountCapability.values());
+    public Set<AccountCapability> getCapabilities() {
+        return Set.of(AccountCapability.values());
     }
 }

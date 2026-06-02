@@ -2,8 +2,9 @@ package com.khaled_amin.book_social_network.email.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
 import com.khaled_amin.book_social_network.email.domain.command.EmailUpdateCommand;
-import com.khaled_amin.book_social_network.email.domain.exception.EmailDomainException;
 import com.khaled_amin.book_social_network.email.domain.value.*;
+import com.khaled_amin.book_social_network.email.exception.EmailBusinessException;
+import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -95,16 +96,16 @@ public class Email extends AuditableEntity {
 
     @Column(
             name = "last_attempt_at",
-            comment = "Represent the last attempt to send the email"
+            comment = "Represent the last attempt to send the emailAddress"
     )
     private LocalDateTime lastAttemptAt;
 
 
     // -------------------------------------- Relationships ----------------------------------- //
 
-    // TODO: Add attachments for email (future feature)
+    // TODO: Add attachments for emailAddress (future feature)
 //    @Builder.Default
-//    @OneToMany(mappedBy = "email")
+//    @OneToMany(mappedBy = "emailAddress")
 //    private List<EmailAttachment> attachments = new ArrayList<>();
 
     // ------------------------------------ End Relationships -------------------------------- //
@@ -112,25 +113,22 @@ public class Email extends AuditableEntity {
     // ------------------------------------- Business Methods ---------------------------------- //
 
     static Email create(
-            From from,
-            To to,
-            ReplyTo replyTo,
-            Set<String> cc,
-            Set<String> bcc,
+            EmailAddress from,
+            EmailAddress to,
+            EmailAddress replyTo,
+            Set<EmailAddress> cc,
+            Set<EmailAddress> bcc,
             Subject subject,
             Body body,
             Template template
-
     ) {
-        validateEmails(cc);
-        validateEmails(bcc);
 
-        Email newEmail = Email.builder()
+        return Email.builder()
                 .from(from.value())
                 .to(to.value())
-                .replyTo(replyTo.value())
-                .cc(cc != null ? cc : new HashSet<>())
-                .bcc(bcc != null ? bcc : new HashSet<>())
+                .replyTo(replyTo != null ? replyTo.value() : null)
+                .cc(toValues(cc))
+                .bcc(toValues(bcc))
                 .subject(subject.value())
                 .body(body.value())
                 .template(template.value())
@@ -138,43 +136,36 @@ public class Email extends AuditableEntity {
                 .retryCount(0)
                 .lastAttemptAt(LocalDateTime.now())
                 .build();
-
-        newEmail.validateState();
-
-        return newEmail;
     }
 
     public void update(EmailUpdateCommand command) {
 
         if (command == null) {
-            throw EmailDomainException.invalidUpdateCommand().withDetail("reason", "Update command cannot be null");
+            throw EmailTechnicalException.nullUpdateCommand()
+                    .withClientDetails("reason", "Update command cannot be null");
         }
 
         if (!this.status.isPending()) {
-            throw EmailDomainException.updateViolation().withDetail("reason", "Email is not in pending stage");
+            throw EmailBusinessException.updateNotAllowed()
+                    .withClientDetails("reason", "Email cannot be updated from current state");
         }
 
-        command.subject().ifPresent(s -> this.subject = s.value());
-        command.body().ifPresent(b -> this.body = b.value());
+        command.subject().ifPresent(subject -> this.subject = subject.value());
+
+        command.body().ifPresent(body -> this.body = body.value());
+
         command.replyTo().ifPresent(replyTo -> this.replyTo = replyTo.value());
-        command.cc().ifPresent(c -> {
-            validateEmails(c);
-            this.cc = c;
-        });
-        command.bcc().ifPresent(b -> {
-            validateEmails(b);
-            this.bcc = b;
-        });
 
+        command.cc().ifPresent(cc -> this.cc = toValues(cc));
 
-        this.validateState();
+        command.bcc().ifPresent(bcc -> this.bcc = toValues(bcc));
     }
 
     public void markAsSent() {
 
         if (!(this.status.isPending() || this.status.isRetrying())) {
-            throw EmailDomainException.invalidedTransition()
-                    .withDetail("reason", "Email can not be sent ,it is not in pending or retrying stage");
+            throw EmailBusinessException.invalidTransition()
+                    .withClientDetails("reason", "Email cannot be sent from current state");
         }
 
         this.status = EmailStatus.SENT;
@@ -185,13 +176,12 @@ public class Email extends AuditableEntity {
     public void markAsFailed(String error) {
 
         if (!(this.status.isPending() || this.status.isRetrying())) {
-            throw EmailDomainException.invalidedTransition()
-                    .withDetail("reason", "Email can not be failed ,it is not in pending or retrying stage");
+            throw EmailBusinessException.invalidTransition()
+                    .withClientDetails("reason", "Email cannot be failed from current state");
         }
 
         if (error == null || error.isBlank()) {
-            throw EmailDomainException.invalidFailureReason()
-                    .withDetail("reason", "Error message cannot be null or empty");
+            throw EmailTechnicalException.nullFailureReason();
         }
 
         this.status = EmailStatus.FAILED;
@@ -202,8 +192,8 @@ public class Email extends AuditableEntity {
     public void markAsRetrying() {
 
         if (!this.status.isFailed()) {
-            throw EmailDomainException.invalidedTransition()
-                    .withDetail("reason", "Email can not be retried ,it is not in failed stage");
+            throw EmailBusinessException.invalidTransition()
+                    .withClientDetails("reason", "Email can only be retried from FAILED state");
         }
 
         this.status = EmailStatus.RETRYING;
@@ -217,61 +207,16 @@ public class Email extends AuditableEntity {
 
 
     // ------------------------------------ Validation -------------------------------- //
-    private void validateState() {
 
-        if (from == null || from.isBlank()) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "From email address must not be null or empty");
+    private static Set<String> toValues(Set<EmailAddress> emails) {
+
+        if (emails == null) {
+            return new HashSet<>();
         }
 
-        if (to == null || to.isBlank()) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "To email address must not be null or empty");
-        }
-
-        if (subject == null || subject.isBlank()) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "Subject of email must not be empty");
-        }
-
-        if (body == null || body.isBlank()) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "Body of email must not be empty");
-        }
-
-        if (template == null || template.isBlank()) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "Template of email must not be empty");
-        }
-
-        if (status == null) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "Status of email must not be null");
-        }
-
-        if (retryCount < 0) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "Retry count of email must not be negative");
-        }
-
-        if (status.isFailed() && ( errorMessage == null || errorMessage.isBlank())) {
-            throw EmailDomainException.invalidState()
-                    .withDetail("reason", "Error message of failed email must not be null or empty");
-        }
-    }
-
-    private static void validateEmails(Set<String> emails) {
-        if (emails == null) return;
-
-        if (emails.isEmpty()) return;
-
-        for (String email : emails) {
-            if (email == null || !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
-                throw EmailDomainException.invalidEmailAddress()
-                        .withDetail("reason", "Provided email address not valid email format")
-                        .withDetail("invalidEmail", email);
-            }
-        }
+        return emails.stream()
+                .map(EmailAddress::value)
+                .collect(java.util.stream.Collectors.toSet());
     }
     // ------------------------------------ End Validation -------------------------------- //
 

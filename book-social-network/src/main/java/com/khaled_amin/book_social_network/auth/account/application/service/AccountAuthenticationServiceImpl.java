@@ -9,15 +9,13 @@ import com.khaled_amin.book_social_network.email.domain.command.EmailCreateComma
 import com.khaled_amin.book_social_network.email.domain.model.EmailTemplate;
 import com.khaled_amin.book_social_network.email.infrastructure.config.EmailProperties;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
-import com.khaled_amin.book_social_network.identity.user.account.domain.value.EncodedPassword;
-import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
+import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountCreateRequest;
+import com.khaled_amin.book_social_network.identity.user.account.domain.value.RawPassword;
 import com.khaled_amin.book_social_network.identity.verification.application.dto.VerificationResult;
 import com.khaled_amin.book_social_network.identity.verification.application.service.VerificationService;
 import com.khaled_amin.book_social_network.identity.verification.domain.model.TokenType;
 import com.khaled_amin.book_social_network.identity.user.role.application.service.RoleService;
-import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.account.application.service.AccountService;
-import com.khaled_amin.book_social_network.identity.user.account.domain.command.AccountCreateCommand;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
 import com.khaled_amin.book_social_network.security.jwt.JwtService;
@@ -25,7 +23,7 @@ import com.khaled_amin.book_social_network.security.provider.AccountCredentialAu
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,54 +43,21 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
     private final RoleService roleService;
     private final JwtService jwtService;
     private final AccountAuthenticationMapper accountAuthenticationMapper;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationProperties authProperties;
     private final EmailProperties emailProperties;
     private final AccountCredentialAuthenticationService authenticationService;
 
 
 
-    @Transactional
-    @Override
-    public void createBootstrapAdmin(String username, String rawPassword, String email) {
-
-        if (accountService.existsByRoleName(
-                SystemRole.SUPER_ADMIN.getName().value())) {
-            return;
-        }
-
-        Role superAdminRole = roleService.getByName(
-                SystemRole.SUPER_ADMIN.getName()
-        );
-
-        String encodedPassword = passwordEncoder.encode(rawPassword);
-
-        AccountCreateCommand command = AccountCreateCommand.of(
-                username,
-                encodedPassword,
-                email,
-                "System",
-                "Administrator"
-        );
-
-        Account account = accountService.create(
-                command,
-                List.of(superAdminRole)
-        );
-
-        accountService.activate(account.getAccountCode());
-    }
-
     @Override
     @Transactional
     public AccountRegistrationResponse register(AccountRegistrationRequest request){
 
-        List<Role> defaultRole = roleService.getDefaultRoles();
-        String encodedPassword = encodePassword(request.getPassword());
+        List<String> defaultRoleNames = roleService.getDefaultRoleNames();
 
-        AccountCreateCommand command = accountAuthenticationMapper.toCommand(request, encodedPassword);
+        AccountCreateRequest createRequest = accountAuthenticationMapper.toCreateRequest(request,defaultRoleNames);
 
-        Account newAccount = accountService.create(command, defaultRole);
+        Account newAccount = accountService.create(createRequest );
 
         String activationCode = verificationService.generateToken(
                 TokenType.ACCOUNT_ACTIVATION,
@@ -147,7 +112,7 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
         if (optionalAccount.isEmpty()) {
             // TODO: log
             return ActionResponse.builder()
-                    .message("If an account exists for this email address,you will receive a reset password email.")
+                    .message("If an account exists for this emailAddress address,you will receive a reset password emailAddress.")
                     .build();
 
         }
@@ -162,7 +127,7 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
         sendResetPasswordEmail(account, resetCode);
 
         return ActionResponse.builder()
-                .message("If an account exists for this email address,you will receive a reset password email.")
+                .message("If an account exists for this emailAddress address,you will receive a reset password emailAddress.")
                 .build();
     }
 
@@ -178,13 +143,10 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
         ActorCode actorCode = result.target().getActorCode();
 
-        // Encode password
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-
         // Apply domain operation
         accountService.resetPassword(
                 actorCode,
-                EncodedPassword.of(encodedPassword)
+                RawPassword.of(request.getPassword())
         );
 
         // Response
@@ -250,11 +212,6 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
             // TODO: loge exception not throw it
         }
 
-    }
-
-
-    private String encodePassword(String raw) {
-        return passwordEncoder.encode(raw);
     }
 
     // -------------------------------------- End Helper methods ----------------------------------- //

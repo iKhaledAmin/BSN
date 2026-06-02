@@ -1,8 +1,9 @@
 package com.khaled_amin.book_social_network.email.application.model;
 
 import com.khaled_amin.book_social_network.email.domain.model.Email;
+import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 
-import java.util.*;
+import java.util.Set;
 
 public record EmailMessage(
         String from,
@@ -15,19 +16,19 @@ public record EmailMessage(
 ) {
 
     public static EmailMessage from(Email email) {
+
         if (email == null) {
-            throw new IllegalArgumentException("Email must not be null");
+            throw EmailTechnicalException.nullEmail();
         }
 
         return new EmailMessage(
                 email.getFrom(),
                 email.getTo(),
-                email.getCc(),
-                email.getBcc(),
+                Set.copyOf(email.getCc()),
+                Set.copyOf(email.getBcc()),
                 email.getReplyTo(),
                 email.getSubject(),
                 email.getBody()
         );
     }
-
 }

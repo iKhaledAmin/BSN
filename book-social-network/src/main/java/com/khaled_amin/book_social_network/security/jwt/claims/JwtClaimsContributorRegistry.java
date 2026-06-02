@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.security.jwt.claims;
 
+import com.khaled_amin.book_social_network.security.exception.SecurityTechnicalException;
 import com.khaled_amin.book_social_network.security.principal.core.AuthenticatedPrincipal;
 import org.springframework.stereotype.Component;
 
@@ -27,12 +28,8 @@ public class JwtClaimsContributorRegistry {
     public <T extends AuthenticatedPrincipal> JwtClaimsContributor<T> get(T principal) {
 
         JwtClaimsContributor<?> contributor = contributors.get(principal.getClass());
-
         if (contributor == null) {
-            throw new IllegalStateException(
-                    "No JwtClaimsContributor registered for principal: "
-                            + principal.getClass().getName()
-            );
+            throw SecurityTechnicalException.nullJwtClaimsContributor(principal.getActorType());
         }
 
         return (JwtClaimsContributor<T>) contributor;

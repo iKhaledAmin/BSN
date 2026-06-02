@@ -2,8 +2,7 @@ package com.khaled_amin.book_social_network.identity.capability.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
 import com.khaled_amin.book_social_network.identity.capability.domain.definition.CapabilityDefinition;
-import com.khaled_amin.book_social_network.identity.capability.domain.command.CapabilityUpdateCommand;
-import com.khaled_amin.book_social_network.identity.capability.domain.exception.CapabilityDomainException;
+import com.khaled_amin.book_social_network.identity.capability.exception.CapabilityTechnicalException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +15,7 @@ import lombok.*;
         name = "capabilities",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_capability_display_name_module",
+                        name = "uk_capability_name_module",
                         columnNames = {"name", "module"}
                 )
         }
@@ -68,34 +67,29 @@ public class Capability extends AuditableEntity {
     )
     private CapabilityModule module;
 
+    @Column(
+            name = "system_managed",
+            nullable = false,
+            updatable = false,
+            comment = "Only the system itself can assign or revoke it"
+    )
+    private boolean systemManaged;
 
-    public static Capability create(CapabilityDefinition capability) {
+
+    public static Capability create(CapabilityDefinition definition) {
+        if (definition == null){
+            throw CapabilityTechnicalException.nullDefinition();
+        }
+
         return Capability.builder()
-                .code(capability.getCode().toString())
-                .resource(capability.getResource().toString())
-                .action(capability.getAction().toString())
-                .name(capability.getName().toString())
-                .description(capability.getDescription() != null ? capability.getDescription().toString() : null)
-                .module(capability.getModule())
+                .code(definition.getCode().toString())
+                .resource(definition.getResource().toString())
+                .action(definition.getAction().toString())
+                .name(definition.getName().toString())
+                .description(definition.getDescription() != null ? definition.getDescription().toString() : null)
+                .module(definition.getModule())
+                .systemManaged(definition.isSystemManaged())
                 .build();
-    }
-
-    public void update(CapabilityUpdateCommand command){
-
-        if (command == null) {
-            throw CapabilityDomainException
-                    .invalidCommand()
-                    .withDetail("reason", "Capability update command must not be null");
-        }
-
-        if (command.displayName() != null) {
-            this.name = command.displayName().value();
-        }
-
-        if (command.description() != null) {
-            this.description = command.description().value();
-        }
-
     }
 
 

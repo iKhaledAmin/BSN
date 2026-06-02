@@ -1,26 +1,47 @@
 package com.khaled_amin.book_social_network.identity.verification.domain.exception;
 
-import com.khaled_amin.book_social_network.core.exception.BusinessError;
+import com.khaled_amin.book_social_network.core.exception.business.BusinessError;
+import com.khaled_amin.book_social_network.core.exception.core.ErrorDomain;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
+@AllArgsConstructor
 public enum VerificationDomainError implements BusinessError {
 
-    INVALID_TOKEN("VERIFICATION_INVALID_TOKEN_CODE", HttpStatus.BAD_REQUEST, "Invalid token"),
-    TOKEN_EXPIRED("VERIFICATION_TOKEN_EXPIRED", HttpStatus.BAD_REQUEST, "Token expired"),
-    TOKEN_ALREADY_USED("VERIFICATION_TOKEN_ALREADY_USED", HttpStatus.CONFLICT, "Token already used"),
-    INVALID_STATE("VERIFICATION_INVALID_STATE", HttpStatus.BAD_REQUEST, "Invalid verification state");
+    TOKEN_CODE_INVALID(
+            ErrorDomain.IDENTITY,
+            "VERIFICATION_TOKEN_CODE_INVALID",
+            HttpStatus.BAD_REQUEST,
+            "Invalid token"
+    ),
 
+    TOKEN_EXPIRED(
+            ErrorDomain.IDENTITY,
+            "VERIFICATION_TOKEN_EXPIRED",
+            HttpStatus.BAD_REQUEST,
+            "Token expired"
+    ),
+
+    TOKEN_ALREADY_USED(
+            ErrorDomain.IDENTITY,
+            "VERIFICATION_TOKEN_ALREADY_USED",
+            HttpStatus.CONFLICT,
+            "Token already used"
+    ),
+
+
+    INVALID_STATE(
+            ErrorDomain.IDENTITY,
+            "VERIFICATION_INVALID_STATE",
+            HttpStatus.BAD_REQUEST,
+            "Invalid verification state"
+    );
+
+    private final ErrorDomain domain;
     private final String code;
     private final HttpStatus status;
     private final String message;
 
-    VerificationDomainError(String code, HttpStatus status, String message) {
-        this.code = code;
-        this.status = status;
-        this.message = message;
-    }
-
-    @Override public String getCode() { return code; }
-    @Override public HttpStatus getStatus() { return status; }
-    @Override public String getMessage() { return message; }
 }
