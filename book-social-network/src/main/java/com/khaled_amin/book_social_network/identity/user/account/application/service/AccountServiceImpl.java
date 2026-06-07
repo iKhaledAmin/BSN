@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.account.application.service;
 
+import com.khaled_amin.book_social_network.core.logging.audit.BusinessEventLogger;
 import com.khaled_amin.book_social_network.core.pagination.PageResult;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
@@ -44,6 +45,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountApplicationValidator accountValidator;
     private final AccountPolicyContextFactory policyContextFactory;
     private final PasswordEncoder passwordEncoder;
+    private final BusinessEventLogger businessEventLogger;
 
 
     @Transactional
@@ -74,7 +76,15 @@ public class AccountServiceImpl implements AccountService {
         );
 
         // Persist
-        return accountRepository.save(account);
+        Account saved = accountRepository.save(account);
+
+        // Log the business operation event
+        businessEventLogger.accountCreated(
+                saved.getAccountCode().toString()
+        );
+
+
+        return saved;
     }
 
 
@@ -97,15 +107,34 @@ public class AccountServiceImpl implements AccountService {
         target.update(command);
 
         // Persist
-        return accountRepository.save(target);
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountUpdated(
+                saved.getAccountCode().toString()
+        );
+
+
+        return saved;
     }
 
     @Transactional
     @Override
     public Account activate(ActorCode accountCode) {
         Account target = getByAccountCode(accountCode);
+
+        // Domain logic
         target.activate();
-        return accountRepository.save(target);
+
+        // Persist
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountActivated(
+                saved.getAccountCode().toString()
+        );
+
+        return saved;
     }
 
     @Transactional
@@ -118,9 +147,17 @@ public class AccountServiceImpl implements AccountService {
                 passwordEncoder.encode(rawPassword.toString())
         );
 
+        // Domain logic
         target.resetPassword(encodedPassword);
 
-        accountRepository.save(target);
+        // Persist
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountPasswordReset(
+                saved.getAccountCode().toString()
+        );
+
     }
 
     @Transactional
@@ -140,15 +177,22 @@ public class AccountServiceImpl implements AccountService {
         target.assignRole(role);
 
         // Persist
-        return accountRepository.save(target);
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountRoleAssigned(
+                saved.getAccountCode().toString(),
+                role.getName()
+        );
+
+        return saved;
     }
 
     @Transactional
     @Override
     public Account assignRoles(ActorCode accountCode, List<RoleName> roleNames) {
 
-        // todo validate roleNames not null or empty
-
+        // todo verify roleNames not null or empty
 
         Account target = getByAccountCode(accountCode);
         Actor actor = actorProvider.getCurrent();
@@ -164,7 +208,16 @@ public class AccountServiceImpl implements AccountService {
         // Domain logic
         target.assignRoles(fetchedRoles);
 
-        return accountRepository.save(target);
+        // Persist
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountRolesAssigned(
+                saved.getAccountCode().toString(),
+                fetchedRoles.stream().map(Role::getName).toList()
+        );
+
+        return saved;
     }
 
     @Transactional
@@ -188,7 +241,15 @@ public class AccountServiceImpl implements AccountService {
         target.removeRole(role);
 
         // Persist
-        return accountRepository.save(target);
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountRoleRemoved(
+                saved.getAccountCode().toString(),
+                role.getName()
+        );
+
+        return saved;
     }
 
 
@@ -213,7 +274,15 @@ public class AccountServiceImpl implements AccountService {
         target.replaceRoles(fetchedRoles);
 
         // Persist
-        return accountRepository.save(target);
+        Account saved = accountRepository.save(target);
+
+        // Log the business operation event
+        businessEventLogger.accountRolesReplaced(
+                saved.getAccountCode().toString(),
+                fetchedRoles.stream().map(Role::getName).toList()
+        );
+
+        return saved;
     }
 
     @Override
@@ -221,6 +290,50 @@ public class AccountServiceImpl implements AccountService {
         Account account = getByAccountCode(accountCode);
         account.login();
         accountRepository.save(account);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Account viewAccount(ActorCode accountCode) {
+
+        Account account = getByAccountCode(accountCode);
+
+        businessEventLogger.accountViewed(
+                account.getAccountCode().toString()
+        );
+
+        return account;
+    }
+
+    @Transactional(readOnly = true)
+    public Account viewMyAccount() {
+
+        Actor actor = actorProvider.getCurrent();
+
+        Account account = getByIdentity(
+                actor.getActorIdentity()
+        );
+
+        businessEventLogger.accountViewed(
+                account.getAccountCode().toString()
+        );
+
+        return account;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResult<Account> listAccounts(AccountPageRequest request) {
+
+        PageResult<Account> accounts = accountRepository.findAll(request);
+
+        businessEventLogger.accountListed(
+                request.getPage(),
+                request.getSize(),
+                request.getSortBy().toString(),
+                request.getDirection().toString()
+        );
+
+        return accounts;
     }
 
     // -------------------------------- Retrieval -------------------------------- //
@@ -248,7 +361,7 @@ public class AccountServiceImpl implements AccountService {
     public Account getByAccountCode(ActorCode accountCode){
         return getOptionalByAccountCode(accountCode).orElseThrow(() -> AccountBusinessException.notFound()
                 .withClientDetails("reason", "Account not found for given code")
-                .withClientDetails("actorCode", accountCode.getValue())
+                .withDebugDetails("accountCode", accountCode.getValue())
         );
     }
 

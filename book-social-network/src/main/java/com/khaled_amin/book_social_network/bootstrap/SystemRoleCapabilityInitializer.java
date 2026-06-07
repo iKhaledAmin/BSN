@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Slf4j(topic = "SystemRoleCapabilityInitializer")
 @Component
 @Order(InitializerOrder.ROLE_CAPABILITY)
 @RequiredArgsConstructor
@@ -61,12 +61,6 @@ public class SystemRoleCapabilityInitializer implements CommandLineRunner {
         );
 
         if (diff.isEmpty()) {
-
-            log.info(
-                    "Role [{}] already synchronized with capability definitions",
-                    role.getName()
-            );
-
             return;
         }
 
@@ -89,12 +83,6 @@ public class SystemRoleCapabilityInitializer implements CommandLineRunner {
                     RoleName.of(role.getName()),
                     CapabilityCode.of(capability.getCode())
             );
-
-            log.info(
-                    "Added capability [{}] to role [{}]",
-                    capability.getCode(),
-                    role.getName()
-            );
         }
     }
 
@@ -115,11 +103,6 @@ public class SystemRoleCapabilityInitializer implements CommandLineRunner {
                     CapabilityCode.of(capability.getCode())
             );
 
-            log.info(
-                    "Removed obsolete capability [{}] from role [{}]",
-                    capability.getCode(),
-                    role.getName()
-            );
         }
     }
 

@@ -4,7 +4,6 @@ package com.khaled_amin.book_social_network.security.jwt;
 import com.khaled_amin.book_social_network.core.exception.validation.ValidationException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorCode;
 import com.khaled_amin.book_social_network.security.exception.AuthenticationException;
-import com.khaled_amin.book_social_network.security.exception.AuthorizationException;
 import com.khaled_amin.book_social_network.security.jwt.claims.JwtClaimsContributor;
 import com.khaled_amin.book_social_network.security.jwt.claims.JwtClaimsContributorRegistry;
 import io.jsonwebtoken.*;
@@ -118,6 +117,12 @@ public  class JwtService {
 
         Claims claims = extractAllClaims(token);
 
+        // ================= ACTOR =================
+
+        ActorType actorType = extractActorType(claims);
+
+        ActorCode actorCode = extractActorCode(claims);
+
         // ================= SUBJECT =================
 
         String subject = claims.getSubject();
@@ -128,11 +133,7 @@ public  class JwtService {
                     .withDebugDetails("reason", "Token subject is missing");
         }
 
-        // ================= ACTOR =================
 
-        ActorType actorType = extractActorType(claims);
-
-        ActorCode actorCode = extractActorCode(claims);
 
         // ================= TIME CLAIMS =================
 
@@ -227,7 +228,7 @@ public  class JwtService {
 
         if (principal.isLocked()) {
             String principalType = principal.getActorType().name();
-            throw AuthorizationException.principalLocked(principalType.toLowerCase(Locale.ROOT))
+            throw AuthenticationException.principalLocked(principalType.toLowerCase(Locale.ROOT))
                     .withDebugDetails("reason", "Principal is locked")
                     .withDebugDetails("actorType",principalType)
                     .withDebugDetails("subject", principal.getSubject());
@@ -235,7 +236,7 @@ public  class JwtService {
 
         if (!principal.isActive()) {
             String principalType = principal.getActorType().name();
-            throw AuthorizationException.principalInactive(principalType.toLowerCase(Locale.ROOT))
+            throw AuthenticationException.principalInactive(principalType.toLowerCase(Locale.ROOT))
                     .withDebugDetails("reason", "Principal is inactive")
                     .withDebugDetails("actorType",principalType)
                     .withDebugDetails("subject", principal.getSubject());
@@ -372,17 +373,30 @@ public  class JwtService {
                     .getPayload();
 
         } catch (ExpiredJwtException ex) {
-            throw AuthenticationException.expiredToken(ex);
+
+            throw AuthenticationException.expiredToken(ex)
+                    .withDebugDetails("reason", "Token expired")
+                    .withDebugDetails("expiration", ex.getClaims().getExpiration());
+
         } catch (MalformedJwtException ex) {
-            throw AuthenticationException.malformedToken(ex);
+
+            throw AuthenticationException.malformedToken(ex)
+                    .withDebugDetails("reason", "Malformed JWT token");
+
         } catch (SignatureException ex) {
-            throw AuthenticationException.invalidTokenSignature(ex);
+
+            throw AuthenticationException.invalidTokenSignature(ex)
+                    .withDebugDetails("reason", "Invalid JWT signature");
+
         } catch (UnsupportedJwtException ex) {
+
             throw AuthenticationException.invalidToken(ex)
                     .withDebugDetails("reason", "Unsupported JWT token");
+
         } catch (IllegalArgumentException ex) {
+
             throw AuthenticationException.invalidToken(ex)
-                    .withDebugDetails("reason", "JWT token is empty or invalid");
+                    .withDebugDetails("reason", "JWT token is missing or empty");
         }
     }
 

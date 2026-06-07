@@ -30,6 +30,11 @@ public interface AccountService {
 
     void login(ActorCode accountCode);
 
+    Account viewAccount(ActorCode accountCode);
+    Account viewMyAccount();
+    PageResult<Account> listAccounts(AccountPageRequest request);
+
+
     boolean existsByRoleName(RoleName roleName);
 
     Optional<Account> getOptionalByEmail(String email);

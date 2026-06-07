@@ -53,6 +53,14 @@ public abstract class AbstractActor implements Actor {
      * {@inheritDoc}
      */
     @Override
+    public ActorCode getActorCode() {
+        return identity.getActorCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ActorType getType() {
         return identity.getActorType();
     }

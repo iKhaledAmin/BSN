@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.user.role.domain.capability;
 
 import com.khaled_amin.book_social_network.identity.capability.domain.definition.CapabilityDefinition;
-import com.khaled_amin.book_social_network.identity.capability.domain.model.CapabilityModule;
+import com.khaled_amin.book_social_network.core.constant.SystemDomain;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +94,7 @@ public enum RoleCapability implements CapabilityDefinition {
     }
 
     @Override
-    public CapabilityModule getModule() {
-        return CapabilityModule.ROLE;
+    public SystemDomain getModule() {
+        return SystemDomain.ROLE;
     }
 }

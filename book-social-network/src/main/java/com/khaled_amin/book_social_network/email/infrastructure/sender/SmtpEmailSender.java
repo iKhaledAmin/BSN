@@ -7,6 +7,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class SmtpEmailSender extends AbstractEmailSenderAdapter {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
 
         helper.setFrom(emailMessage.from());
         helper.setTo(emailMessage.to());
@@ -35,9 +38,11 @@ public class SmtpEmailSender extends AbstractEmailSenderAdapter {
             helper.setReplyTo(emailMessage.replyTo());
         }
 
+
         helper.setSubject(emailMessage.subject());
         helper.setText(emailMessage.body(), true);
 
         mailSender.send(message);
+
     }
 }

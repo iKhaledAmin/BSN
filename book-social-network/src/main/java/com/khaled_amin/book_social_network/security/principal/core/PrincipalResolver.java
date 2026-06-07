@@ -104,7 +104,7 @@ public interface PrincipalResolver {
      *
      * @param payload {@link JwtPayload} validated JWT payload containing identity claims
      * @return fully constructed {@link AuthenticatedPrincipal}
-     * @throws InvalidTokenException if identity resolution fails or is inconsistent
+     * @throws SecurityException if identity resolution fails or is inconsistent
      */
     AuthenticatedPrincipal resolve(JwtPayload payload);
 }

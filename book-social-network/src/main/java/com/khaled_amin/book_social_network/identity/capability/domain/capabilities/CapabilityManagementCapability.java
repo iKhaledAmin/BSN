@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.capabilities;
 
 import com.khaled_amin.book_social_network.identity.capability.domain.definition.CapabilityDefinition;
-import com.khaled_amin.book_social_network.identity.capability.domain.model.CapabilityModule;
+import com.khaled_amin.book_social_network.core.constant.SystemDomain;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.*;
 import lombok.Getter;
 
@@ -41,7 +41,7 @@ public enum CapabilityManagementCapability implements CapabilityDefinition {
 
 
     @Override
-    public CapabilityModule getModule() {
-        return CapabilityModule.CAPABILITY;
+    public SystemDomain getModule() {
+        return SystemDomain.CAPABILITY;
     }
 }

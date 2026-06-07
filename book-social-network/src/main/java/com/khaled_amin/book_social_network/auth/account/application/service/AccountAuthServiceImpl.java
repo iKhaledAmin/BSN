@@ -1,9 +1,14 @@
 package com.khaled_amin.book_social_network.auth.account.application.service;
 
 import com.khaled_amin.book_social_network.auth.account.api.dto.*;
-import com.khaled_amin.book_social_network.auth.account.api.mapper.AccountAuthenticationMapper;
+import com.khaled_amin.book_social_network.core.exception.security.SecurityException;
+import com.khaled_amin.book_social_network.auth.account.api.mapper.AccountAuthMapper;
 import com.khaled_amin.book_social_network.auth.account.application.config.AuthenticationProperties;
 import com.khaled_amin.book_social_network.core.api.ActionResponse;
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
+import com.khaled_amin.book_social_network.core.logging.audit.BusinessEventLogger;
+import com.khaled_amin.book_social_network.core.logging.audit.SecurityEventLogger;
+import com.khaled_amin.book_social_network.core.logging.core.ActorLoggingContext;
 import com.khaled_amin.book_social_network.email.application.port.in.EmailService;
 import com.khaled_amin.book_social_network.email.domain.command.EmailCreateCommand;
 import com.khaled_amin.book_social_network.email.domain.model.EmailTemplate;
@@ -19,7 +24,7 @@ import com.khaled_amin.book_social_network.identity.user.account.application.ser
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
 import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
 import com.khaled_amin.book_social_network.security.jwt.JwtService;
-import com.khaled_amin.book_social_network.security.provider.AccountCredentialAuthenticationService;
+import com.khaled_amin.book_social_network.security.provider.AccountAuthenticationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +39,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class AccountAuthenticationServiceImpl implements AccountAuthenticationService {
+public class AccountAuthServiceImpl implements AccountAuthService {
 
 
     private final VerificationService verificationService;
@@ -42,10 +47,12 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
     private final EmailService emailService;
     private final RoleService roleService;
     private final JwtService jwtService;
-    private final AccountAuthenticationMapper accountAuthenticationMapper;
+    private final AccountAuthMapper accountAuthMapper;
     private final AuthenticationProperties authProperties;
     private final EmailProperties emailProperties;
-    private final AccountCredentialAuthenticationService authenticationService;
+    private final AccountAuthenticationService authenticationService;
+    private final SecurityEventLogger securityEventLogger;
+    private final BusinessEventLogger businessEventLogger;
 
 
 
@@ -55,9 +62,9 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
         List<String> defaultRoleNames = roleService.getDefaultRoleNames();
 
-        AccountCreateRequest createRequest = accountAuthenticationMapper.toCreateRequest(request,defaultRoleNames);
+        AccountCreateRequest createRequest = accountAuthMapper.toCreateRequest(request,defaultRoleNames);
 
-        Account newAccount = accountService.create(createRequest );
+        Account newAccount = accountService.create(createRequest);
 
         String activationCode = verificationService.generateToken(
                 TokenType.ACCOUNT_ACTIVATION,
@@ -66,14 +73,16 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
         sendActivationEmail(newAccount, activationCode);
 
-        return accountAuthenticationMapper.toRegistrationResponse(newAccount);
+        businessEventLogger.accountRegistered(newAccount.getActorCode().toString());
+
+        return accountAuthMapper.toRegistrationResponse(newAccount);
     }
 
     @Override
     @Transactional
     public AccountActivationResponse activate(AccountActivationRequest request){
 
-        VerificationResult result = verificationService.validateToken(
+        VerificationResult result = verificationService.verifyToken(
                 request.getCode(),
                 TokenType.ACCOUNT_ACTIVATION
         );
@@ -82,7 +91,7 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
         Account activatedAccount = accountService.activate(actorCode);
 
-        return accountAuthenticationMapper.toActivationResponse(activatedAccount);
+        return accountAuthMapper.toActivationResponse(activatedAccount);
     }
 
 
@@ -90,17 +99,35 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
     @Transactional
     public AccountLoginResponse login(AccountLoginRequest request) {
 
-        AccountPrincipal principal = authenticationService.authenticate(
-                request.getUsername(),
-                request.getPassword()
-        );
+        try {
 
-        String jwtToken = jwtService.generateToken(principal);
+            AccountPrincipal principal = authenticationService.authenticate(
+                    request.getUsername(),
+                    request.getPassword()
+            );
 
-        return accountAuthenticationMapper.toLoginResponse(jwtToken,principal);
+            accountService.login(principal.getActorCode());
+
+            String jwtToken = jwtService.generateToken(principal);
+
+            // Set actor context
+            ActorLoggingContext.put(principal);
+
+            // Log login success
+            securityEventLogger.loginSucceeded(principal);
+
+            return accountAuthMapper.toLoginResponse(jwtToken, principal);
+
+        } catch (SecurityException ex) {
+
+            securityEventLogger.loginFailed(
+                    request.getUsername(),
+                    ex
+            );
+
+            throw ex;
+        }
     }
-
-
 
     @Transactional
     @Override
@@ -110,7 +137,6 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
         Optional<Account> optionalAccount = accountService.getOptionalByEmail(request.getEmailAddress());
 
         if (optionalAccount.isEmpty()) {
-            // TODO: log
             return ActionResponse.builder()
                     .message("If an account exists for this emailAddress address,you will receive a reset password emailAddress.")
                     .build();
@@ -120,11 +146,15 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
         Account account = optionalAccount.get();
 
         String resetCode = verificationService.generateToken(
-                TokenType.RESET_PASSWORD,
+                TokenType.ACCOUNT_RESET_PASSWORD,
                 account.getActorIdentity()
         );
 
         sendResetPasswordEmail(account, resetCode);
+
+        businessEventLogger.passwordResetRequested(
+                account.getAccountCode().toString()
+        );
 
         return ActionResponse.builder()
                 .message("If an account exists for this emailAddress address,you will receive a reset password emailAddress.")
@@ -133,12 +163,12 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
     @Override
     @Transactional
-    public ActionResponse confirmResetPassword(AccountConfirmResetPasswordRequest request) {
+    public ActionResponse resetPassword(AccountConfirmResetPasswordRequest request) {
 
         // Validate token
-        VerificationResult result = verificationService.validateToken(
+        VerificationResult result = verificationService.verifyToken(
                 request.getCode(),
-                TokenType.RESET_PASSWORD
+                TokenType.ACCOUNT_RESET_PASSWORD
         );
 
         ActorCode actorCode = result.target().getActorCode();
@@ -181,8 +211,10 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
         try {
             emailService.sendEmail(command, variables);
-        } catch (Exception e) {
-            // TODO: loge exception not throw it
+        } catch (TechnicalException e) {
+            // Intentionally ignored.
+            // Email delivery failure is non-blocking.
+            // The Email module already logs the failure and schedules retries.
         }
 
     }
@@ -208,8 +240,10 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
         try {
             emailService.sendEmail(command, variables);
-        } catch (Exception e) {
-            // TODO: loge exception not throw it
+        } catch (TechnicalException e) {
+            // Intentionally ignored.
+            // Email delivery failure is non-blocking.
+            // The Email module already logs the failure and schedules retries.
         }
 
     }

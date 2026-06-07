@@ -36,7 +36,7 @@ import com.khaled_amin.book_social_network.security.principal.core.Authenticated
  * <h3>Implementation Guidelines</h3>
  * <ul>
  *   <li>Each {@link ActorType} must have exactly one resolver</li>
- *   <li>Implementations must explicitly validate the principal type</li>
+ *   <li>Implementations must explicitly verify the principal type</li>
  *   <li>Must not return {@code null}</li>
  *   <li>Should fail fast on mismatched principal types</li>
  * </ul>

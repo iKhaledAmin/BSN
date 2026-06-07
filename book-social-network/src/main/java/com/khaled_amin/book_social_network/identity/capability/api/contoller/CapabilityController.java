@@ -6,7 +6,7 @@ import com.khaled_amin.book_social_network.identity.capability.api.dto.Capabilit
 import com.khaled_amin.book_social_network.identity.capability.api.mapper.CapabilityMapper;
 import com.khaled_amin.book_social_network.identity.capability.application.port.CapabilityService;
 import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
-import com.khaled_amin.book_social_network.identity.capability.domain.model.CapabilityModule;
+import com.khaled_amin.book_social_network.core.constant.SystemDomain;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.CapabilityCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ public class CapabilityController {
     @GetMapping("/{code}")
     public ResponseEntity<ApiResponse<CapabilityResponse>> getByCode(@PathVariable String code) {
 
-        Capability capability = capabilityService.getByCode(CapabilityCode.of(code));
+        Capability capability = capabilityService.viewCapability(CapabilityCode.of(code));
 
         CapabilityResponse response = capabilityMapper.toResponse(capability);
         return ResponseEntity.ok(
@@ -40,11 +40,9 @@ public class CapabilityController {
     @PreAuthorize("hasAuthority('capability_read')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CapabilityResponse>>> getAll(
-            @RequestParam(required = false) CapabilityModule module) {
-        System.out.println(module);
+            @RequestParam(required = false) SystemDomain module) {
 
-        List<Capability> capabilities =
-                module == null ? capabilityService.getAll() : capabilityService.getByModule(module);
+        List<Capability> capabilities = capabilityService.listCapabilities(module);
 
         List<CapabilityResponse> response = capabilities
                 .stream()

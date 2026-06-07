@@ -94,6 +94,18 @@ public interface Actor {
 
 
     /**
+     * Returns the global unique code of the actor.
+     *
+     * <p>
+     * The code is a unique identifier assigned to the actor.
+     * </p>
+     *
+     * @return non-null {@link ActorCode}
+     */
+    ActorCode getActorCode();
+
+
+    /**
      * Checks whether the actor has a specific authority [ role or scope ].
      *
      * <p>

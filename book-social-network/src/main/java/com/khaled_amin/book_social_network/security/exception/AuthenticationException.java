@@ -74,4 +74,18 @@ public class AuthenticationException extends SecurityException {
     public static AuthenticationException missingToken() {
         return new AuthenticationException(AuthenticationError.TOKEN_MISSING);
     }
+
+
+    public static AuthenticationException principalLocked(String principalType) {
+        return new AuthenticationException(
+                AuthenticationError.PRINCIPAL_LOCKED,
+                principalType + " is locked"
+        );
+    }
+
+    public static AuthenticationException principalInactive(String principalType) {
+        return new AuthenticationException(AuthenticationError.PRINCIPAL_INACTIVE,
+                principalType + " is not active"
+        );
+    }
 }

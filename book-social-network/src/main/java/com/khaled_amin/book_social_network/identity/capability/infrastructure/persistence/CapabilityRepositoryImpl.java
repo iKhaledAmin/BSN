@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.capability.infrastructure.persistence;
 
 import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
-import com.khaled_amin.book_social_network.identity.capability.domain.model.CapabilityModule;
+import com.khaled_amin.book_social_network.core.constant.SystemDomain;
 import com.khaled_amin.book_social_network.identity.capability.domain.repository.CapabilityRepository;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.CapabilityCode;
 import lombok.AllArgsConstructor;
@@ -34,18 +34,17 @@ public class CapabilityRepositoryImpl implements CapabilityRepository {
     }
 
     @Override
-    public Optional<Capability> findByCodeAndModule(CapabilityCode code, CapabilityModule module) {
+    public Optional<Capability> findByCodeAndModule(CapabilityCode code, SystemDomain module) {
         return capabilityJpaRepository.findByCodeAndModule(code.value(),module.name());
     }
 
     @Override
-    public boolean existsByCodeAndModule(CapabilityCode code, CapabilityModule module) {
+    public boolean existsByCodeAndModule(CapabilityCode code, SystemDomain module) {
         return capabilityJpaRepository.existsByCodeAndModule(code.value(),module.name());
     }
 
     @Override
-    public List<Capability> findAllByModule(CapabilityModule module) {
-        System.out.println("ggdd");
+    public List<Capability> findAllByModule(SystemDomain module) {
         return capabilityJpaRepository.findAllByModule(module);
     }
 

@@ -47,7 +47,7 @@ public class AccountController {
 
     @PreAuthorize("hasAuthority('account_update_self')")
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse<AccountResponse>> updateCurrentAccount(
+    public ResponseEntity<ApiResponse<AccountResponse>> updateMyAccount(
             @Valid @RequestBody AccountUpdateRequest request) {
 
         Actor authaticatedActor = actorProvider.getCurrent();
@@ -81,10 +81,10 @@ public class AccountController {
 
     @PreAuthorize("hasAuthority('account_read_self')")
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<AccountResponse>> getCurrentAccount() {
+    public ResponseEntity<ApiResponse<AccountResponse>> getMyAccount() {
 
-        Actor authntcatedActor = actorProvider.getCurrent();
-        Account account = accountService.getByIdentity(authntcatedActor.getActorIdentity());
+
+        Account account = accountService.viewMyAccount();
 
         AccountResponse response = accountMapper.toResponse(account);
         return ResponseEntity.ok(
@@ -97,7 +97,7 @@ public class AccountController {
     @GetMapping("/{accountCode}")
     public ResponseEntity<ApiResponse<AccountAdminResponse>> getAccount(@PathVariable String accountCode) {
 
-        Account account = accountService.getByAccountCode(
+        Account account = accountService.viewAccount(
                 ActorCode.of(accountCode)
         );
 
@@ -111,7 +111,7 @@ public class AccountController {
     @PreAuthorize("hasAuthority('account_read')")
     public ResponseEntity<ApiPageResponse<AccountAdminResponse>> getAll(@Valid AccountPageRequest pageRequest) {
 
-        PageResult<Account> accounts = accountService.getAll(pageRequest);
+        PageResult<Account> accounts = accountService.listAccounts(pageRequest);
 
         PageResult<AccountAdminResponse> response = PageMapper.map(accounts, accountAdminMapper::toResponse);
 

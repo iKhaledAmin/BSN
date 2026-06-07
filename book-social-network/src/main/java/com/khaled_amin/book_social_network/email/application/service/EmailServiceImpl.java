@@ -1,5 +1,7 @@
 package com.khaled_amin.book_social_network.email.application.service;
 
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
+import com.khaled_amin.book_social_network.core.logging.audit.BusinessEventLogger;
 import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 import com.khaled_amin.book_social_network.email.infrastructure.config.EmailProperties;
 import com.khaled_amin.book_social_network.email.application.model.EmailMessage;
@@ -63,6 +65,7 @@ public class EmailServiceImpl implements EmailService {
 
     private final EmailFactory emailFactory;
     private final EmailProperties emailProperties;
+    private final BusinessEventLogger businessEventLogger;
 
 
     @Override
@@ -74,35 +77,55 @@ public class EmailServiceImpl implements EmailService {
             renderedBody = templateRenderer.render(command.template().value(), variables);
         } catch (Exception ex) {
             // Template rendering failed
-            // todo: log the failure
             throw EmailTechnicalException.templateRenderingFailed(ex)
                     .withDebugDetails("template", command.template().toString());
         }
 
-        // Create EmailAddress
+        // Create Email
         Email email = emailFactory.create(command, renderedBody);
 
         // Persist initial state (PENDING)
         emailRepository.save(email);
+
+        // Log event email queued
+        businessEventLogger.emailQueued(
+                email.getId(),
+                email.getTemplate(),
+                email.getTo()
+        );
 
         // Try sending
         try {
             EmailMessage emailMessage = EmailMessage.from(email);
             emailSender.send(emailMessage);
 
+            // Mark as sent
             email.markAsSent();
-            emailRepository.save(email); // Persist sent state
 
-        } catch (Exception ex) {
+            // Persist sent state
+            emailRepository.save(email);
+
+            // Log event email sent
+            businessEventLogger.emailSent(
+                    email.getId(),
+                    email.getTo()
+            );
+
+        } catch (TechnicalException ex) {
 
             email.markAsFailed(ex.getMessage());
-            emailRepository.save(email); // Persist failed state
 
-            // todo: log the failure
+            // Persist failed state
+            emailRepository.save(email);
+
+            businessEventLogger.emailSendFailed(
+                    email.getId(),
+                    email.getTo()
+            );
+
             throw EmailTechnicalException.emailSendingFailed(ex)
                     .withDebugDetails("emailId", email.getId());
         }
-
     }
 
 
@@ -137,7 +160,15 @@ public class EmailServiceImpl implements EmailService {
 
         //  Mark retrying
         email.markAsRetrying();
-        emailRepository.save(email); // persist RETRYING state
+
+        // Persist RETRYING state
+        emailRepository.save(email);
+
+        // Log retry attempt started
+        businessEventLogger.emailRetryStarted(
+                email.getId(),
+                email.getRetryCount()
+        );
 
         try {
             // Try sending again
@@ -146,16 +177,33 @@ public class EmailServiceImpl implements EmailService {
 
             // Success
             email.markAsSent();
-            emailRepository.save(email); // persist SENT state
+
+            // persist SENT state
+            emailRepository.save(email);
+
+            // Log retry attempt succeeded
+            businessEventLogger.emailRetrySucceeded(
+                    email.getId(),
+                    email.getRetryCount()
+            );
 
         } catch (Exception ex) {
             // Failure again
             email.markAsFailed(ex.getMessage());
-            emailRepository.save(email); // persist FAILED state
+
+            // persist FAILED state
+            emailRepository.save(email);
+
+            // Log retry attempt failed
+            businessEventLogger.emailRetryFailed(
+                    email.getId(),
+                    email.getRetryCount()
+            );
 
             throw EmailTechnicalException.emailSendingFailed(ex)
                     .withDebugDetails("emailId", email.getId())
-                    .withDebugDetails("retryCount", email.getRetryCount());        }
+                    .withDebugDetails("retryCount", email.getRetryCount());
+        }
 
     }
 

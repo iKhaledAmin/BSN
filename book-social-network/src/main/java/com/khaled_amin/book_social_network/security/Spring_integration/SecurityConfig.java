@@ -1,7 +1,8 @@
 package com.khaled_amin.book_social_network.security.Spring_integration;
 
-import com.khaled_amin.book_social_network.security.exception.RestAccessDeniedHandler;
-import com.khaled_amin.book_social_network.security.exception.RestAuthenticationEntryPoint;
+import com.khaled_amin.book_social_network.core.logging.core.RequestCorrelationFilter;
+import com.khaled_amin.book_social_network.security.exception.CustomAccessDeniedHandler;
+import com.khaled_amin.book_social_network.security.exception.CustomAuthenticationEntryPoint;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +24,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtAuthFilter;
+    private final RequestCorrelationFilter requestCorrelationFilter;
 
-    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    private final RestAccessDeniedHandler restAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -53,10 +55,19 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint(restAuthenticationEntryPoint)
-                    .accessDeniedHandler(restAccessDeniedHandler)
+                    .authenticationEntryPoint(customAuthenticationEntryPoint)
+                    .accessDeniedHandler(customAccessDeniedHandler)
             )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//            .addFilterBefore(requestCorrelationFilter, JwtFilter.class)
+//            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(
+                    requestCorrelationFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            )
+            .addFilterAfter(
+                    jwtAuthFilter,
+                    RequestCorrelationFilter.class
+            );
 
         return http.build();
     }

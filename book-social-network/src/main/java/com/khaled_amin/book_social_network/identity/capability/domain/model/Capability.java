@@ -1,6 +1,7 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.model;
 
 import com.khaled_amin.book_social_network.core.audit.AuditableEntity;
+import com.khaled_amin.book_social_network.core.constant.SystemDomain;
 import com.khaled_amin.book_social_network.identity.capability.domain.definition.CapabilityDefinition;
 import com.khaled_amin.book_social_network.identity.capability.exception.CapabilityTechnicalException;
 import jakarta.persistence.*;
@@ -65,7 +66,7 @@ public class Capability extends AuditableEntity {
             updatable = false,
             comment = "The domain module to which the capabilities belongs"
     )
-    private CapabilityModule module;
+    private SystemDomain module;
 
     @Column(
             name = "system_managed",

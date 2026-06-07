@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.email.application.port.out;
 
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.email.application.model.EmailMessage;
 import com.khaled_amin.book_social_network.email.exception.EmailTechnicalException;
 
@@ -39,7 +40,7 @@ import com.khaled_amin.book_social_network.email.exception.EmailTechnicalExcepti
  *
  * <h3>Failure Semantics</h3>
  * <ul>
- *   <li>Failures are propagated as {@link EmailTechnicalException}</li>
+ *   <li>Failures are propagated as {@link TechnicalException}</li>
  *   <li>No silent failures are allowed</li>
  * </ul>
  *
@@ -47,7 +48,7 @@ import com.khaled_amin.book_social_network.email.exception.EmailTechnicalExcepti
  * <ul>
  *   <li>Implementations should be stateless and thread-safe</li>
  *   <li>Must not store request-specific state in instance fields</li>
- *   <li>Must translate infrastructure exceptions to {@link EmailTechnicalException}</li>
+ *   <li>Must translate infrastructure exceptions to {@link TechnicalException}</li>
  * </ul>
  *
  * @see EmailMessage
@@ -76,11 +77,11 @@ public interface EmailSender {
      *
      * <h3>Failure Handling</h3>
      * <ul>
-     *   <li>Throws {@link EmailTechnicalException} if delivery fails</li>
+     *   <li>Throws {@link TechnicalException} if delivery fails</li>
      * </ul>
      *
      * @param message {@link EmailMessage} the email message to be sent
-     * @throws EmailTechnicalException if the email could not be delivered
+     * @throws TechnicalException if the email could not be delivered
      */
     void send(EmailMessage message);
 }

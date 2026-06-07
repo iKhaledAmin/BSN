@@ -1,7 +1,7 @@
 package com.khaled_amin.book_social_network.identity.verification.domain.model;
 
 import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
-import com.khaled_amin.book_social_network.identity.verification.domain.exception.VerificationDomainException;
+import com.khaled_amin.book_social_network.identity.verification.exception.VerificationException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,18 +51,18 @@ public class VerificationToken {
                     )
             )
     })
-    //@Column(name = "target", nullable = false,updatable = false)
     private ActorIdentity target;
 
     // -------------------- Lifecycle --------------------
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    @Column(name = "expired_at", nullable = false)
+    private LocalDateTime expiredAt;
 
-    private LocalDateTime validatedAt;
+    @Column(name = "verified_at")
+    private LocalDateTime VerifiedAt;
 
     // -------------------- Factory --------------------
 
@@ -73,81 +73,52 @@ public class VerificationToken {
             int expirationMinutes
     ) {
 
-        String code =generateCode(codeLength);
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(expirationMinutes);
+        String code = generateCode(codeLength);
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(expirationMinutes);
 
-        VerificationToken token = VerificationToken.builder()
+        return VerificationToken.builder()
                 .code(code)
                 .tokenType(type)
                 .target(target)
                 .createdAt(LocalDateTime.now())
-                .expiresAt(expiresAt)
+                .expiredAt(expiredAt)
                 .build();
-
-        token.validateState();
-
-        return token;
     }
 
     // -------------------- Business Methods --------------------
 
-    public void validate() {
+    public void verify() {
 
-        if (isValidated()) {
-            throw VerificationDomainException.alreadyUsed();
+        if (isVerified()) {
+            throw VerificationException.alreadyVerified()
+                    .withDebugDetails("VerifiedAt",VerifiedAt);
         }
 
         if (isExpired()) {
-            throw VerificationDomainException.expired();
+            throw VerificationException.expired()
+                    .withDebugDetails("expiredAt",expiredAt);
         }
 
-        this.validatedAt = LocalDateTime.now();
+        this.VerifiedAt = LocalDateTime.now();
     }
 
     public void canBeUsedFor(TokenType expectedType) {
         if(!this.tokenType.same(expectedType)){
-            throw VerificationDomainException.invalidToken()
-                    .withClientDetails("reason","Wrong token type");
+            throw VerificationException.invalidToken()
+                    .withDebugDetails("reason","Wrong token type")
+                    .withDebugDetails("ActualTokenType",this.tokenType.name())
+                    .withDebugDetails("providedTokenType",expectedType.name());
         }
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
+        return LocalDateTime.now().isAfter(expiredAt);
     }
 
-    public boolean isValidated() {
-        return validatedAt != null;
+    public boolean isVerified() {
+        return VerifiedAt != null;
     }
 
-    // -------------------- Validation --------------------
-
-    private void validateState() {
-
-        if (code == null || code.isBlank()) {
-            throw VerificationDomainException.invalidState()
-                    .withClientDetails("reason", "Token code must not be null");
-        }
-
-        if (tokenType == null) {
-            throw VerificationDomainException.invalidState()
-                    .withClientDetails("reason", "Token type must not be null");
-        }
-
-        if (target == null) {
-            throw VerificationDomainException.invalidState()
-                    .withClientDetails("reason", "Target account must not be null");
-        }
-
-        if (expiresAt == null || createdAt == null) {
-            throw VerificationDomainException.invalidState()
-                    .withClientDetails("reason", "Timestamps must not be null");
-        }
-
-        if (expiresAt.isBefore(createdAt)) {
-            throw VerificationDomainException.invalidState()
-                    .withClientDetails("reason", "Expiration must be after creation");
-        }
-    }
 
     // -------------------- Helper --------------------
 

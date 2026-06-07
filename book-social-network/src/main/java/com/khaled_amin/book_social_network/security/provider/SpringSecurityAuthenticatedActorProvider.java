@@ -55,7 +55,6 @@ public class SpringSecurityAuthenticatedActorProvider implements AuthenticatedAc
                 .withDebugDetails("authenticated", auth.isAuthenticated())
                 .withDebugDetails("authenticationName", auth.getName());
 
-       // return SystemActor.INSTANCE;
     }
 
 }

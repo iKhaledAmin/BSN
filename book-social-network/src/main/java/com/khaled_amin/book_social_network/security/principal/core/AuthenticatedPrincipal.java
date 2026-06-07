@@ -139,7 +139,7 @@ public interface AuthenticatedPrincipal {
      * between persisted identity and token identity.
      * </p>
      *
-     * @param subject {@link String} token subject to validate
+     * @param subject {@link String} token subject to verify
      * @return {@code true} if the subject matches this principal
      */
     default boolean supportsToken(String subject) {

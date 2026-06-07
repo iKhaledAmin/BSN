@@ -86,7 +86,7 @@ public class AccountReplaceRolesPolicy extends AbstractPolicy<AccountPolicyConte
                 Role::getId
         );
 
-        // no changes → nothing to validateToken
+        // no changes → nothing to verifyToken
         if (!diff.hasChanges()) {
             allow();
         }

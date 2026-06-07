@@ -1,6 +1,6 @@
 package com.khaled_amin.book_social_network.identity.capability.domain.definition;
 
-import com.khaled_amin.book_social_network.identity.capability.domain.model.CapabilityModule;
+import com.khaled_amin.book_social_network.core.constant.SystemDomain;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.*;
 
 /**
@@ -172,7 +172,7 @@ public interface CapabilityDefinition {
      *
      * @return owning capability module
      */
-    CapabilityModule getModule();
+    SystemDomain getModule();
 
 
 

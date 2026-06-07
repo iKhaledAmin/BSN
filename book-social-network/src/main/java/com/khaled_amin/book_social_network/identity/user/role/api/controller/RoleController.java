@@ -77,7 +77,7 @@ public class RoleController {
     @PreAuthorize("hasAuthority('role_read')")
     public ResponseEntity<ApiResponse<RoleResponse>> get(@PathVariable String roleName) {
 
-        Role role = roleService.getByName(
+        Role role = roleService.viewRole(
                 RoleName.of(roleName)
         );
         RoleResponse response = roleMapper.toResponse(role);
@@ -91,7 +91,7 @@ public class RoleController {
     @GetMapping
     @PreAuthorize("hasAuthority('role_read')")
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAll() {
-        List<Role> roles = roleService.getAll();
+        List<Role> roles = roleService.listRoles();
 
         List<RoleResponse> responses = roles
                 .stream()

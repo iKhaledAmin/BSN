@@ -25,12 +25,12 @@ import com.khaled_amin.book_social_network.email.exception.EmailTechnicalExcepti
  * <ul>
  *   <li>Invoke {@link #doSend(EmailMessage)}</li>
  *   <li>Catch and translate infrastructure exceptions</li>
- *   <li>Ensure only {@link EmailTechnicalException} escapes the boundary</li>
+ *   <li>Ensure only {@link TechnicalException} escapes the boundary</li>
  * </ul>
  *
  * <h3>Failure Semantics</h3>
  * <ul>
- *   <li>Re-throws {@link EmailTechnicalException} without modification</li>
+ *   <li>Re-throws {@link TechnicalException} without modification</li>
  *   <li>Wraps any other exception into {@link EmailTechnicalException}</li>
  * </ul>
  *
@@ -78,7 +78,7 @@ public abstract class AbstractEmailSenderAdapter implements EmailSender {
      * </ul>
      *
      * @param message the emailAddress message to send
-     * @throws Exception any exception during delivery (will be translated)
+     * @throws TechnicalException any exception during delivery (will be translated)
      *
      * @see EmailSender#send(EmailMessage)
      */

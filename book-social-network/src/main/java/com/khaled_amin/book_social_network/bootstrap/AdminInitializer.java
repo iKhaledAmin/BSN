@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.bootstrap;
 
+import com.khaled_amin.book_social_network.core.logging.audit.BusinessEventLogger;
 import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountCreateRequest;
 import com.khaled_amin.book_social_network.identity.user.account.application.service.AccountService;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
@@ -20,6 +21,7 @@ public class AdminInitializer implements CommandLineRunner {
 
     private final AccountService accountService;
     private final BootstrapProperties properties;
+    private final BusinessEventLogger businessEventLogger;
 
     @Override
     public void run(String... args) {
@@ -42,5 +44,10 @@ public class AdminInitializer implements CommandLineRunner {
         Account account = accountService.create(request);
 
         accountService.activate(account.getAccountCode());
+
+        businessEventLogger.systemAdminInitialized(
+                account.getActorCode().toString(),
+                properties.admin().username()
+        );
     }
 }

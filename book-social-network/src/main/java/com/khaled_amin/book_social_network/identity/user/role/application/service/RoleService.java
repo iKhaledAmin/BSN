@@ -6,6 +6,7 @@ import com.khaled_amin.book_social_network.identity.user.role.api.dto.RoleUpdate
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.Role;
 import com.khaled_amin.book_social_network.identity.user.role.domain.model.SystemRole;
 import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,10 @@ public interface RoleService {
 
     Role addCapability(RoleName roleName, CapabilityCode code);
     Role removeCapability(RoleName roleName, CapabilityCode code);
+
+    Role viewRole(RoleName roleName);
+    List<Role> listRoles();
+
 
     List<Role> getDefaultRoles();
     List<String> getDefaultRoleNames();

@@ -37,18 +37,5 @@ public class AuthorizationException extends SecurityException {
         return new AuthorizationException(AuthorizationError.INSUFFICIENT_SCOPE);
     }
 
-    // ================= PRINCIPAL =================
 
-    public static AuthorizationException principalLocked(String principalType) {
-        return new AuthorizationException(
-                AuthorizationError.PRINCIPAL_LOCKED,
-                principalType + " is locked"
-        );
-    }
-
-    public static AuthorizationException principalInactive(String principalType) {
-        return new AuthorizationException(AuthorizationError.PRINCIPAL_INACTIVE,
-                principalType + " is not active"
-        );
-    }
 }

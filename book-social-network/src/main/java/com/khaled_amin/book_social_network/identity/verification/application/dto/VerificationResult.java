@@ -3,7 +3,5 @@ package com.khaled_amin.book_social_network.identity.verification.application.dt
 import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.verification.domain.model.TokenType;
 
-public record VerificationResult(
-        ActorIdentity target,
-        TokenType type
-) {}
+public record VerificationResult(ActorIdentity target, TokenType type)
+{}

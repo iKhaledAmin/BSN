@@ -37,7 +37,7 @@ import com.khaled_amin.book_social_network.identity.core.registry.ActorSourceRes
  * <h3>Implementation Guidelines</h3>
  * <ul>
  *   <li>Each {@link ActorType} must have exactly one resolver</li>
- *   <li>Implementations must explicitly validate the source type</li>
+ *   <li>Implementations must explicitly verify the source type</li>
  *   <li>Must not return {@code null}</li>
  *   <li>Should fail fast on mismatched source types</li>
  * </ul>

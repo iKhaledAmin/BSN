@@ -1,0 +1,55 @@
+package com.khaled_amin.book_social_network.core.logging.event;
+
+public enum BusinessEvent {
+
+    // Bootstrap events
+    SYSTEM_ADMIN_INITIALIZED,
+
+
+
+    // Auth events
+    ACCOUNT_REGISTERED,
+    PASSWORD_RESET_REQUESTED,
+
+    // Account events
+    ACCOUNT_CREATED,
+    ACCOUNT_UPDATED,
+    ACCOUNT_ACTIVATED,
+    ACCOUNT_VIEWED,
+    ACCOUNT_LISTED,
+    ACCOUNT_ROLE_ASSIGNED,
+    ACCOUNT_ROLE_REMOVED,
+    ACCOUNT_ROLES_ASSIGNED,
+    ACCOUNT_ROLES_REPLACED,
+    ACCOUNT_PASSWORD_RESET,
+
+    // Role events
+    BUSINESS_ROLE_CREATED,
+    SYSTEM_ROLE_CREATED,
+    ROLE_UPDATED,
+    ROLE_DELETED,
+    ROLE_VIEWED,
+    ROLE_LISTED,
+    ROLE_CAPABILITY_ASSIGNED,
+    ROLE_CAPABILITY_REMOVED,
+
+
+    // Capability events
+    CAPABILITY_INITIALIZED,
+    CAPABILITY_VIEWED,
+    CAPABILITY_LISTED,
+
+
+    // Verification events
+    VERIFICATION_TOKEN_GENERATED,
+    VERIFICATION_TOKEN_VERIFIED,
+
+    // Email events
+    EMAIL_QUEUED,
+    EMAIL_SENT,
+    EMAIL_SEND_FAILED,
+    EMAIL_RETRY_STARTED,
+    EMAIL_RETRY_SUCCEEDED,
+    EMAIL_RETRY_FAILED,
+
+}

@@ -1,23 +1,23 @@
 package com.khaled_amin.book_social_network.identity.user.account.exception;
 
-import com.khaled_amin.book_social_network.core.exception.security.SecurityError;
-import com.khaled_amin.book_social_network.core.exception.security.SecurityException;
+import com.khaled_amin.book_social_network.core.exception.policy.PolicyError;
+import com.khaled_amin.book_social_network.core.exception.policy.PolicyException;
 
-public class AccountPolicyException extends SecurityException {
+public class AccountPolicyException extends PolicyException {
     // -------------------------------------------- Constructors -------------------------------------------- //
-    protected AccountPolicyException(SecurityError error) {
+    protected AccountPolicyException(PolicyError error) {
         super(error);
     }
 
-//    protected AccountPolicyException(SecurityError error, Throwable cause) {
+//    protected AccountPolicyException(PolicyError error, Throwable cause) {
 //        super(error, cause);
 //    }
 //
-//    protected AccountPolicyException(SecurityError error, String message) {
+//    protected AccountPolicyException(PolicyError error, String message) {
 //        super(error, message);
 //    }
 //
-//    protected AccountPolicyException(SecurityError error, String message, Throwable cause) {
+//    protected AccountPolicyException(PolicyError error, String message, Throwable cause) {
 //        super(error, message, cause);
 //    }
 

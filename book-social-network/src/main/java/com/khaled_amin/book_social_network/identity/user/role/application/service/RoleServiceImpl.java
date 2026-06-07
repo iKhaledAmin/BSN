@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.identity.user.role.application.service;
 
+import com.khaled_amin.book_social_network.core.logging.audit.BusinessEventLogger;
 import com.khaled_amin.book_social_network.identity.capability.application.port.CapabilityService;
 import com.khaled_amin.book_social_network.identity.capability.domain.model.Capability;
 import com.khaled_amin.book_social_network.identity.capability.domain.value.CapabilityCode;
@@ -38,6 +39,7 @@ public class RoleServiceImpl implements RoleService {
     private final ActorProvider actorProvider;
     private final CapabilityService capabilityService;
     private final RoleValidator roleValidator;
+    private final BusinessEventLogger businessEventLogger;
 
     public static final String DEFAULT_ROLES_CACHE = "defaultRoles";
 
@@ -60,7 +62,13 @@ public class RoleServiceImpl implements RoleService {
         );
 
         // Persistence
-        return roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
+
+        businessEventLogger.businessRoleCreated(
+                savedRole.getName()
+        );
+
+        return savedRole;
     }
 
     @Transactional
@@ -78,7 +86,13 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleFactory.createSystemRole(systemRole);
 
         // Persistence
-        return roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
+
+        businessEventLogger.systemRoleCreated(
+                savedRole.getName()
+        );
+
+        return savedRole;
 
     }
 
@@ -103,7 +117,13 @@ public class RoleServiceImpl implements RoleService {
         existingRole.update(command);
 
         // Persistence
-        return roleRepository.save(existingRole);
+        Role savedRole = roleRepository.save(existingRole);
+
+        businessEventLogger.roleUpdated(
+                savedRole.getName()
+        );
+
+        return savedRole;
     }
 
     @Transactional
@@ -121,6 +141,10 @@ public class RoleServiceImpl implements RoleService {
 
         // Persistence
         roleRepository.delete(role);
+
+        businessEventLogger.roleDeleted(
+                role.getName()
+        );
     }
 
     @Transactional
@@ -140,7 +164,14 @@ public class RoleServiceImpl implements RoleService {
         role.addCapability(capability);
 
         // Persistence
-        return roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
+
+        businessEventLogger.roleCapabilityAssigned(
+                role.getName(),
+                capability.getCode()
+        );
+
+        return savedRole;
     }
 
 
@@ -159,11 +190,40 @@ public class RoleServiceImpl implements RoleService {
         role.removeCapability(capability);
 
         // Persistence
-        return roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
+
+        businessEventLogger.roleCapabilityRemoved(
+                role.getName(),
+                capability.getCode()
+        );
+
+        return savedRole;
     }
 
 
 
+    @Transactional(readOnly = true)
+    public Role viewRole(RoleName roleName) {
+
+        Role role = getByName(roleName);
+
+        businessEventLogger.roleViewed(
+                role.getName()
+        );
+
+        return role;
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<Role> listRoles() {
+
+        List<Role> roles = getAll();
+
+        businessEventLogger.roleListed();
+
+        return roles;
+    }
 
 
 

@@ -1,5 +1,6 @@
 package com.khaled_amin.book_social_network.security.principal.core;
 
+import com.khaled_amin.book_social_network.core.exception.technical.TechnicalException;
 import com.khaled_amin.book_social_network.identity.core.model.ActorType;
 import com.khaled_amin.book_social_network.security.exception.SecurityTechnicalException;
 import com.khaled_amin.book_social_network.security.jwt.JwtPayload;
@@ -42,9 +43,9 @@ import java.util.Map;
  * <h3>Failure Semantics</h3>
  * <ul>
  *   <li>If multiple resolvers are registered for the same {@link ActorType}:
- *       {@link SecurityTechnicalException#duplicatePrincipalResolver(ActorType)} is thrown at startup</li>
+ *       {@link TechnicalException} is thrown at startup</li>
  *   <li>If no resolver exists for a given {@link ActorType}:
- *       {@link SecurityTechnicalException#nullPrincipalResolver(ActorType)} is thrown at runtime</li>
+ *       {@link {@link TechnicalException} is thrown at startup</li>#nullPrincipalResolver(ActorType)} is thrown at runtime</li>
  *   <li>All failures are considered system-level configuration errors, not user errors</li>
  * </ul>
  *
@@ -66,7 +67,7 @@ import java.util.Map;
  * @see AuthenticatedPrincipal
  * @see JwtPayload
  * @see ActorType
- * @see SecurityTechnicalException
+ * @see TechnicalException
  */
 @Component
 public class PrincipalResolverRegistry {
@@ -130,7 +131,7 @@ public class PrincipalResolverRegistry {
      * <ul>
      *   <li>
      *       If no resolver exists for the payload actor type:
-     *       {@link SecurityTechnicalException#nullPrincipalResolver(ActorType)}
+     *       {@link TechnicalException}
      *       is thrown.
      *   </li>
      *   <li>
@@ -151,7 +152,7 @@ public class PrincipalResolverRegistry {
      *
      * @param payload {@link JwtPayload} validated JWT payload containing identity claims
      * @return resolved principal {@link AuthenticatedPrincipal} associated with the payload
-     * @throws SecurityException if principal resolution fails
+     * @throws TechnicalException if principal resolution fails
      */
     public AuthenticatedPrincipal resolve(JwtPayload payload) {
 

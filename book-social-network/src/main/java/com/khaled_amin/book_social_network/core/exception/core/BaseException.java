@@ -27,21 +27,24 @@ public abstract class BaseException extends RuntimeException {
     }
 
 
+    public abstract BaseError getError();
+
+
     // ---------------- SAFE DETAILS ---------------- //
 
-    public BaseException withClientDetails(String key, Object value) {
+    public <T extends BaseException> T withClientDetails(String key, Object value) {
         if (value != null) {
             this.clientDetails.put(key, value);
         }
-        return this;
+        return (T) this;
     }
 
     // ---------------- DEBUG DETAILS ---------------- //
 
-    public BaseException withDebugDetails(String key, Object value) {
+    public <T extends BaseException> T withDebugDetails(String key, Object value) {
         if (value != null) {
             this.debugDetails.put(key, value);
         }
-        return this;
+        return (T) this;
     }
 }

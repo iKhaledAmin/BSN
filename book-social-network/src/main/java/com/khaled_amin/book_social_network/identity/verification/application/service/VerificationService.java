@@ -2,7 +2,6 @@ package com.khaled_amin.book_social_network.identity.verification.application.se
 
 import com.khaled_amin.book_social_network.identity.core.model.ActorIdentity;
 import com.khaled_amin.book_social_network.identity.verification.application.dto.VerificationResult;
-import com.khaled_amin.book_social_network.identity.verification.application.exception.VerificationApplicationException;
 import com.khaled_amin.book_social_network.identity.verification.domain.model.TokenType;
 
 /**
@@ -48,7 +47,6 @@ import com.khaled_amin.book_social_network.identity.verification.domain.model.To
  * </ul>
  *
  * @see ActorIdentity
- * @see VerificationApplicationException
  */
 public interface VerificationService {
 
@@ -118,5 +116,5 @@ public interface VerificationService {
      * @param type {@link TokenType} the type of token (e.g., activation, password reset)  used in validation process
      * @return verification {@link VerificationResult} result containing target and token type
      */
-    VerificationResult validateToken(String code, TokenType type);
+    VerificationResult verifyToken(String code, TokenType type);
 }

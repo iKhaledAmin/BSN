@@ -25,7 +25,7 @@ import com.khaled_amin.book_social_network.core.exception.security.SecurityExcep
  * <h3>Execution Model</h3>
  * <ul>
  *   <li>{@link #check(BasePolicyContext)} is the main entry point</li>
- *   <li>Implementations must validate the context via {@link #validateContext(BasePolicyContext)}</li>
+ *   <li>Implementations must verify the context via {@link #validateContext(BasePolicyContext)}</li>
  *   <li>Authorization decisions must either:
  *     <ul>
  *       <li>Allow execution (no exception thrown)</li>
@@ -69,7 +69,7 @@ public interface BasePolicy<C extends BasePolicyContext> {
      * authorization logic.
      * </p>
      *
-     * @param context {@link BasePolicyContext} the policy context to validate
+     * @param context {@link BasePolicyContext} the policy context to verify
      */
     void validateContext(C context);
 }

@@ -17,15 +17,12 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
 
     @Override
-    public void commence(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException ex
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex
     ) throws IOException {
 
         SecurityException securityException = extractSecurityException(ex);

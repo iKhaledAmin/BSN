@@ -5,7 +5,6 @@ import com.khaled_amin.book_social_network.auth.account.api.dto.*;
 import com.khaled_amin.book_social_network.core.mapper.GlobalMapperConfig;
 import com.khaled_amin.book_social_network.identity.user.account.api.dto.AccountCreateRequest;
 import com.khaled_amin.book_social_network.identity.user.account.domain.model.Account;
-import com.khaled_amin.book_social_network.identity.user.role.domain.value.RoleName;
 import com.khaled_amin.book_social_network.security.jwt.JwtMapper;
 import com.khaled_amin.book_social_network.security.principal.account.AccountPrincipal;
 import org.mapstruct.Mapper;
@@ -17,7 +16,7 @@ import java.util.Set;
 
 
 @Mapper(config = GlobalMapperConfig.class,uses = JwtMapper.class)
-public interface AccountAuthenticationMapper {
+public interface AccountAuthMapper {
 
 
     // ---------------- Registration ----------------
