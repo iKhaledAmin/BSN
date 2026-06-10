@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataSource name="book_social_network@localhost">
-  <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.54">
+  <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.55">
     <root id="1">
       <DateStyle>mdy</DateStyle>
       <IntrospectionStateNumber>741</IntrospectionStateNumber>
@@ -4846,7 +4846,7 @@ false posixrules
       <OwnerName>username</OwnerName>
     </table>
     <column id="265" parent="264" name="id">
-      <IdentityKind>by-default</IdentityKind>
+      <GeneratedKind>unknown-migrated</GeneratedKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StateNumber>738</StateNumber>

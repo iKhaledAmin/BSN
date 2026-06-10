@@ -46,13 +46,12 @@ public class AccountController {
     }
 
     @PreAuthorize("hasAuthority('account_update_self')")
-    @PutMapping("/me")
+    @PatchMapping("/me")
     public ResponseEntity<ApiResponse<AccountResponse>> updateMyAccount(
             @Valid @RequestBody AccountUpdateRequest request) {
 
         Actor authaticatedActor = actorProvider.getCurrent();
         ActorCode accountCode = authaticatedActor.getActorIdentity().getActorCode();
-
 
         Account updatedAccount = accountService.update(accountCode,request);
 

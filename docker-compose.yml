@@ -1,31 +1,34 @@
 services:
-  postgres:
-    container_name: postgres-bsn
-    image: postgres:15.15-bookworm
+  mysql:
+    container_name: mysql-bns
+    image: mysql:8.4
     environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: book_social_network
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: bns
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - bsn-data:/var/lib/postgresql/data
+      - bns-data:/var/lib/mysql
     ports:
-      - "5432:5432"
+      - "3307:3306"
     networks:
-      - bsn-network
+      - bns-network
     restart: unless-stopped
+
   mail-dev:
-    container_name: mail-dev-bsn
+    container_name: mail-dev-bns
     image: maildev/maildev
     ports:
-      - "1080:1080"
-      - "1025:1025"
+      - "1081:1080"
+      - "1026:1025"
     networks:
-      - bsn-network
+      - bns-network
     restart: unless-stopped
-networks:
-  bsn-network:
-    driver: bridge
-volumes:
-  bsn-data:
-    driver: local
 
+networks:
+  bns-network:
+    driver: bridge
+
+volumes:
+  bns-data:
+    driver: local
